@@ -13,4 +13,6 @@ Route::get('/user', function (Request $request) {
 Route::prefix('student')->middleware(['api', 'JsonRes'])
     ->group(function () {
         Route::get('/test', [MainController::class, 'test']);
+
+        Route::post('/checkIndex', [MainController::class, 'checkIndex']);
     });
