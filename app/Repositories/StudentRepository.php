@@ -358,7 +358,6 @@ class StudentRepository
         ];
     }
 
-
     public function getResult()
     {
 
