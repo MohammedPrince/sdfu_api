@@ -6,7 +6,7 @@ use App\Repositories\StudentRepository;
 
 class StudentService
 {
-    protected $studentRepository; 
+    protected $studentRepository;
 
     public function __construct(StudentRepository $studentRepository)
     {
@@ -17,4 +17,30 @@ class StudentService
     {
         return $this->studentRepository->studentCheck($data);
     }
+
+    public function login($data)
+    {
+        return $this->studentRepository->login($data);
+    }
+
+    public function mainData()
+    {
+        return $this->studentRepository->mainData();
+    }
+
+    public function getResult()
+    {
+        return $this->studentRepository->getResult();
+    }
+
+    public function getFees()
+    {
+        return $this->studentRepository->getFees();
+    }
+
+    public function logout()
+    {
+        return $this->studentRepository->logout();
+    }
+
 }

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api\Students;
 
-use Illuminate\Http\Request;
-use App\Services\StudentService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StudIndexValidation;
+use App\Services\StudentService;
+use Illuminate\Http\Request;
+
 
 class MainController extends Controller
 {
@@ -16,10 +17,8 @@ class MainController extends Controller
         $this->studentService = $studentService;
     }
 
-
     public function test()
     {
-
         return response()->json([
             'status' => 'success',
             'code' => 200,
@@ -27,8 +26,37 @@ class MainController extends Controller
         ], 200);
     }
 
+    public function login(Request $request)
+    {
+
+        $studIndex = trim($request->input('stud_index', ''));
+        $studPassword = $request->input('stud_password', '');
+
+        $data = ['stud_index' => $studIndex, 'stud_password' => $studPassword];
+
+        $result = $this->studentService->login($data);
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'studentDetails' => $result['studentDetails'],
+                ]
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
     public function checkIndex(StudIndexValidation $request)
     {
+
         $data = $request->validated();
 
         $result = $this->studentService->studentCheck($data);
@@ -51,4 +79,96 @@ class MainController extends Controller
         }
 
     }
+
+    public function mainData()
+    {
+        $result = $this->studentService->mainData();
+
+        if (!$result['success']) {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'code' => 200,
+            'message' => 'Main Data Retrieved Successfully',
+            'data' => [
+                'studentDetails' => $result['studentDetails'],
+                'semesterResult' => $result['semesterResult'],
+                'feeDetails' => $result['feeDetails'],
+                'timetable' => $result['timetable'],
+            ],
+        ]);
+    }
+
+    public function getResult()
+    {
+        $result = $this->studentService->getResult();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'studentDetails' => $result['studentDetails'],
+                    'semesterResult' => $result['semesterResult'],
+                ],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
+    public function getFees()
+    {
+        $result = $this->studentService->getFees();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'studentDetails' => $result['studentDetails'],
+                    'feeDetails' => $result['feeDetails'],
+                ],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
+    public function logout()
+    {
+
+        $result = $this->studentService->logout();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message']
+            ], $result['code']);
+        }
+    }
+
 }
