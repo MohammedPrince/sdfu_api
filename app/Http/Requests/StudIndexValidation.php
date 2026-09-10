@@ -23,12 +23,14 @@ class StudIndexValidation extends FormRequest
     {
         return [
             'stud_index' => 'required|string',
+            'stud_password' => 'required|string',
         ];
     }
     public function messages()
     {
         return [
             'stud_index.required' => 'Please Enter Your Index',
+            'stud_password.required' => 'Please Enter Your Password',
         ];
     }
 }

@@ -9,10 +9,22 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Public
+Route::prefix('student')->middleware('JsonRes')->group(function () {
 
-Route::prefix('student')->middleware(['api', 'JsonRes'])
-    ->group(function () {
-        Route::get('/test', [MainController::class, 'test']);
+    // Public
+    Route::get('/test', [MainController::class, 'test']);
+    Route::post('/checkIndex', [MainController::class, 'checkIndex']);
+    Route::post('/login', [MainController::class, 'login']);
 
-        Route::post('/checkIndex', [MainController::class, 'checkIndex']);
+    // Protected
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [MainController::class, 'logout']);
+        Route::post('/result', [MainController::class, 'getResult']);
+        Route::post('/fees', [MainController::class, 'getFees']);
+
+        //Main data. App launch
+        Route::post('/mainData', [MainController::class, 'mainData']);
     });
+
+});
