@@ -552,7 +552,7 @@ class StudentRepository
         | Keyed with $current_date so days_remaining / registration_closed
         | naturally roll over at midnight without needing manual invalidation.
         */
-        
+
         $feeDetails = Cache::remember(
             "{$cacheKey}:fees:{$current_date}",
             600, // 10 minutes — fee status can change (e.g. after a payment)
@@ -629,7 +629,6 @@ class StudentRepository
 
     public function getResult()
     {
-
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
@@ -646,15 +645,58 @@ class StudentRepository
         $batch = $user->batch;
         $semester = $user->semester;
 
-        $results = $this->externalDatabase->getStudentResult(
-            $stud_id,
-            $faculty_code,
-            $major_code,
-            $batch,
-            $semester
-        );
+        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:result";
 
-        if (empty($results)) {
+        $payload = Cache::remember($cacheKey, 3600, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+            $results = $this->externalDatabase->getStudentResult(
+                $stud_id,
+                $faculty_code,
+                $major_code,
+                $batch,
+                $semester
+            );
+
+            if (empty($results)) {
+                return null; // sentinel — no result yet
+            }
+
+            $first = $results[0];
+
+            $studentDetails = [
+                'stud_id' => $first['stud_id'],
+                'student_name' => $first['student_name'],
+                'ministry_no' => $first['ministry_no'],
+                'faculty' => $first['faculty'],
+                'major' => $first['major'],
+            ];
+
+            $courses = [];
+
+            foreach ($results as $result) {
+                $courses[] = [
+                    'course_code' => $result['course_code'],
+                    'course_name' => $result['course_name'],
+                    'course_units' => $result['course_units'],
+                    'grade' => $result['grade'],
+                    'points' => $result['points'],
+                    'remark' => $result['remark'],
+                    'result_status' => $result['result_status'],
+                ];
+            }
+
+            return [
+                'studentDetails' => $studentDetails,
+                'semesterResult' => [
+                    'semester' => $first['semester'],
+                    'gpa' => round((float) $first['gpa'], 2),
+                    'cgpa' => round((float) $first['cgpa']),
+                    'status' => $first['status'],
+                    'courses' => $courses,
+                ],
+            ];
+        });
+
+        if ($payload === null) {
             return [
                 'success' => false,
                 'code' => 404,
@@ -662,45 +704,12 @@ class StudentRepository
             ];
         }
 
-        $first = $results[0];
-
-        $studentDetails = [
-            'stud_id' => $first['stud_id'],
-            'student_name' => $first['student_name'],
-            'ministry_no' => $first['ministry_no'],
-            'faculty' => $first['faculty'],
-            'major' => $first['major'],
-        ];
-
-        $courses = [];
-
-        foreach ($results as $result) {
-
-            $courses[] = [
-                'course_code' => $result['course_code'],
-                'course_name' => $result['course_name'],
-                'course_units' => $result['course_units'],
-                'grade' => $result['grade'],
-                'points' => $result['points'],
-                'remark' => $result['remark'],
-                'result_status' => $result['result_status'],
-            ];
-        }
-
         return [
             'success' => true,
             'code' => 200,
             'message' => 'Student Result Retrieved Successfully',
-
-            'studentDetails' => $studentDetails,
-
-            'semesterResult' => [
-                'semester' => $first['semester'],
-                'gpa' => round((float) $first['gpa'], 2),
-                'cgpa' => round((float) $first['cgpa']),
-                'status' => $first['status'],
-                'courses' => $courses,
-            ],
+            'studentDetails' => $payload['studentDetails'],
+            'semesterResult' => $payload['semesterResult'],
         ];
     }
     public function getFees()
