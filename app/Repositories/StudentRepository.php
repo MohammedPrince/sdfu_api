@@ -290,7 +290,7 @@ class StudentRepository
                     'course_name' => $result['course_name'],
                     'course_units' => $result['course_units'],
                     'grade' => $result['grade'],
-                    'points' => $result['points'],
+                    'points' => round((float) $result['points']),
                     'remark' => $result['remark'],
                     'result_status' => $result['result_status'],
                 ];
@@ -298,8 +298,8 @@ class StudentRepository
 
             $semesterResult = [
                 'semester' => $first['semester'],
-                'gpa' => $first['gpa'],
-                'cgpa' => $first['cgpa'],
+                'gpa' => round((float) $first['gpa']),
+                'cgpa' => round((float) $first['cgpa']),
                 'status' => $first['status'],
                 'courses' => $courses,
             ];
@@ -321,13 +321,69 @@ class StudentRepository
         );
 
 
+        $current_date = now()->format('Y-m-d');
+        $registration_closed = false;
+        $start_date = null;
+        $end_date = null;
+        $viewData = null;
+        $total_fee_bank = 0;
+        $status = null;
+        $fees_type = null;
+        $today = Carbon::today();
+
+        if ($feeDetails) {
+
+            $start_date = $feeDetails->start_date;
+            $end_date = $feeDetails->end_date;
+            $viewData = $feeDetails->viewData;
+            $total_fee_bank = $feeDetails->total_fee_bank;
+
+            $registration_closed = $current_date > $end_date;
+
+            $endDate = Carbon::parse($end_date)->startOfDay();
+
+            if ($endDate->isSameDay($today)) {
+                $daysRemaining = 1;
+            } else {
+                $daysRemaining = abs($today->diffInDays($endDate, false));
+            }
+
+            if ($registration_closed) {
+                $status = 'Registration is closed.';
+            } elseif ($total_fee_bank == 0 || $viewData == 0) {
+                $status = 'Check with faculty registrar for fee details';
+            } elseif ($viewData == 2) {
+                $status = 'Paid';
+            }
+
+            $fees_type = in_array($semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
+
+            $feeDetails = [
+                // 'start_date' => $start_date,
+                'total_fees' => $total_fee_bank,
+                'fees_type' => $fees_type,
+                'end_date' => $end_date,
+                'days_remaining' => $daysRemaining,
+                'registration_closed' => $registration_closed,
+                'status' => $status,
+            ];
+
+            return [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Fee Details Retrieved Successfully',
+                'feeDetails' => $feeDetails,
+            ];
+
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Timetable
         |--------------------------------------------------------------------------
         */
 
-        $timetable =[];
+        $timetable = [];
         // $timetable = $this->externalDatabase->getStudentTimetable(
         //     $stud_id,
         //     $faculty_code,
@@ -427,14 +483,13 @@ class StudentRepository
 
             'semesterResult' => [
                 'semester' => $first['semester'],
-                'gpa' => $first['gpa'],
-                'cgpa' => $first['cgpa'],
+                'gpa' => round((float) $first['gpa'], 2),
+                'cgpa' => round((float) $first['cgpa']),
                 'status' => $first['status'],
                 'courses' => $courses,
             ],
         ];
     }
-
     public function getFees()
     {
 
@@ -473,6 +528,7 @@ class StudentRepository
         $total_fee_bank = 0;
         $status = null;
         $fees_type = null;
+        $today = Carbon::today();
 
         $getFeeDetails = $this->externalDatabase->getStudentFees($stud_id, $faculty_code, $major_code, $batch, $semester);
 
@@ -484,6 +540,14 @@ class StudentRepository
             $total_fee_bank = $getFeeDetails->total_fee_bank;
 
             $registration_closed = $current_date > $end_date;
+
+            $endDate = Carbon::parse($end_date)->startOfDay();
+
+            if ($endDate->isSameDay($today)) {
+                $daysRemaining = 1;
+            } else {
+                $daysRemaining = abs($today->diffInDays($endDate, false));
+            }
 
             if ($registration_closed) {
                 $status = 'Registration is closed.';
@@ -500,7 +564,7 @@ class StudentRepository
                 'total_fees' => $total_fee_bank,
                 'fees_type' => $fees_type,
                 'end_date' => $end_date,
-                'days_remaining' => $registration_closed ? 0 : now()->diffInDays($end_date),
+                'days_remaining' => $daysRemaining,
                 'registration_closed' => $registration_closed,
                 'status' => $status,
             ];
