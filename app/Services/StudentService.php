@@ -23,6 +23,12 @@ class StudentService
         return $this->studentRepository->login($data);
     }
 
+
+    public function getProfile()
+    {
+      return $this->studentRepository->getProfile();  
+    }
+
     public function mainData()
     {
         return $this->studentRepository->mainData();

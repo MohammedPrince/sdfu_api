@@ -12,7 +12,7 @@ class ExternalDatabaseService
     |--------------------------------------------------------------------------
     */
 
-    public function getMoodleStudent(string $studIndex)
+    public function getMoodleStudent(string $studIndex): ?object
     {
         return DB::connection('mysql_moodle')
             ->table('user')
@@ -36,7 +36,7 @@ class ExternalDatabaseService
     |--------------------------------------------------------------------------
     */
 
-    public function getStudentDetails(string $studIndex)
+    public function getStudentDetails(string $studIndex): ?object
     {
         return DB::connection('mysql_sis')
             ->table('student_profile_e as e')
@@ -48,8 +48,19 @@ class ExternalDatabaseService
             )
             ->where('e.stud_id', $studIndex)
             ->select([
-                'e.*',
-                'c.*',
+                // e.* — explicit, so a shared column name never gets
+                // silently overwritten by c.*
+                'e.stud_id',
+                'e.stud_name',
+                'e.stud_surname',
+                'e.familyname',
+                'e.lastName',
+                'e.stud_email',
+                'e.stud_tel_mobile',
+
+                // c.* — add/remove to match what callers actually use
+                'c.batch',
+                'c.semester',
             ])
             ->first();
     }
@@ -61,7 +72,7 @@ class ExternalDatabaseService
     |--------------------------------------------------------------------------
     */
 
-    public function getFacultyName($facultyCode)
+    public function getFacultyName($facultyCode): ?string
     {
         return DB::connection('mysql_sis')
             ->table('faculty')
@@ -76,12 +87,30 @@ class ExternalDatabaseService
     |--------------------------------------------------------------------------
     */
 
-    public function getMajorName($majorCode)
+    public function getMajorName($majorCode): ?string
     {
         return DB::connection('mysql_sis')
             ->table('major')
             ->where('major_code', $majorCode)
             ->value('major_desc_e');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ministry Number
+    |--------------------------------------------------------------------------
+    | Pulled separately instead of leftJoin'd into getStudentResult() —
+    | if a student has more than one stud_highschool row, a join would
+    | silently duplicate every course row in the result set.
+    */
+
+    public function getMinistryNo($stud_id): ?string
+    {
+        return DB::connection('mysql_sis')
+            ->table('stud_highschool')
+            ->where('stud_id', $stud_id)
+            ->value('ministry_no');
     }
 
 
@@ -97,8 +126,10 @@ class ExternalDatabaseService
         $majorCode,
         $batch,
         $semester
-    ) {
+    ): array {
         $db = DB::connection('mysql_sis');
+
+        $ministryNo = $this->getMinistryNo($stud_id);
 
         $results = $db->table('stud_course_mark as scm')
 
@@ -194,19 +225,6 @@ class ExternalDatabaseService
 
             /*
             |--------------------------------------------------------------------------
-            | Ministry Number
-            |--------------------------------------------------------------------------
-            */
-
-            ->leftJoin(
-                'stud_highschool as sh',
-                'sh.stud_id',
-                '=',
-                'scm.stud_id'
-            )
-
-            /*
-            |--------------------------------------------------------------------------
             | Filters
             |--------------------------------------------------------------------------
             */
@@ -252,8 +270,6 @@ class ExternalDatabaseService
                 'f.faculty_desc_e',
                 'm.major_desc_e',
                 'm.abbreviation',
-
-                'sh.ministry_no',
             ])
 
             ->orderBy('scm.course_code')
@@ -338,7 +354,7 @@ class ExternalDatabaseService
 
                 'status' => $row->status_desc_e,
 
-                'ministry_no' => $row->ministry_no,
+                'ministry_no' => $ministryNo,
 
                 'faculty' => $row->faculty_desc_e,
 
@@ -366,10 +382,16 @@ class ExternalDatabaseService
         $majorCode,
         $batch,
         $semester
-    ) {
+    ): ?object {
         return DB::connection('mysql_fib')
             ->table('fu_student_fee_fib_flag_local')
             ->where('student_index_no', $stud_id)
+            ->select([
+                'start_date',
+                'end_date',
+                'viewData',
+                'total_fee_bank',
+            ])
             ->first();
     }
 }
