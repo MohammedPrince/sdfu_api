@@ -13,12 +13,10 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->string('faculty_code', 50)
                 ->nullable()
-                ->unique()
                 ->after('phone');
 
             $table->string('major_code', 50)
                 ->nullable()
-                ->unique()
                 ->after('faculty_code');
 
             $table->string('batch', 20)
