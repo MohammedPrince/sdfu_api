@@ -22,6 +22,7 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
         Route::post('/logout', [MainController::class, 'logout']);
         Route::post('/result', [MainController::class, 'getResult']);
         Route::post('/fees', [MainController::class, 'getFees']);
+        Route::post('/profile', [MainController::class, 'getProfile']);
 
         //Main data. App launch
         Route::post('/mainData', [MainController::class, 'mainData']);

@@ -197,6 +197,54 @@ class StudentRepository
         ];
     }
 
+    public function getProfile()
+    {
+
+        if (!Auth::check() || !Auth::user()) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated'
+            ];
+        }
+
+        $studentDetails = [];
+
+        $user = Auth::user();
+
+        $stud_id = $user->stud_index;
+        $stud_full_name = $user->name;
+        $faculty_code = $user->faculty_code;
+        $major_code = $user->major_code;
+        $batch = $user->batch;
+        $semester = $user->semester;
+        $email = $user->email ?? null;
+        $phone = $user->phone ?? null;
+
+        $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
+        $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+    
+        $studentDetails = [
+            'stud_index' => $stud_id,
+            'stud_full_name' => $stud_full_name,
+            'stud_email' => $email ?? null,
+            'stud_phone' => $phone ?? null,
+            'faculty_code' => $faculty_code ?? null,
+            'major_code' => $major_code ?? null,
+            'faculty' => $faculty_desc_e ?? null,
+            'major' => $major_desc_e ?? null,
+            'batch' => $batch ?? null,
+            'sem' => (int) $semester,
+        ];
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Student Details',
+            'studentDetails' => $studentDetails,
+        ];
+    }
+
     //Without Cache
     // public function mainData()
     // {
@@ -433,7 +481,6 @@ class StudentRepository
     // }
 
 
-    //With Cache
     public function mainData()
     {
         if (!Auth::check() || !Auth::user()) {

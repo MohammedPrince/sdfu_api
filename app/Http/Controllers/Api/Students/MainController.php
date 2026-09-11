@@ -54,6 +54,28 @@ class MainController extends Controller
         }
     }
 
+    public function getProfile()
+    {
+        $result = $this->studentService->getProfile();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'studentDetails' => $result['studentDetails'],
+                ]
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
     public function checkIndex(StudIndexValidation $request)
     {
 
