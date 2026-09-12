@@ -223,7 +223,7 @@ class StudentRepository
 
         $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
         $major_desc_e = $this->externalDatabase->getMajorName($major_code);
-    
+
         $studentDetails = [
             'stud_index' => $stud_id,
             'stud_full_name' => $stud_full_name,
@@ -560,7 +560,7 @@ class StudentRepository
                         'course_name' => $result['course_name'],
                         'course_units' => $result['course_units'],
                         'grade' => $result['grade'],
-                        'points' =>  $result['points'],
+                        'points' => $result['points'],
                         'remark' => $result['remark'],
                         'result_status' => $result['result_status'],
                     ];
@@ -569,7 +569,7 @@ class StudentRepository
                 $semesterResult = [
                     'semester' => $first['semester'],
                     'gpa' => $first['gpa'],
-                    'cgpa' =>  $first['cgpa'],
+                    'cgpa' => $first['cgpa'],
                     'status' => $first['status'],
                     'courses' => $courses,
                 ];
@@ -663,6 +663,10 @@ class StudentRepository
         */
         $timetable = []; // Later: also cache once implemented
 
+        $appStatus = [
+            'status' => true,
+        ];
+
         return [
             'success' => true,
             'code' => 200,
@@ -671,6 +675,7 @@ class StudentRepository
             'semesterResult' => $semesterResult,
             'feeDetails' => $feeDetails,
             'timetable' => $timetable,
+            'appStatus' => $appStatus,
         ];
     }
 

@@ -123,6 +123,7 @@ class MainController extends Controller
                 'semesterResult' => $result['semesterResult'],
                 'feeDetails' => $result['feeDetails'],
                 'timetable' => $result['timetable'],
+                'appStatus' => $result['appStatus'],
             ],
         ]);
     }
