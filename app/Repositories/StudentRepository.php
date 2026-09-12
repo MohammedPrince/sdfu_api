@@ -664,7 +664,7 @@ class StudentRepository
         $timetable = []; // Later: also cache once implemented
 
         $appStatus = [
-            'status' => true,
+            'active' => true,
         ];
 
         return [
