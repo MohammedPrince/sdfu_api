@@ -55,12 +55,13 @@ class ExternalDatabaseService
                 'e.stud_surname',
                 'e.familyname',
                 'e.lastName',
-                'e.stud_email',
-                'e.stud_tel_mobile',
 
                 // c.* — add/remove to match what callers actually use
+                'c.stud_email',
+                'c.stud_tel_mobile',
                 'c.batch',
-                'c.semester',
+                'c.curr_sem',
+
             ])
             ->first();
     }

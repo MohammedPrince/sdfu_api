@@ -137,7 +137,7 @@ class MainController extends Controller
                 'code' => $result['code'],
                 'message' => $result['message'],
                 'data' => [
-                    'studentDetails' => $result['studentDetails'],
+                    // 'studentDetails' => $result['studentDetails'],
                     'semesterResult' => $result['semesterResult'],
                 ],
             ], $result['code']);
@@ -160,7 +160,7 @@ class MainController extends Controller
                 'code' => $result['code'],
                 'message' => $result['message'],
                 'data' => [
-                    'studentDetails' => $result['studentDetails'],
+                    // 'studentDetails' => $result['studentDetails'],
                     'feeDetails' => $result['feeDetails'],
                 ],
             ], $result['code']);
