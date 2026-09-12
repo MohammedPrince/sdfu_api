@@ -346,13 +346,12 @@ class ExternalDatabaseService
 
                 'grade' => $grade,
 
-                'points' => (float) $row->weightage,
+                'points' => number_format((float) $row->weightage, 2, '.', ''),
 
                 'remark' => $row->remark ?? '',
 
-                'gpa' => (float) $row->gpa,
-
-                'cgpa' => (float) $row->cgpa,
+                'gpa' => number_format((float) $row->gpa, 2, '.', ''),
+                'cgpa' => number_format((float) $row->cgpa, 2, '.', ''),
 
                 'status' => $row->status_desc_e,
 
