@@ -61,7 +61,8 @@ class ExternalDatabaseService
                 'c.stud_tel_mobile',
                 'c.batch',
                 'c.curr_sem',
-
+                'c.faculty_code',
+                'c.major_code',
             ])
             ->first();
     }
