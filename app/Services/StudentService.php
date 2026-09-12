@@ -26,7 +26,7 @@ class StudentService
 
     public function getProfile()
     {
-      return $this->studentRepository->getProfile();  
+        return $this->studentRepository->getProfile();
     }
 
     public function mainData()
@@ -42,6 +42,11 @@ class StudentService
     public function getFees()
     {
         return $this->studentRepository->getFees();
+    }
+
+    public function updatePassword($data)
+    {
+        return $this->studentRepository->updatePassword($data);
     }
 
     public function logout()

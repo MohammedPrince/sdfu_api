@@ -140,9 +140,7 @@ class StudentRepository
             $user = User::create([
                 'stud_index' => $studIndex,
                 'name' => $stud_full_name,
-                'email' => !empty($student->email)
-                    ? $student->email
-                    : null,
+                'email' => !empty($student->email) ? $student->email : null,
                 'phone' => $phone,
                 'faculty_code' => $studentDetails->faculty_code ?? null,
                 'major_code' => $studentDetails->major_code ?? null,
@@ -156,9 +154,7 @@ class StudentRepository
             $user->update([
                 'name' => $stud_full_name,
                 'phone' => $phone,
-                'email' => !empty($student->email)
-                    ? $student->email
-                    : $user->email,
+                'email' => !empty($student->email) ? $student->email : $user->email,
                 'faculty_code' => $studentDetails->faculty_code ?? null,
                 'major_code' => $studentDetails->major_code ?? null,
                 'batch' => $studentDetails->batch ?? null,
@@ -167,12 +163,7 @@ class StudentRepository
         }
 
         $expiresAt = Carbon::now()->addYear();
-
-        $token = $user->createToken(
-            'student-mobile-app',
-            ['*'],
-            $expiresAt
-        );
+        $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
 
         $LoginDetails = [
             'stud_index' => $studIndex,
@@ -244,242 +235,6 @@ class StudentRepository
             'studentDetails' => $studentDetails,
         ];
     }
-
-    //Without Cache
-    // public function mainData()
-    // {
-    //     if (!Auth::check() || !Auth::user()) {
-    //         return [
-    //             'success' => false,
-    //             'code' => 401,
-    //             'message' => 'Student not authenticated'
-    //         ];
-    //     }
-
-    //     $user = Auth::user();
-
-    //     $stud_id = $user->stud_index;
-    //     $faculty_code = $user->faculty_code;
-    //     $major_code = $user->major_code;
-    //     $batch = $user->batch;
-    //     $semester = $user->semester;
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Fees Variables
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $current_date = now()->format('Y-m-d');
-    //     $registration_closed = false;
-    //     $end_date = null;
-    //     $viewData = null;
-    //     $total_fee_bank = 0;
-    //     $status = null;
-    //     $fees_type = null;
-    //     $today = Carbon::today();
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Student Details
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $studentDetails = $this->externalDatabase->getStudentDetails($stud_id);
-
-    //     if (!$studentDetails) {
-    //         return [
-    //             'success' => false,
-    //             'code' => 404,
-    //             'message' => 'Student Profile Not Found'
-    //         ];
-    //     }
-
-    //     $stud_full_name = trim($studentDetails->stud_name . ' ' .$studentDetails->stud_surname . ' ' .$studentDetails->familyname . ' ' .$studentDetails->lastName);
-
-    //     $faculty = $this->externalDatabase->getFacultyName($faculty_code);
-    //     $major = $this->externalDatabase->getMajorName($major_code);
-
-    //     $studentData = [
-    //         'stud_id' => $stud_id,
-    //         'student_name' => $stud_full_name,
-    //         'email' => $studentDetails->stud_email ?? null,
-    //         'phone' => $studentDetails->stud_tel_mobile ?? null,
-
-    //         'faculty_code' => $faculty_code,
-    //         'major_code' => $major_code,
-
-    //         'faculty' => $faculty,
-    //         'major' => $major,
-
-    //         'batch' => $batch,
-    //         'semester' => (int) $semester,
-    //     ];
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Semester Result
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $results = $this->externalDatabase->getStudentResult(
-    //         $stud_id,
-    //         $faculty_code,
-    //         $major_code,
-    //         $batch,
-    //         $semester
-    //     );
-
-    //     $semesterResult = null;
-
-    //     if (!empty($results)) {
-
-    //         $first = $results[0];
-
-    //         $courses = [];
-
-    //         foreach ($results as $result) {
-
-    //             $courses[] = [
-    //                 'course_code' => $result['course_code'],
-    //                 'course_name' => $result['course_name'],
-    //                 'course_units' => $result['course_units'],
-    //                 'grade' => $result['grade'],
-    //                 'points' => round((float) $result['points']),
-    //                 'remark' => $result['remark'],
-    //                 'result_status' => $result['result_status'],
-    //             ];
-    //         }
-
-    //         $semesterResult = [
-    //             'semester' => $first['semester'],
-    //             // Keep 2 decimal places
-    //             'gpa' => round((float) $first['gpa'], 2),
-    //             'cgpa' => round((float) $first['cgpa'], 2),
-    //             'status' => $first['status'],
-    //             'courses' => $courses,
-    //         ];
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Fee Details
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $feeDetails = $this->externalDatabase->getStudentFees(
-    //         $stud_id,
-    //         $faculty_code,
-    //         $major_code,
-    //         $batch,
-    //         $semester
-    //     );
-
-    //     if ($feeDetails) {
-
-    //         $start_date = $feeDetails->start_date;
-    //         $end_date = $feeDetails->end_date;
-    //         $viewData = $feeDetails->viewData;
-    //         $total_fee_bank = $feeDetails->total_fee_bank;
-
-    //         $registration_closed = $current_date > $end_date;
-
-    //         $endDate = Carbon::parse($end_date)->startOfDay();
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Days Remaining
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         if ($endDate->isSameDay($today)) {
-    //             $daysRemaining = 1;
-    //         } elseif ($endDate->isFuture()) {
-    //             $daysRemaining = $today->diffInDays($endDate);
-    //         } else {
-    //             $daysRemaining = 0;
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Registration Status
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         if ($registration_closed) {
-
-    //             $status = 'Registration is closed.';
-
-    //         } elseif ($total_fee_bank == 0 || $viewData == 0) {
-
-    //             $status = 'Check with faculty registrar for fee details';
-
-    //         } elseif ($viewData == 2) {
-
-    //             $status = 'Paid';
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Fees Type
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         $fees_type = in_array((int) $semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
-
-    //         $feeDetails = [
-    //             'total_fees' => $total_fee_bank,
-    //             'fees_type' => $fees_type,
-    //             'end_date' => $end_date,
-    //             'days_remaining' => $daysRemaining,
-    //             'registration_closed' => $registration_closed,
-    //             'status' => $status,
-    //         ];
-
-    //     } else {
-
-    //         // No fee record
-    //         $feeDetails = null;
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Timetable
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $timetable = [];
-
-    //     // Later:
-    //     // $timetable = $this->externalDatabase->getStudentTimetable(
-    //     //     $stud_id,
-    //     //     $faculty_code,
-    //     //     $major_code,
-    //     //     $batch,
-    //     //     $semester
-    //     // );
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Main Data Response
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     return [
-    //         'success' => true,
-    //         'code' => 200,
-    //         'message' => 'Main Data Retrieved Successfully',
-
-    //         'studentDetails' => $studentData,
-
-    //         'semesterResult' => $semesterResult,
-
-    //         'feeDetails' => $feeDetails,
-
-    //         'timetable' => $timetable,
-    //     ];
-    // }
-
 
     public function mainData()
     {
@@ -681,6 +436,7 @@ class StudentRepository
 
     public function getResult()
     {
+
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
@@ -764,6 +520,7 @@ class StudentRepository
             'semesterResult' => $payload['semesterResult'],
         ];
     }
+
     public function getFees()
     {
 
@@ -869,8 +626,53 @@ class StudentRepository
                 'message' => 'Fee Details Not Found'
             ];
         }
+    }
+
+    public function updatePassword($data)
+    {
+        $studPassword = trim($data['stud_password'] ?? '');
+        $studPasswordConfirm = $data['stud_password_confirm'] ?? '';
+
+        if (!Auth::check() || !Auth::user()) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated'
+            ];
+        }
+
+        $user = Auth::user();
+        $stud_id = $user->stud_index;
+
+        //$student = $this->externalDatabase->getMoodleStudent($stud_id);
+
+        if ($studPassword === '' || $studPasswordConfirm === '') {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Password fields are required'
+            ];
+        }
+
+        if ($studPassword != $studPasswordConfirm) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Password is mis-match confirm password'
+            ];
+        }
+
+        $user->password = Hash::make($studPasswordConfirm);
+        $user->save();
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Password updated successfully'
+        ];
 
     }
+
     public function logout()
     {
         if (Auth::check()) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Students;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StudIndexValidation;
+use App\Http\Requests\StudIndexPasswordValidation;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
 
@@ -171,6 +172,36 @@ class MainController extends Controller
                 'code' => $result['code'],
                 'error' => $result['message'],
             ], $result['code']);
+        }
+    }
+
+
+    public function updatePassword(StudIndexPasswordValidation $request)
+    {
+
+        $studPassword = $request->input('stud_password', '');
+        $studPasswordConfirm = $request->input('stud_password_confirm', '');
+
+        $data = ['stud_password' => $studPassword, 'stud_password_confirm' => $studPasswordConfirm];
+
+        $result = $this->studentService->updatePassword($data);
+
+        if ($result['success']) {
+
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+            ], $result['code']);
+
+        } else {
+
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+            
         }
     }
 
