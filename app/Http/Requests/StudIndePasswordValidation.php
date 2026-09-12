@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StudIndexPasswordValidation extends FormRequest
+class StudIndePasswordValidation extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,15 +22,16 @@ class StudIndexPasswordValidation extends FormRequest
     public function rules(): array
     {
         return [
-            'stud_password' => 'required|string',
-            'stud_password_confirm' => 'required|string',
+            'current_password' =>'required|string',
+            'new_password' => 'required|string',
+            'new_password_confirm' => 'required|string',
         ];
     }
     public function messages()
     {
         return [
-            'stud_password.required' => 'Please Enter Your Password',
-            'stud_password_confirm.required' => 'Please Enter Your Password Confirmation',
+            'new_password.required' => 'Please Enter Your Password',
+            'new_password_confirm.required' => 'Please Enter Your Password Confirmation',
         ];
     }
 }

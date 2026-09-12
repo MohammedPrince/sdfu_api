@@ -13,8 +13,6 @@ Route::get('/user', function (Request $request) {
 Route::prefix('student')->middleware('JsonRes')->group(function () {
 
     // Public
-    Route::get('/test', [MainController::class, 'test']);
-    Route::post('/checkIndex', [MainController::class, 'checkIndex']);
     Route::post('/login', [MainController::class, 'login']);
 
     // Protected
@@ -25,9 +23,12 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
         Route::post('/result', [MainController::class, 'getResult']);
         Route::post('/fees', [MainController::class, 'getFees']);
         Route::post('/password', [MainController::class, 'updatePassword']);
-
         //Logout
         Route::post('/logout', [MainController::class, 'logout']);
     });
+
+    //Test
+    Route::get('/test', [MainController::class, 'test']);
+    Route::post('/checkIndex', [MainController::class, 'checkIndex']);
 
 });

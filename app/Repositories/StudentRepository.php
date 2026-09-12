@@ -630,8 +630,10 @@ class StudentRepository
 
     public function updatePassword($data)
     {
-        $studPassword = trim($data['stud_password'] ?? '');
-        $studPasswordConfirm = $data['stud_password_confirm'] ?? '';
+        
+        $currentPassword = trim($data['current_password'] ?? '');
+        $newPassword = trim($data['new_password'] ?? '');
+        $newPasswordConfirm = $data['new_password_confirm'] ?? '';
 
         if (!Auth::check() || !Auth::user()) {
             return [
@@ -643,32 +645,56 @@ class StudentRepository
 
         $user = Auth::user();
         $stud_id = $user->stud_index;
+        $old_password = $user->password;
 
-        //$student = $this->externalDatabase->getMoodleStudent($stud_id);
-
-        if ($studPassword === '' || $studPasswordConfirm === '') {
+        if (!Hash::check($currentPassword, $user->password)) {
             return [
                 'success' => false,
                 'code' => 422,
-                'message' => 'Password fields are required'
+                'message' => 'Current password not correct, try again'
             ];
         }
 
-        if ($studPassword != $studPasswordConfirm) {
+        if (!password_verify($currentPassword, $old_password)) {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Current password not correct, try again'
+            ];
+        }
+
+        if ($newPassword != $newPasswordConfirm) {
             return [
                 'success' => false,
                 'code' => 401,
-                'message' => 'Password is mis-match confirm password'
+                'message' => 'Password is miss-match'
             ];
         }
 
-        $user->password = Hash::make($studPasswordConfirm);
+        //Update it on Moodle DB
+        $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id,$newPassword);
+        if (!$moodleUpdatedPassword) {
+            return [
+                'success' => false,
+                'code' => 500,
+                'message' => 'Password updated locally, but Moodle password update failed',
+            ];
+        }
+
+        //Update it on SDFU DB
+        $user->password = Hash::make($newPasswordConfirm);
         $user->save();
+
+        //Delete current user token
+        $currentToken = $user->currentAccessToken();
+        if ($currentToken) {
+            $user->tokens()->where('id', $currentToken->id)->delete();
+        }
 
         return [
             'success' => true,
             'code' => 200,
-            'message' => 'Password updated successfully'
+            'message' => 'Password updated, token deleted successfully',
         ];
 
     }

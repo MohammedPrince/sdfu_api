@@ -395,4 +395,35 @@ class ExternalDatabaseService
             ])
             ->first();
     }
+
+    public function updateMoodlePassword($username, $newPassword): bool
+    {
+
+        $user = DB::connection('mysql_moodle')->table('user')->where('username', $username)->first();
+
+        if (!$user) {
+            return false;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Moodle Password Hash
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | Moodle does NOT use Laravel's bcrypt password hash directly.
+        |
+        | For modern Moodle versions, passwords are normally stored using
+        | Moodle's $2y$ bcrypt-compatible format.
+        |
+        */
+
+        $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+
+        return DB::connection('mysql_moodle')->table('user')->where('id', $user->id)
+            ->update([
+                'password' => $hash,
+                'timemodified' => now()->timestamp,
+            ]) > 0;
+    }
 }
