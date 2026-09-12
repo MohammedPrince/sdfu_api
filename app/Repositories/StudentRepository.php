@@ -510,7 +510,7 @@ class StudentRepository
         | Student Details + Result (changes rarely — cache 1 hour)
         |--------------------------------------------------------------------------
         */
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 3600, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 100, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
             $studentDetails = $this->externalDatabase->getStudentDetails($stud_id);
 
             if (!$studentDetails) {
