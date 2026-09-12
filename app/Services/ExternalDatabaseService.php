@@ -349,9 +349,9 @@ class ExternalDatabaseService
 
                 'remark' => $row->remark ?? '',
 
-                'gpa' => number_format((float) $row->gpa, 2, '.', ''),
-                
-                'cgpa' => number_format((float) $row->cgpa, 2, '.', ''),
+                'gpa' => (float) $row->gpa,
+
+                'cgpa' => (float) $row->cgpa,
 
                 'status' => $row->status_desc_e,
 

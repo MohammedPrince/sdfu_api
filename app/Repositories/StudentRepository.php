@@ -560,7 +560,7 @@ class StudentRepository
                         'course_name' => $result['course_name'],
                         'course_units' => $result['course_units'],
                         'grade' => $result['grade'],
-                        'points' => number_format((float) $result['points'], 2, '.', ''),
+                        'points' =>  $result['points'],
                         'remark' => $result['remark'],
                         'result_status' => $result['result_status'],
                     ];
@@ -568,8 +568,8 @@ class StudentRepository
 
                 $semesterResult = [
                     'semester' => $first['semester'],
-                    'gpa' => number_format((float) $first['gpa'], 2, '.', ''),
-                    'cgpa' => number_format((float) $first['cgpa'], 2, '.', ''),
+                    'gpa' => $first['gpa'],
+                    'cgpa' =>  $first['cgpa'],
                     'status' => $first['status'],
                     'courses' => $courses,
                 ];
