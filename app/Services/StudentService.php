@@ -18,13 +18,12 @@ class StudentService
         return $this->studentRepository->studentCheck($data);
     }
 
-    public function login($data)
+    public function login($data) :array
     {
         return $this->studentRepository->login($data);
     }
 
-
-    public function getProfile()
+    public function getProfile() : array
     {
         return $this->studentRepository->getProfile();
     }
@@ -43,6 +42,11 @@ class StudentService
     {
         return $this->studentRepository->getFees();
     }
+
+    public function getTimetable()
+    {
+        return $this->studentRepository->getTimetable(); 
+    }  
 
     public function updatePassword($data)
     {

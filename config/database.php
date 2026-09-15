@@ -113,6 +113,23 @@ return [
             'engine' => null,
         ],
 
+        'mysql_ott' => [
+            'driver' => 'mysql',
+            'url' => env('DB5_URL'),
+            'host' => env('DB5_HOST', '127.0.0.1'),
+            'port' => env('DB5_PORT', '3306'),
+            'database' => env('DB5_DATABASE'),
+            'username' => env('DB5_USERNAME'),
+            'password' => env('DB5_PASSWORD'),
+            'unix_socket' => env('DB5_SOCKET'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

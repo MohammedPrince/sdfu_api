@@ -46,28 +46,6 @@ class MainController extends Controller
         }
     }
 
-    public function getProfile()
-    {
-        $result = $this->studentService->getProfile();
-
-        if ($result['success']) {
-            return response()->json([
-                'status' => 'success',
-                'code' => $result['code'],
-                'message' => $result['message'],
-                'data' => [
-                    'studentDetails' => $result['studentDetails'],
-                ]
-            ], $result['code']);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'code' => $result['code'],
-                'error' => $result['message'],
-            ], $result['code']);
-        }
-    }
-
     public function mainData()
     {
         $result = $this->studentService->mainData();
@@ -93,6 +71,29 @@ class MainController extends Controller
             ],
         ]);
     }
+
+    public function getProfile()
+    {
+        $result = $this->studentService->getProfile();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'studentDetails' => $result['studentDetails'],
+                ]
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
 
     public function getResult()
     {
@@ -128,6 +129,28 @@ class MainController extends Controller
                 'data' => [
                     // 'studentDetails' => $result['studentDetails'],
                     'feeDetails' => $result['feeDetails'],
+                ],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
+    public function getTimetable()
+    {
+        $result = $this->studentService->getTimetable();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'timetableDetails' => $result['timetableDetails'],
                 ],
             ], $result['code']);
         } else {

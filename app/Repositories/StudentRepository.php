@@ -3,21 +3,25 @@
 namespace App\Repositories;
 
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use App\Services\ExternalDatabaseService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
+use App\Repositories\AdminRepository;
 
 class StudentRepository
 {
     protected $externalDatabase;
+    protected $adminRepository;
 
     public function __construct()
     {
         $this->externalDatabase = new ExternalDatabaseService();
+        $this->adminRepository = new AdminRepository();
 
     }
 
@@ -147,6 +151,7 @@ class StudentRepository
                 'batch' => $studentDetails->batch ?? null,
                 'semester' => (int) $studentDetails->curr_sem,
                 'password' => Hash::make(Str::random(64)),
+                'role_id' => 2,
             ]);
 
         } else {
@@ -235,7 +240,6 @@ class StudentRepository
             'studentDetails' => $studentDetails,
         ];
     }
-
     public function mainData()
     {
         if (!Auth::check() || !Auth::user()) {
@@ -259,6 +263,13 @@ class StudentRepository
 
         // Cache key base — unique per student per academic context
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
+
+        $settings = $this->adminRepository->getSystemSettings(
+            $faculty_code,
+            $major_code,
+            $batch,
+            $semester
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -419,7 +430,13 @@ class StudentRepository
         $timetable = []; // Later: also cache once implemented
 
         $appStatus = [
-            'active' => true,
+            'active' => $settings ? (bool) $settings->api_active : true,
+
+            'tabs_status' => [
+                'fee' => $settings ? (bool) $settings->fee_active : true,
+                'result' => $settings ? (bool) $settings->result_active : true,
+                'timetable' => $settings ? (bool) $settings->timetable_active : false,
+            ],
         ];
 
         return [
@@ -628,9 +645,47 @@ class StudentRepository
         }
     }
 
+
+    public function getTimetable()
+    {
+
+        if (!Auth::check() || !Auth::user()) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        $user = Auth::user();
+
+        $timetable = $this->externalDatabase->getStudentTimetable(
+            $user->stud_index,
+            $user->faculty_code,
+            $user->major_code,
+            $user->batch,
+            $user->semester
+        );
+
+        if (!empty($timetable['days'])) {
+            return [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Timetable Retrieved Successfully',
+                'timetableDetails' => $timetable,
+            ];
+        }
+
+        return [
+            'success' => false,
+            'code' => 404,
+            'message' => 'Timetable Not Found',
+        ];
+    }
+
     public function updatePassword($data)
     {
-        
+
         $currentPassword = trim($data['current_password'] ?? '');
         $newPassword = trim($data['new_password'] ?? '');
         $newPasswordConfirm = $data['new_password_confirm'] ?? '';
@@ -672,7 +727,7 @@ class StudentRepository
         }
 
         //Update it on Moodle DB
-        $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id,$newPassword);
+        $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id, $newPassword);
         if (!$moodleUpdatedPassword) {
             return [
                 'success' => false,
@@ -686,8 +741,12 @@ class StudentRepository
         $user->save();
 
         //Delete current user token
+        // $currentToken = $user->currentAccessToken();
+        // if ($currentToken) {
+        //     $user->tokens()->where('id', $currentToken->id)->delete();
+        // }
         $currentToken = $user->currentAccessToken();
-        if ($currentToken) {
+        if ($currentToken instanceof PersonalAccessToken) {
             $user->tokens()->where('id', $currentToken->id)->delete();
         }
 

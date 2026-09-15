@@ -28,6 +28,7 @@ class User extends Authenticatable
         'major_code',
         'batch',
         'semester',
+        'role_id'
     ];
 
     /**
