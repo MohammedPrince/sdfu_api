@@ -4,6 +4,8 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+
 
 class ExternalDatabaseService
 {
@@ -546,15 +548,15 @@ class ExternalDatabaseService
 
             $days[$dayKey][] = [
                 'type' => 'lab',
-                'course_code' => $row->Course_Code,
-                'course_name' => $course->Course_Name ?? null,
-                'batch_year' => $row->Batch_Year,
+                'course_code' => trim($row->Course_Code),
+                'course_name' => trim($course->Course_Name ?? null),
+                'batch_year' => trim($row->Batch_Year),
                 'stud_group' => $row->Stud_Group,
                 'lab_groups' => $row->Lab_Groups,
-                'instructor_name' => $instructor->Instructor_Name ?? null,
+                'instructor_name' => trim($instructor->Instructor_Name ?? null),
                 'time' => $this->formatTime($labTime->time ?? null),
                 'day' => $labTime->day ?? null,
-                'room' => $lab->LabName ?? null,
+                'room' => trim($lab->LabName ?? null),
                 'faculty_code' => $row->Faculty_Code,
                 'major_code' => $row->Major_Code,
                 'period' => $row->Period,
@@ -637,4 +639,33 @@ class ExternalDatabaseService
             return $time;
         }
     }
+
+    public function faculties(): Collection
+    {
+        return DB::connection('mysql_sis')->table('faculty')->where('deleted', 0)->get();
+    }
+
+    public function majors(): Collection
+    {
+        return DB::connection('mysql_sis')->table('major')->where('deleted', 0)->get();
+    }
+
+    public function batches(): Collection
+    {
+        return DB::connection('mysql_sis')
+            ->table('batch_control')
+            ->select('batch')
+            ->distinct()
+            ->orderBy('batch')
+            ->get();
+    }
+
+    public function majorsByFaculty(string $facultyCode): Collection
+    {
+        return DB::connection('mysql_sis')
+            ->table('major')
+            ->where('faculty_code', $facultyCode)
+            ->get();
+    }
+
 }

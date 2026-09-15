@@ -1185,3 +1185,507 @@ body {
     color: #7a2531;
     border: 1px solid rgba(140, 30, 45, 0.18);
 }
+
+/* =========================================================
+   Manage Application
+   ========================================================= */
+
+.manage-page {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+/* ---------------------------------------------------------
+   Alerts
+   --------------------------------------------------------- */
+
+.manage-page .alert {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.manage-page .alert-success {
+    color: #315f47;
+    background: #edf7f0;
+    border: 1px solid #cfe7d7;
+}
+
+.manage-page .alert-danger {
+    color: #8a3d3d;
+    background: #fdf0f0;
+    border: 1px solid #efd0d0;
+}
+
+.manage-page .alert ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* ---------------------------------------------------------
+   Main Card
+   --------------------------------------------------------- */
+
+.manage-page .admin-card {
+    background: #ffffff;
+    border: 1px solid #eee7e5;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(70, 42, 42, 0.06);
+}
+
+/* ---------------------------------------------------------
+   Card Header
+   --------------------------------------------------------- */
+
+.manage-page .admin-card-header {
+    padding: 28px 30px;
+    border-bottom: 1px solid #eee7e5;
+    background: #fffdfc;
+}
+
+.manage-page .admin-card-header h3 {
+    margin: 0 0 7px;
+    color: #542f35;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.manage-page .admin-card-header p {
+    margin: 0;
+    color: #8a7b7d;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ---------------------------------------------------------
+   Settings Sections
+   --------------------------------------------------------- */
+
+.manage-page .settings-section {
+    padding: 28px 30px;
+    border-bottom: 1px solid #f0eaea;
+}
+
+.manage-page .settings-section:last-of-type {
+    border-bottom: none;
+}
+
+.manage-page .settings-section h4 {
+    margin: 0 0 20px;
+    color: #5b353b;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.manage-page .settings-section h4::after {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 3px;
+    margin-top: 8px;
+    border-radius: 10px;
+    background: #8b4650;
+}
+
+/* ---------------------------------------------------------
+   Academic Form Grid
+   --------------------------------------------------------- */
+
+.manage-page .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+}
+
+.manage-page .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.manage-page .form-group label {
+    margin-bottom: 8px;
+    color: #59494b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ---------------------------------------------------------
+   Select Inputs
+   --------------------------------------------------------- */
+
+.manage-page .form-control {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 42px 0 14px;
+
+    color: #403537;
+    background-color: #fff;
+
+    border: 1px solid #ddd3d2;
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+
+    appearance: none;
+
+    background-image:
+        linear-gradient(45deg, transparent 50%, #806b6e 50%),
+        linear-gradient(135deg, #806b6e 50%, transparent 50%);
+
+    background-position:
+        calc(100% - 17px) 20px,
+        calc(100% - 12px) 20px;
+
+    background-size:
+        5px 5px,
+        5px 5px;
+
+    background-repeat: no-repeat;
+}
+
+.manage-page .form-control:hover {
+    border-color: #cbbbbb;
+    background-color: #fffdfc;
+}
+
+.manage-page .form-control:focus {
+    border-color: #9b626a;
+    box-shadow: 0 0 0 3px rgba(139, 70, 80, 0.10);
+}
+
+.manage-page .form-control:disabled {
+    color: #aaa0a1;
+    background-color: #f7f4f3;
+    cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------
+   Application Status List
+   --------------------------------------------------------- */
+
+.manage-page .status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.manage-page .status-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 76px;
+    padding: 17px 20px;
+
+    background: #fffdfc;
+    border: 1px solid #eee6e4;
+    border-radius: 12px;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.manage-page .status-item:hover {
+    background: #fffafa;
+    border-color: #dfd0d0;
+    box-shadow: 0 3px 12px rgba(70, 42, 42, 0.04);
+}
+
+/* ---------------------------------------------------------
+   Status Information
+   --------------------------------------------------------- */
+
+.manage-page .status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-right: 20px;
+}
+
+.manage-page .status-info strong {
+    color: #4d3639;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.manage-page .status-info span {
+    color: #918385;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ---------------------------------------------------------
+   Toggle Switch
+   --------------------------------------------------------- */
+
+.manage-page .switch {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+
+    width: 48px;
+    height: 27px;
+
+    cursor: pointer;
+}
+
+.manage-page .switch input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.manage-page .slider {
+    position: absolute;
+    inset: 0;
+
+    background: #d8d0cf;
+    border-radius: 30px;
+
+    transition: background-color 0.25s ease;
+}
+
+.manage-page .slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 21px;
+    height: 21px;
+
+    left: 3px;
+    top: 3px;
+
+    background: #ffffff;
+    border-radius: 50%;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+
+    transition: transform 0.25s ease;
+}
+
+.manage-page .switch input:checked+.slider {
+    background: #8b4650;
+}
+
+.manage-page .switch input:checked+.slider::before {
+    transform: translateX(21px);
+}
+
+.manage-page .switch input:focus-visible+.slider {
+    box-shadow: 0 0 0 3px rgba(139, 70, 80, 0.15);
+}
+
+/* ---------------------------------------------------------
+   Form Actions
+   --------------------------------------------------------- */
+
+.manage-page .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 22px 30px;
+
+    background: #fffdfc;
+    border-top: 1px solid #eee7e5;
+}
+
+.manage-page .btn-primary {
+    min-height: 44px;
+    padding: 0 24px;
+
+    color: #ffffff;
+    background: #8b4650;
+
+    border: none;
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow: 0 3px 8px rgba(139, 70, 80, 0.16);
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.manage-page .btn-primary:hover {
+    background: #793b44;
+    box-shadow: 0 5px 12px rgba(139, 70, 80, 0.20);
+    transform: translateY(-1px);
+}
+
+.manage-page .btn-primary:active {
+    transform: translateY(0);
+}
+
+.manage-page .btn-primary:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 3px rgba(139, 70, 80, 0.14),
+        0 4px 10px rgba(139, 70, 80, 0.16);
+}
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+    .manage-page {
+        max-width: 100%;
+    }
+
+    .manage-page .admin-card-header,
+    .manage-page .settings-section {
+        padding: 22px 20px;
+    }
+
+    .manage-page .form-grid {
+        grid-template-columns: 1fr;
+        gap: 17px;
+    }
+
+    .manage-page .status-item {
+        min-height: 72px;
+        padding: 15px 16px;
+    }
+
+    .manage-page .status-info span {
+        font-size: 12px;
+    }
+
+    .manage-page .form-actions {
+        padding: 18px 20px;
+    }
+
+    .manage-page .btn-primary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .manage-page .admin-card {
+        border-radius: 12px;
+    }
+
+    .manage-page .admin-card-header h3 {
+        font-size: 18px;
+    }
+
+    .manage-page .settings-section h4 {
+        font-size: 15px;
+    }
+
+    .manage-page .status-item {
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .manage-page .status-info {
+        padding-right: 5px;
+    }
+}
+
+/* Saved Settings */
+
+.saved-settings-card {
+    margin-top: 24px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+.settings-table th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6f5960;
+    background: #faf7f7;
+    border-bottom: 1px solid #eadfe1;
+    white-space: nowrap;
+}
+
+.settings-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #44393c;
+    border-bottom: 1px solid #eee6e7;
+    white-space: nowrap;
+}
+
+.settings-table tbody tr:hover {
+    background: #fcf9f9;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    color: #35634a;
+    background: #edf6ef;
+}
+
+.status-badge.inactive {
+    color: #8a555c;
+    background: #f8eeee;
+}
+
+.empty-state {
+    padding: 35px 20px;
+    text-align: center;
+    color: #8a7b7f;
+    font-size: 14px;
+}
+
+.btn-edit {
+    display: inline-block;
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.btn-edit.btn-sm {
+    padding: 5px 10px;
+    font-size: 13px;
+}

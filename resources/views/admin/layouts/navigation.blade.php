@@ -10,7 +10,7 @@
 
         <div class="admin-sidebar-brand-text">
             <span>Future University</span>
-            <small>Administration Desk</small>
+            <small>Student Desk Panel</small>
         </div>
     </div>
 
@@ -38,56 +38,27 @@
         </a>
 
 
-        <a href="#" class="admin-nav-item">
+        <a href="{{ url('/admin/manage') }}"
+            class="admin-nav-item
+            {{ request()->is('admin/manage') ? 'active' : '' }}">
             <span class="admin-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M16 21V19C16 16.79 14.21 15 12 15H6C3.79 15 2 16.79 2 19V21" stroke="currentColor"
-                        stroke-width="1.8" stroke-linecap="round" />
-                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8" />
-                    <path d="M22 21V19C22 17.16 20.75 15.61 19 15.13" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" />
-                    <path d="M16 3.13C17.75 3.61 19 5.16 19 7C19 8.84 17.75 10.39 16 10.87" stroke="currentColor"
-                        stroke-width="1.8" stroke-linecap="round" />
+                    <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5A3.5 3.5 0 0 0 12 15.5Z" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+
+                    <path
+                        d="M19.4 15A1.7 1.7 0 0 0 19.74 16.88L19.8 16.94L18.94 18.44L18.86 18.39A1.7 1.7 0 0 0 17.02 18.42L16.96 18.46A1.7 1.7 0 0 0 16.13 20.08V20.2H14.4L14.38 20.08A1.7 1.7 0 0 0 13.16 18.67H13.08A1.7 1.7 0 0 0 11.45 19.65L11.39 19.76L9.66 19.13L9.7 19.02A1.7 1.7 0 0 0 9.12 17.3L9.06 17.25A1.7 1.7 0 0 0 7.25 17.34L7.15 17.4L6.15 15.83L6.25 15.76A1.7 1.7 0 0 0 6.54 13.89V13.82A1.7 1.7 0 0 0 5.1 12.55H5V10.82H5.12A1.7 1.7 0 0 0 6.54 9.55V9.48A1.7 1.7 0 0 0 6.25 7.61L6.15 7.54L7.15 5.97L7.25 6.03A1.7 1.7 0 0 0 9.06 6.12L9.12 6.07A1.7 1.7 0 0 0 9.7 4.35L9.66 4.24L11.39 3.61L11.45 3.72A1.7 1.7 0 0 0 13.08 4.7H13.16A1.7 1.7 0 0 0 14.38 3.29L14.4 3.17H16.13V3.29A1.7 1.7 0 0 0 16.96 4.91L17.02 4.95A1.7 1.7 0 0 0 18.86 4.98L18.94 4.93L19.8 6.43L19.74 6.49A1.7 1.7 0 0 0 19.4 8.37V8.44A1.7 1.7 0 0 0 20.84 9.71H21V11.44H20.88A1.7 1.7 0 0 0 19.4 12.71V15Z"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </span>
 
             <span class="admin-nav-text">
-                Students
+                Manage Application
             </span>
         </a>
 
 
-        <a href="#" class="admin-nav-item">
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor"
-                        stroke-width="1.8" />
-                    <path d="M8 2V6M16 2V6M3 9H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                    <path d="M8 13H8.01M12 13H12.01M16 13H16.01M8 17H8.01M12 17H12.01" stroke="currentColor"
-                        stroke-width="2.2" stroke-linecap="round" />
-                </svg>
-            </span>
 
-            <span class="admin-nav-text">
-                Academic
-            </span>
-        </a>
-
-
-        <a href="#" class="admin-nav-item">
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 19V5C4 3.9 4.9 3 6 3H20V17H6C4.9 17 4 17.9 4 19Z" stroke="currentColor"
-                        stroke-width="1.8" stroke-linejoin="round" />
-                    <path d="M6 17H20V21H6C4.9 21 4 20.1 4 19C4 17.9 4.9 17 6 17Z" stroke="currentColor"
-                        stroke-width="1.8" stroke-linejoin="round" />
-                </svg>
-            </span>
-
-            <span class="admin-nav-text">
-                Courses
-            </span>
-        </a>
 
 
         <div class="admin-menu-label admin-menu-label-spaced">

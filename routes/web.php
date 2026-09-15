@@ -47,6 +47,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
 
         Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
+        Route::get('/manage', [MainController::class, 'manageApplication'])->name('manage');
+        Route::post('/manage', [MainController::class, 'updateApplication'])->name('manage.update');
+
+ 
+
+        //Get majors based of faculty_code. JS
+        Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

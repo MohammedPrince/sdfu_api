@@ -72,17 +72,24 @@
             {{-- Footer --}}
             <footer class="admin-footer">
 
-                <span>
-                    FUTURE UNIVERSITY
-                </span>
+                <span>Student Desk Panel</span>
 
-                <span class="admin-footer-dot">
-                    •
-                </span>
+    <span>•</span>
 
-                <span>
-                    Knowledge Builds Your Future
-                </span>
+    <span>
+        © {{ date('Y') }}
+        <a href="https://fu.edu.sd" target="_blank" rel="noopener" style="text-decoration: none;color:#651522">
+            Future University
+        </a>
+    </span>
+
+    <span>•</span>
+
+    <span>
+        <a href="https://fu.edu.sd/CESD" target="_blank" rel="noopener" style="text-decoration: none; color:#651522">
+            CESD
+        </a>
+    </span>
 
             </footer>
 

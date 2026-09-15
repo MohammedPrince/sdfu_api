@@ -276,7 +276,7 @@ class StudentRepository
         | Student Details + Result (changes rarely — cache 1 hour)
         |--------------------------------------------------------------------------
         */
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 50, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 0, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
             $studentDetails = $this->externalDatabase->getStudentDetails($stud_id);
 
             if (!$studentDetails) {
@@ -427,11 +427,28 @@ class StudentRepository
         | Timetable
         |--------------------------------------------------------------------------
         */
-        $timetable = []; // Later: also cache once implemented
 
+        $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
+
+        $timetable = Cache::remember(
+            $timetableCacheKey,
+            now()->addHour(),
+            fn() => $this->externalDatabase->getStudentTimetable(
+                $user->stud_index,
+                $user->faculty_code,
+                $user->major_code,
+                $user->batch,
+                $user->semester
+            )
+        );
+
+        if (empty($timetable) || !isset($timetable['days'])) {
+            $timetable = ['days' => []];
+        }
+
+        //App status
         $appStatus = [
             'active' => $settings ? (bool) $settings->api_active : true,
-
             'tabs_status' => [
                 'fee' => $settings ? (bool) $settings->fee_active : true,
                 'result' => $settings ? (bool) $settings->result_active : true,
@@ -645,7 +662,6 @@ class StudentRepository
         }
     }
 
-
     public function getTimetable()
     {
 
@@ -659,12 +675,26 @@ class StudentRepository
 
         $user = Auth::user();
 
-        $timetable = $this->externalDatabase->getStudentTimetable(
-            $user->stud_index,
-            $user->faculty_code,
-            $user->major_code,
-            $user->batch,
-            $user->semester
+        // $timetable = $this->externalDatabase->getStudentTimetable(
+        //     $user->stud_index,
+        //     $user->faculty_code,
+        //     $user->major_code,
+        //     $user->batch,
+        //     $user->semester
+        // );
+
+        $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
+
+        $timetable = Cache::remember(
+            $timetableCacheKey,
+            now()->addHour(),
+            fn() => $this->externalDatabase->getStudentTimetable(
+                $user->stud_index,
+                $user->faculty_code,
+                $user->major_code,
+                $user->batch,
+                $user->semester
+            )
         );
 
         if (!empty($timetable['days'])) {

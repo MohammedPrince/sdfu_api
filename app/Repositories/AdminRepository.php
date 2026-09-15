@@ -4,12 +4,15 @@ namespace App\Repositories;
 
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Services\ExternalDatabaseService;
 
 class AdminRepository
 {
+    protected $externalDatabase;
+
     public function __construct()
     {
-        //
+        $this->externalDatabase = new ExternalDatabaseService();
     }
 
     public function getSystemSettings(
@@ -42,7 +45,6 @@ class AdminRepository
             ->first();
     }
 
-
     public function updateSystemSettings(array $data)
     {
 
@@ -64,11 +66,78 @@ class AdminRepository
                 'show_timetable' => $data['show_timetable'] ?? true,
             ]
         );
+
     }
 
     public function countStudents()
     {
         return User::where('role_id', 2)->count();
+    }
+
+    public function getSavedSettings()
+    {
+
+        $savedSettings = SystemSetting::orderBy('faculty_code')
+            ->orderBy('major_code')
+            ->orderBy('batch')
+            ->orderBy('semester')
+            ->get();
+
+        $faculties = $this->externalDatabase
+            ->faculties()
+            ->keyBy('faculty_code');
+
+        $majors = $this->externalDatabase
+            ->majors()
+            ->keyBy('major_code');
+
+        return $savedSettings->map(function ($setting) use ($faculties, $majors) {
+
+            $faculty = $faculties->get($setting->faculty_code);
+            $major = $majors->get($setting->major_code);
+
+            return [
+                'id' => $setting->id,
+                'faculty_code' => $setting->faculty_code,
+                'faculty_desc_e' => $faculty->faculty_desc_e ?? $setting->faculty_code,
+
+                'major_code' => $setting->major_code,
+                'major_desc_e' => $major->major_desc_e ?? $setting->major_code,
+
+                'batch' => $setting->batch,
+                'semester' => $setting->semester,
+
+                'api_active' => (bool) $setting->api_active,
+                'fee_active' => (bool) $setting->fee_active,
+                'result_active' => (bool) $setting->result_active,
+                'timetable_active' => (bool) $setting->timetable_active,
+            ];
+        });
+    }
+
+    public function getFaculties()
+    {
+        return $this->externalDatabase->faculties();
+
+    }
+
+    public function getMajors()
+    {
+        return $this->externalDatabase->majors();
+
+    }
+
+    public function getBatches()
+    {
+        return $this->externalDatabase->batches();
+
+    }
+
+    public function majorsByFaculty($facultyCode)
+    {
+        $majors = $this->externalDatabase->majorsByFaculty($facultyCode);
+
+        return $majors;
     }
 
 }
