@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\MainController;
+use App\Http\Controllers\Admin\NotificationController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -50,7 +51,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/manage', [MainController::class, 'manageApplication'])->name('manage');
         Route::post('/manage', [MainController::class, 'updateApplication'])->name('manage.update');
 
- 
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+        Route::post('/notifications/push', [NotificationController::class, 'pushToGroup'])->name('notifications.push');
+        Route::post('/notifications/push-one', [NotificationController::class, 'pushToOne'])->name('notifications.push.one');
+
+        Route::get('/notifications/test', [NotificationController::class, 'testFirebase']);
 
         //Get majors based of faculty_code. JS
         Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');

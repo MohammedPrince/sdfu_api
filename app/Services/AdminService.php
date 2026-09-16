@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\AdminRepository;
+use Illuminate\Database\Eloquent\Collection;
 
 class AdminService
 {
@@ -34,7 +35,7 @@ class AdminService
 
     public function manageApplication()
     {
-        return $this->adminRepository->manageApplication();
+        //return $this->adminRepository->manageApplication();
     }
 
     //Helpers functions

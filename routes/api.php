@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Students\MainController;
+use App\Http\Controllers\Api\Students\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,11 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
         Route::post('/fees', [MainController::class, 'getFees']);
         Route::post('/timetable', [MainController::class, 'getTimetable']);
         Route::post('/password', [MainController::class, 'updatePassword']);
+        //Notification
+        Route::post('/notifications/token',[NotificationController::class, 'registerToken']);
+
+        Route::post('/notifications/token/remove',[NotificationController::class, 'unregisterToken']);
+        
         //Logout
         Route::post('/logout', [MainController::class, 'logout']);
     });

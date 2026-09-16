@@ -18,12 +18,12 @@ class StudentService
         return $this->studentRepository->studentCheck($data);
     }
 
-    public function login($data) :array
+    public function login($data): array
     {
         return $this->studentRepository->login($data);
     }
 
-    public function getProfile() : array
+    public function getProfile(): array
     {
         return $this->studentRepository->getProfile();
     }
@@ -45,12 +45,23 @@ class StudentService
 
     public function getTimetable()
     {
-        return $this->studentRepository->getTimetable(); 
-    }  
+        return $this->studentRepository->getTimetable();
+    }
 
     public function updatePassword($data)
     {
         return $this->studentRepository->updatePassword($data);
+    }
+
+    //Notifications
+    public function registerToken($data)
+    {
+        return $this->studentRepository->registerToken($data);
+    }
+
+    public function unregisterToken($data)
+    {
+        return $this->studentRepository->unregisterToken($data);
     }
 
     public function logout()

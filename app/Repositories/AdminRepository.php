@@ -80,7 +80,7 @@ class AdminRepository
         $savedSettings = SystemSetting::orderBy('faculty_code')
             ->orderBy('major_code')
             ->orderBy('batch')
-            ->orderBy('semester')
+            ->orderBy('id')
             ->get();
 
         $faculties = $this->externalDatabase

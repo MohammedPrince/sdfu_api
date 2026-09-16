@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use App\Services\AdminService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 
 class MainController extends Controller
@@ -26,7 +25,6 @@ class MainController extends Controller
 
     public function manageApplication(Request $request)
     {
-        //$faculties = DB::table('faculty')->orderBy('faculty_desc_e')->get();
 
         $settings = null;
         $faculties = $this->adminService->getFaculties();
@@ -43,7 +41,6 @@ class MainController extends Controller
             );
         }
 
-
         return view('admin.manage', compact(
             'faculties',
             'majors',
@@ -52,13 +49,6 @@ class MainController extends Controller
             'savedSettings',
             'editSetting'
         ));
-    }
-
-    public function getMajors(string $faculty_code)
-    {
-        $majors = $this->adminService->getMajorsByFaculty($faculty_code);
-
-        return response()->json($majors);
     }
 
     public function updateApplication(Request $request)
@@ -113,6 +103,13 @@ class MainController extends Controller
         return redirect()
             ->route('admin.manage')
             ->with('success', 'Application settings saved successfully.');
+    }
+
+    public function getMajors(string $faculty_code)
+    {
+        $majors = $this->adminService->getMajorsByFaculty($faculty_code);
+
+        return response()->json($majors);
     }
 
 }

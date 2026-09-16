@@ -57,6 +57,24 @@
             </span>
         </a>
 
+        <a href="{{ url('/admin/notifications') }}"
+            class="admin-nav-item
+            {{ request()->is('admin/notifications') ? 'active' : '' }}">
+            <span class="admin-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M18 9A6 6 0 0 0 6 9C6 16 3.5 16 3.5 18H20.5C20.5 16 18 16 18 9Z" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+
+                    <path d="M10 21H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+            </span>
+
+            <span class="admin-nav-text">
+                Push Notifications
+            </span>
+        </a>
+
+
 
 
 
