@@ -74,15 +74,9 @@
             </span>
         </a>
 
-
-
-
-
-
         <div class="admin-menu-label admin-menu-label-spaced">
             MANAGEMENT
         </div>
-
 
         <a href="#" class="admin-nav-item">
             <span class="admin-nav-icon">

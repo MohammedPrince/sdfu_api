@@ -266,7 +266,6 @@
 
                     </div>
 
-
                     <div class="form-actions">
 
                         <button type="submit" class="btn-primary">

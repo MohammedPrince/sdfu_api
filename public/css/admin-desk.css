@@ -1724,3 +1724,23 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+
+input.form-control,
+textarea.form-control {
+    cursor: text !important;
+}
+
+input.form-control,
+textarea.form-control {
+    cursor: text !important;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+button,
+.btn {
+    cursor: pointer;
+}
