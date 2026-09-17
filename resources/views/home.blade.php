@@ -226,15 +226,10 @@
 
                         </div>
 
-                        @if ($applicationStatus['success'])
-                            <div class="status-value status-available">
-                                ● Available
-                            </div>
-                        @else
-                            <div class="status-value status-unavailable">
-                                ● Unavailable
-                            </div>
-                        @endif
+                        <div class="status-value status-available">
+                            ● Available
+                        </div>
+
                     </div>
 
                 </div>
