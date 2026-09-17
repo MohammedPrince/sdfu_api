@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Repositories\AdminRepository;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
+use App\Helpers\Helper;
 
 class StudentRepository
 {
@@ -243,6 +243,11 @@ class StudentRepository
             ];
         }
 
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
         $studentDetails = [];
 
         $user = Auth::user();
@@ -299,13 +304,12 @@ class StudentRepository
         $semester = $user->semester;
 
         //Check application status Active/Disable
-        $application = $this->checkApplicationStatus();
-
-        if (!$application['success']) {
-            return $application;
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
         }
 
-        $settings = $application['settings'];
+        $settings = $applicationStatus['settings'];
 
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
@@ -529,10 +533,10 @@ class StudentRepository
             ];
         }
 
-        $tab = $this->checkTabStatus('result');
-
-        if (!$tab['success']) {
-            return $tab;
+        //Check tab status
+        $status = Helper::checkTabStatus('result');
+        if (!$status['success']) {
+            return $status;
         }
 
         $user = Auth::user();
@@ -623,10 +627,10 @@ class StudentRepository
             ];
         }
 
-        $tab = $this->checkTabStatus('fee');
-
-        if (!$tab['success']) {
-            return $tab;
+        //Check tab status
+        $status = Helper::checkTabStatus('fee');
+        if (!$status['success']) {
+            return $status;
         }
 
         $user = Auth::user();
@@ -736,21 +740,13 @@ class StudentRepository
             ];
         }
 
-        $tab = $this->checkTabStatus('timetable');
-
-        if (!$tab['success']) {
-            return $tab;
+        //Check tab status
+        $status = Helper::checkTabStatus('timetable');
+        if (!$status['success']) {
+            return $status;
         }
 
         $user = Auth::user();
-
-        // $timetable = $this->externalDatabase->getStudentTimetable(
-        //     $user->stud_index,
-        //     $user->faculty_code,
-        //     $user->major_code,
-        //     $user->batch,
-        //     $user->semester
-        // );
 
         $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
 
@@ -789,6 +785,12 @@ class StudentRepository
         $newPassword = trim($data['new_password'] ?? '');
         $newPasswordConfirm = $data['new_password_confirm'] ?? '';
 
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
@@ -801,7 +803,7 @@ class StudentRepository
         $stud_id = $user->stud_index;
         $old_password = $user->password;
 
-        if (!Hash::check($currentPassword, $user->password)) {
+        if (!Hash::check($currentPassword, $old_password)) {
             return [
                 'success' => false,
                 'code' => 422,
@@ -826,14 +828,14 @@ class StudentRepository
         }
 
         //Update it on Moodle DB
-        $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id, $newPassword);
-        if (!$moodleUpdatedPassword) {
-            return [
-                'success' => false,
-                'code' => 500,
-                'message' => 'Password updated locally, but Moodle password update failed',
-            ];
-        }
+        // $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id, $newPassword);
+        // if (!$moodleUpdatedPassword) {
+        //     return [
+        //         'success' => false,
+        //         'code' => 500,
+        //         'message' => 'Password updated locally, but Moodle password update failed',
+        //     ];
+        // }
 
         //Update it on SDFU DB
         $user->password = Hash::make($newPasswordConfirm);
@@ -859,6 +861,12 @@ class StudentRepository
 
     public function logout()
     {
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
         if (Auth::check()) {
             if (Auth::user()->tokens()->delete()) {
                 return ['success' => true, 'code' => 200, 'message' => 'logout success'];
@@ -878,6 +886,13 @@ class StudentRepository
     //Notifications
     public function registerToken($request)
     {
+
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
         $user = $request->user();
 
         if (!$user) {
@@ -911,6 +926,12 @@ class StudentRepository
 
     public function unregisterToken($request): array
     {
+
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
         $user = $request->user();
 
         if (!$user) {
@@ -941,118 +962,4 @@ class StudentRepository
             'message' => 'FCM token removed successfully',
         ];
     }
-
-    private function checkApplicationStatus(): array
-    {
-
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated',
-            ];
-        }
-
-        $user = Auth::user();
-
-        $settings = SystemSetting::where('faculty_code', $user->faculty_code)
-            ->where('major_code', $user->major_code)
-            ->where('batch', $user->batch)
-            ->where('semester', $user->semester)
-            ->first();
-
-        if (!(bool) $settings->api_active) {
-            return [
-                'success' => false,
-                'code' => 403,
-                'message' => 'Application is currently unavailable',
-            ];
-        }
-
-        return [
-            'success' => true,
-            'code' => 200,
-            'message' => 'Application is active',
-            'settings' => $settings,
-        ];
-    }
-
-    private function checkTabStatus(string $tab): array
-    {
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated',
-            ];
-        }
-
-        $user = Auth::user();
-
-        $settings = SystemSetting::where('faculty_code', $user->faculty_code)
-            ->where('major_code', $user->major_code)
-            ->where('batch', $user->batch)
-            ->where('semester', $user->semester)
-            ->first();
-
-        if (!$settings) {
-            return [
-                'success' => false,
-                'code' => 403,
-                'message' => 'Application settings not found',
-            ];
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Check Main Application Status
-        |--------------------------------------------------------------------------
-        |
-        | If the main application is disabled, all tabs are disabled.
-        |
-        */
-
-        if (!(bool) $settings->api_active) {
-            return [
-                'success' => false,
-                'code' => 403,
-                'message' => 'Application is currently unavailable',
-            ];
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Check Requested Tab
-        |--------------------------------------------------------------------------
-        */
-
-        $tabs = [
-            'fee' => (bool) $settings->fee_active,
-            'result' => (bool) $settings->result_active,
-            'timetable' => (bool) $settings->timetable_active,
-        ];
-
-        if (!array_key_exists($tab, $tabs)) {
-            return [
-                'success' => false,
-                'code' => 400,
-                'message' => 'Invalid tab',
-            ];
-        }
-
-        if (!$tabs[$tab]) {
-            return [
-                'success' => false,
-                'code' => 403,
-                'message' => ucfirst($tab) . ' is currently unavailable',
-            ];
-        }
-
-        return [
-            'success' => true,
-            'code' => 200,
-            'message' => ucfirst($tab) . ' is active',
-        ];
-    }
-
 }

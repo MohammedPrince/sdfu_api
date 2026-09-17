@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use App\Services\AdminService;
@@ -14,6 +15,16 @@ class MainController extends Controller
     public function __construct(AdminService $adminService)
     {
         $this->adminService = $adminService;
+    }
+
+    public function index()
+    {
+        Helper::recordVisitor();
+
+        $visitorCount = Helper::visitorCount();
+        $applicationStatus = Helper::checkApplicationStatus();
+
+        return view('home', compact('visitorCount','applicationStatus'));
     }
 
     public function dashboard()

@@ -17,21 +17,10 @@ Route::get('/clear', function () {
     return 'Caching, routes, and configuration cleared successfully.';
 })->name('clear');
 
-Route::get('/', function () {
-    return view('home');
-});
-
-
-// Route::get('/admin', function () {
-//     return view('admin.auth.login');
-// });
-
-// Route::get('/admin/dashboard', function () {
-//     return view('admin/dashboard');
-// });
+//Home
+Route::get('/', [MainController::class, 'index']);
 
 Route::prefix('admin')->name('admin.')->group(function () {
-
 
     Route::middleware('guest')->group(function () {
         Route::get('/', [AuthController::class, 'showLogin'])->name('login');
