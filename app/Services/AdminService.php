@@ -89,4 +89,20 @@ class AdminService
         return $this->adminRepository->getApplicationOverview();
     }
 
+    //Studnets Start
+    public function getStudents($data)
+    {
+        return $this->adminRepository->getStudents($data);
+    }
+
+    public function getStudentBatches()
+    {
+        return $this->adminRepository->getStudentBatches();
+    }
+
+    public function getStudentDetails($data)
+    {
+        return $this->adminRepository->getStudentDetails($data);
+    }
+
 }

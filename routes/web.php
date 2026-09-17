@@ -46,6 +46,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/notifications/test', [NotificationController::class, 'testFirebase']);
 
+        //Students
+        Route::get('/students', [MainController::class, 'students'])->name('students');
+        Route::get('/students/{student}', [MainController::class, 'showStudents'])->name('students.show');
+        Route::patch('/students/{student}/status', [MainController::class, 'updateStudentStatus'])->name('students.status');
+
         //Get majors based of faculty_code. JS
         Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');
 

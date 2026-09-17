@@ -78,6 +78,29 @@
             MANAGEMENT
         </div>
 
+        <a href="{{ url('/admin/students') }}"
+            class="admin-nav-item
+            {{ request()->is('admin/students') ? 'active' : '' }}">
+            <span class="admin-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M16 21V19C16 16.8 14.2 15 12 15H6C3.8 15 2 16.8 2 19V21" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" />
+
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8" />
+
+                    <path d="M22 21V19C22 17.2 20.8 15.7 19 15.2" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" />
+
+                    <path d="M16 3.2C17.8 3.7 19 5.2 19 7" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" />
+                </svg>
+            </span>
+
+            <span class="admin-nav-text">
+                Studnets
+            </span>
+        </a>
+
         <a href="#" class="admin-nav-item">
             <span class="admin-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none">

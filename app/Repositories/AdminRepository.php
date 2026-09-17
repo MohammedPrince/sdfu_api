@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Services\ExternalDatabaseService;
 use App\Models\Notification;
 use App\Models\Visitor;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class AdminRepository
 {
@@ -225,6 +227,212 @@ class AdminRepository
         $majors = $this->externalDatabase->majorsByFaculty($facultyCode);
 
         return $majors;
+    }
+
+    //Studnets Start
+    public function getStudents(array $filters): LengthAwarePaginator
+    {
+
+        $query = User::query()
+            ->where('role_id', 2)
+            ->withCount('devices')
+            ->withMax('devices', 'last_seen_at');
+
+        if (!empty($filters['search'])) {
+
+            $search = $filters['search'];
+
+            $query->where(function ($q) use ($search) {
+                $q->where('stud_index', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($filters['faculty_code'])) {
+            $query->where(
+                'faculty_code',
+                $filters['faculty_code']
+            );
+        }
+
+        if (!empty($filters['major_code'])) {
+            $query->where(
+                'major_code',
+                $filters['major_code']
+            );
+        }
+
+        if (!empty($filters['batch'])) {
+            $query->where(
+                'batch',
+                $filters['batch']
+            );
+        }
+
+        if (!empty($filters['semester'])) {
+            $query->where(
+                'semester',
+                $filters['semester']
+            );
+        }
+
+        if ($filters['status'] !== null && $filters['status'] !== '') {
+
+            $active = (bool) $filters['status'];
+
+            $query->whereExists(function ($q) use ($active) {
+
+                $q->selectRaw('1')
+                    ->from('system_settings')
+                    ->whereColumn(
+                        'system_settings.faculty_code',
+                        'users.faculty_code'
+                    )
+                    ->whereColumn(
+                        'system_settings.major_code',
+                        'users.major_code'
+                    )
+                    ->whereColumn(
+                        'system_settings.batch',
+                        'users.batch'
+                    )
+                    ->whereColumn(
+                        'system_settings.semester',
+                        'users.semester'
+                    )
+                    ->where(
+                        'system_settings.api_active',
+                        $active
+                    );
+            });
+        }
+
+        $students = $query
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
+
+        $settings = SystemSetting::query()
+            ->get()
+            ->keyBy(function ($setting) {
+                return implode('|', [
+                    $setting->faculty_code,
+                    $setting->major_code,
+                    $setting->batch,
+                    $setting->semester,
+                ]);
+            });
+
+
+        $faculties = $this->externalDatabase->faculties()->keyBy('faculty_code');
+        $majors = $this->externalDatabase->majors()->keyBy('major_code');
+
+        $students->getCollection()->transform(function ($student) use ($faculties, $majors, $settings) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Faculty
+            |--------------------------------------------------------------------------
+            */
+
+            $faculty = $faculties->get($student->faculty_code);
+
+            $student->faculty_desc_e = $faculty->faculty_desc_e
+                ?? $student->faculty_code;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Major
+            |--------------------------------------------------------------------------
+            */
+
+            $major = $majors->get($student->major_code);
+
+            $student->major_desc_e = $major->major_desc_e
+                ?? $student->major_code;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Application / Account Status
+            |--------------------------------------------------------------------------
+            */
+
+            $settingKey = implode('|', [
+                $student->faculty_code,
+                $student->major_code,
+                $student->batch,
+                $student->semester,
+            ]);
+
+            $setting = $settings->get($settingKey);
+
+
+            if (!$setting) {
+
+                $student->account_active = false;
+                $student->account_status = 'Disabled';
+
+            } else {
+
+                $student->account_active = (bool) $setting->api_active;
+
+                $student->account_status =
+                    $setting->api_active
+                    ? 'Active'
+                    : 'Disabled';
+            }
+
+
+            return $student;
+        });
+
+        return $students;
+    }
+
+    public function getStudentBatches(): Collection
+    {
+        return User::query()
+            ->where('role_id', 2)
+            ->whereNotNull('batch')
+            ->where('batch', '!=', '')
+            ->select('batch')
+            ->distinct()
+            ->orderBy('batch')
+            ->pluck('batch');
+    }
+
+    public function getStudentDetails(User $student): User
+    {
+        $student->load([
+            'devices' => function ($query) {
+                $query->latest('last_seen_at');
+            },
+        ]);
+
+        $student->loadCount('devices');
+
+        $student->faculty_name =
+            $this->externalDatabase->getFacultyName(
+                $student->faculty_code
+            );
+
+        $student->major_name =
+            $this->externalDatabase->getMajorName(
+                $student->major_code
+            );
+
+        $student->notification_count =
+            Notification::where('user_id', $student->id)->count();
+
+        $student->unread_notification_count =
+            Notification::where('user_id', $student->id)
+                ->whereNull('read_at')
+                ->count();
+
+        return $student;
     }
 
 }

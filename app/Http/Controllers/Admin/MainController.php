@@ -29,7 +29,7 @@ class MainController extends Controller
 
     public function dashboard()
     {
-        
+
         $studentCount = $this->adminService->countStudents();
 
         $courseCount = $this->adminService->countCourses();
@@ -140,5 +140,63 @@ class MainController extends Controller
 
         return response()->json($majors);
     }
+
+    //Studnets Start
+    public function students(Request $request)
+    {
+
+        $filters = [
+            'search' => trim($request->input('search', '')),
+            'faculty_code' => $request->input('faculty_code'),
+            'major_code' => $request->input('major_code'),
+            'batch' => $request->input('batch'),
+            'semester' => $request->input('semester'),
+            'status' => $request->input('status'),
+        ];
+
+        $students = $this->adminService->getStudents($filters);
+
+        $faculties = $this->adminService->getFaculties();
+
+        $majors = $this->adminService->getMajors();
+
+        $batches = $this->adminService->getStudentBatches();
+
+        return view('admin.students', compact(
+            'students',
+            'faculties',
+            'majors',
+            'batches',
+            'filters'
+        ));
+    }
+
+    public function showStudents(User $student)
+    {
+        abort_unless($student->role_id === 2, 404);
+
+        $student = $this->adminService->getStudentDetails($student);
+
+        return view('admin.students.show', compact('student'));
+    }
+
+    public function updateStudentStatus(Request $request, User $student)
+    {
+        abort_unless($student->role_id === 2, 404);
+
+        $validated = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $student->update([
+            'is_active' => (bool) $validated['is_active'],
+        ]);
+
+        return redirect()
+            ->route('admin.students.show', $student)
+            ->with('success', 'Student account status updated successfully.');
+    }
+    //Studnets End
+
 
 }

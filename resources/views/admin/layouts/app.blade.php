@@ -14,7 +14,7 @@
     </title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
-    
+
     <link rel="stylesheet" href="{{ asset('css/admin-desk.css') }}">
 
 </head>
@@ -74,28 +74,32 @@
 
                 <span>Student Desk Panel</span>
 
-    <span>•</span>
+                <span>•</span>
 
-    <span>
-        © {{ date('Y') }}
-        <a href="https://fu.edu.sd" target="_blank" rel="noopener" style="text-decoration: none;color:#651522">
-            Future University
-        </a>
-    </span>
+                <span>
+                    © {{ date('Y') }}
+                    <a href="https://fu.edu.sd" target="_blank" rel="noopener"
+                        style="text-decoration: none;color:#651522">
+                        Future University
+                    </a>
+                </span>
 
-    <span>•</span>
+                <span>•</span>
 
-    <span>
-        <a href="https://fu.edu.sd/CESD" target="_blank" rel="noopener" style="text-decoration: none; color:#651522">
-            CESD
-        </a>
-    </span>
+                <span>
+                    <a href="https://fu.edu.sd/CESD" target="_blank" rel="noopener"
+                        style="text-decoration: none; color:#651522">
+                        CESD
+                    </a>
+                </span>
 
             </footer>
 
         </main>
 
     </div>
+
+    @stack('scripts')
 
 </body>
 

@@ -281,73 +281,13 @@
         </div>
 
     </div>
-    {{-- ========================================================= --}}
-    {{-- FACULTY -> MAJOR --}}
-    {{-- ========================================================= --}}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+    @push('scripts')
+        <script>
+            window.adminMajorsUrl = @json(url('/admin/manage/majors'));
+        </script>
 
-            const facultySelect = document.getElementById('faculty_code');
-            const majorSelect = document.getElementById('major_code');
-
-            facultySelect.addEventListener('change', function() {
-
-                const facultyCode = this.value;
-
-                majorSelect.innerHTML =
-                    '<option value="">Select Major</option>';
-
-                majorSelect.disabled = true;
-
-                if (!facultyCode) {
-                    return;
-                }
-
-                fetch(
-                        `{{ url('/admin/manage/majors') }}/${encodeURIComponent(facultyCode)}`
-                    )
-                    .then(response => {
-
-                        if (!response.ok) {
-                            throw new Error('Failed to load majors.');
-                        }
-
-                        return response.json();
-
-                    })
-                    .then(majors => {
-
-                        majors.forEach(major => {
-
-                            const option =
-                                document.createElement('option');
-
-                            option.value = major.major_code;
-
-                            option.textContent = major.major_desc_e;
-
-                            majorSelect.appendChild(option);
-
-                        });
-
-                        majorSelect.disabled = false;
-
-                    })
-                    .catch(error => {
-
-                        console.error(error);
-
-                        majorSelect.innerHTML =
-                            '<option value="">Unable to load majors</option>';
-
-                        majorSelect.disabled = true;
-
-                    });
-
-            });
-
-        });
-    </script>
+        <script src="{{ asset('js/admin/script.js') }}"></script>
+    @endpush
 
 @endsection
