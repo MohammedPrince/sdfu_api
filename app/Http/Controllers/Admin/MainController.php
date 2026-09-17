@@ -24,14 +24,32 @@ class MainController extends Controller
         $visitorCount = Helper::visitorCount();
         $applicationStatus = Helper::checkApplicationStatus();
 
-        return view('home', compact('visitorCount','applicationStatus'));
+        return view('home', compact('visitorCount', 'applicationStatus'));
     }
 
     public function dashboard()
     {
+        
         $studentCount = $this->adminService->countStudents();
 
-        return view('admin.dashboard', compact('studentCount'));
+        $courseCount = $this->adminService->countCourses();
+
+        $notificationCount = $this->adminService->countNotifications();
+
+        $visitorCount = $this->adminService->getVisitorCounts();
+
+        $applicationOverview = $this->adminService->getApplicationOverview();
+
+        $recentNotifications = $this->adminService->getRecentNotifications();
+
+        return view('admin.dashboard', compact(
+            'studentCount',
+            'courseCount',
+            'notificationCount',
+            'visitorCount',
+            'applicationOverview',
+            'recentNotifications'
+        ));
     }
 
     public function manageApplication(Request $request)

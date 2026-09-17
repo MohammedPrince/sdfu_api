@@ -27,34 +27,6 @@ class StudentRepository
 
     }
 
-    public function studentCheck($data)
-    {
-        $studIndex = $data['stud_index'];
-        $studPassword = $data['stud_password'];
-
-        $rateLimitKey = 'student-login:' . strtolower($studIndex) . '|' . request()->ip();
-
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
-
-            $seconds = RateLimiter::availableIn($rateLimitKey);
-
-            $minutes = ceil($seconds / 60);
-
-            return response()->json([
-                'success' => false,
-                'code' => 429,
-                'message' => 'Too many login attempts. Please try again in ' . $minutes . ' minute(s).',
-                'retry_after' => $seconds,
-            ], 429);
-        }
-
-        if (!empty($studIndex)) {
-            return ['success' => true, 'code' => 200, 'message' => 'Student Index Exists', 'studIndex' => $studIndex, 'studPassword' => $studPassword];
-        } else {
-            return ['success' => false, 'code' => 404, 'message' => 'Student Index Not Exists'];
-        }
-    }
-
     public function login($data)
     {
 
@@ -94,15 +66,17 @@ class StudentRepository
             //dd('local tabel');
 
             $user = Auth::user();
+            $studentHelper = Helper::studentData();
 
-            $stud_id = $user->stud_index;
-            $stud_full_name = $user->name;
-            $faculty_code = $user->faculty_code;
-            $major_code = $user->major_code;
-            $batch = $user->batch;
-            $semester = $user->semester;
-            $email = $user->email ?? null;
-            $phone = $user->phone ?? null;
+            $stud_full_name = $studentHelper['stud_full_name'];
+            $faculty_code = $studentHelper['faculty_code'];
+            $major_code = $studentHelper['major_code'];
+            $batch = $studentHelper['batch'];
+            $semester = $studentHelper['semester'];
+
+            $phone = $studentHelper['phone'];
+            $email = $studentHelper['email'];
+            $gender = $studentHelper['gender'];
 
             $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
             $major_desc_e = $this->externalDatabase->getMajorName($major_code);
@@ -121,6 +95,7 @@ class StudentRepository
                 'major' => $major_desc_e ?? null,
                 'batch' => $batch ?? null,
                 'sem' => (int) $semester,
+                'gender' => $gender ?? null,
                 'token' => $token->plainTextToken,
                 'token_expires_at' => $expiresAt->toISOString(),
             ];
@@ -175,6 +150,12 @@ class StudentRepository
         $faculty_desc_e = $this->externalDatabase->getFacultyName($studentDetails->faculty_code);
         $major_desc_e = $this->externalDatabase->getMajorName($studentDetails->major_code);
         $phone = $studentDetails->stud_tel_mobile ?? null;
+        $gender = match ((int) ($studentDetails->sex_code ?? 0)) {
+            1 => 'Male',
+            2 => 'Female',
+            3 => 'Other',
+            default => null,
+        };
 
         $user = User::where('stud_index', $studIndex)->first();
 
@@ -190,6 +171,7 @@ class StudentRepository
                 'batch' => $studentDetails->batch ?? null,
                 'semester' => (int) $studentDetails->curr_sem,
                 'password' => Hash::make(Str::random(64)),
+                'gender' => $gender,
                 'role_id' => 2,
             ]);
 
@@ -203,9 +185,14 @@ class StudentRepository
                 'major_code' => $studentDetails->major_code ?? null,
                 'batch' => $studentDetails->batch ?? null,
                 'semester' => (int) $studentDetails->curr_sem,
+                'gender' => $gender,
             ]);
         }
 
+        //Delete old token if exist
+        $user->tokens()->delete();
+
+        //Create new token
         $expiresAt = Carbon::now()->addYear();
         $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
 
@@ -220,6 +207,7 @@ class StudentRepository
             'major' => $major_desc_e ?? null,
             'batch' => $studentDetails->batch ?? null,
             'sem' => (int) $studentDetails->curr_sem,
+            'gender' => $gender,
             'token' => $token->plainTextToken,
             'token_expires_at' => $expiresAt->toISOString(),
         ];
@@ -232,76 +220,27 @@ class StudentRepository
         ];
     }
 
-    public function getProfile()
-    {
-
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated'
-            ];
-        }
-
-        $applicationStatus = Helper::checkApplicationStatus();
-        if (!$applicationStatus['success']) {
-            return $applicationStatus;
-        }
-
-        $studentDetails = [];
-
-        $user = Auth::user();
-
-        $stud_id = $user->stud_index;
-        $stud_full_name = $user->name;
-        $faculty_code = $user->faculty_code;
-        $major_code = $user->major_code;
-        $batch = $user->batch;
-        $semester = $user->semester;
-        $email = $user->email ?? null;
-        $phone = $user->phone ?? null;
-
-        $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-        $major_desc_e = $this->externalDatabase->getMajorName($major_code);
-
-        $studentDetails = [
-            'stud_index' => $stud_id,
-            'stud_full_name' => $stud_full_name,
-            'stud_email' => $email ?? null,
-            'stud_phone' => $phone ?? null,
-            'faculty_code' => $faculty_code ?? null,
-            'major_code' => $major_code ?? null,
-            'faculty' => $faculty_desc_e ?? null,
-            'major' => $major_desc_e ?? null,
-            'batch' => $batch ?? null,
-            'sem' => (int) $semester,
-        ];
-
-        return [
-            'success' => true,
-            'code' => 200,
-            'message' => 'Student Details',
-            'studentDetails' => $studentDetails,
-        ];
-    }
     public function mainData()
     {
 
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated'
-            ];
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
         }
 
-        $user = Auth::user();
+        $studentHelper = Helper::studentData();
 
-        $stud_id = $user->stud_index;
-        $faculty_code = $user->faculty_code;
-        $major_code = $user->major_code;
-        $batch = $user->batch;
-        $semester = $user->semester;
+        $stud_id = $studentHelper['stud_id'];
+        $stud_full_name = $studentHelper['stud_full_name'];
+        $faculty_code = $studentHelper['faculty_code'];
+        $major_code = $studentHelper['major_code'];
+        $batch = $studentHelper['batch'];
+        $semester = $studentHelper['semester'];
+
+        $phone = $studentHelper['phone'];
+        $email = $studentHelper['email'];
+        $gender = $studentHelper['gender'];
 
         //Check application status Active/Disable
         $applicationStatus = Helper::checkApplicationStatus();
@@ -314,49 +253,25 @@ class StudentRepository
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
 
+        $faculty = $this->externalDatabase->getFacultyName($faculty_code);
+        $major = $this->externalDatabase->getMajorName($major_code);
+
         // Cache key base — unique per student per academic context
-        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-
-        // $settings = $this->adminRepository->getSystemSettings(
-        //     $faculty_code,
-        //     $major_code,
-        //     $batch,
-        //     $semester
-        // );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Student Details + Result (changes rarely — cache 1 hour)
-        |--------------------------------------------------------------------------
-        */
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 0, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
-            $studentDetails = $this->externalDatabase->getStudentDetails($stud_id);
-
-            if (!$studentDetails) {
-                return null; // sentinel — student not found
-            }
-
-            $stud_full_name = trim(
-                $studentDetails->stud_name . ' ' .
-                $studentDetails->stud_surname . ' ' .
-                $studentDetails->familyname . ' ' .
-                $studentDetails->lastName
-            );
-
-            $faculty = $this->externalDatabase->getFacultyName($faculty_code);
-            $major = $this->externalDatabase->getMajorName($major_code);
+        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 0, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $faculty, $major, $stud_full_name, $phone, $email, $gender) {
 
             $studentData = [
                 'stud_id' => $stud_id,
                 'student_name' => $stud_full_name,
-                'email' => $studentDetails->stud_email ?? null,
-                'phone' => $studentDetails->stud_tel_mobile ?? null,
+                'email' => $email ?? null,
+                'phone' => $phone ?? null,
                 'faculty_code' => $faculty_code,
                 'major_code' => $major_code,
                 'faculty' => $faculty,
                 'major' => $major,
                 'batch' => $batch,
                 'semester' => (int) $semester,
+                'gender' => $gender ?? null,
             ];
 
             $results = $this->externalDatabase->getStudentResult(
@@ -481,17 +396,17 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
+        $timetableCacheKey = "student:timetable:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
 
         $timetable = Cache::remember(
             $timetableCacheKey,
             now()->addHour(),
             fn() => $this->externalDatabase->getStudentTimetable(
-                $user->stud_index,
-                $user->faculty_code,
-                $user->major_code,
-                $user->batch,
-                $user->semester
+                $stud_id,
+                $faculty_code,
+                $major_code,
+                $batch,
+                $semester
             )
         );
 
@@ -522,15 +437,66 @@ class StudentRepository
         ];
     }
 
+    public function getProfile()
+    {
+
+        $studentDetails = [];
+
+        $auth = Helper::authenticatedStudent();
+        if (!$auth['success']) {
+            return $auth;
+        }
+
+
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        $studentHelper = Helper::studentData();
+
+        $stud_id = $studentHelper['stud_id'];
+        $stud_full_name = $studentHelper['stud_full_name'];
+        $faculty_code = $studentHelper['faculty_code'];
+        $major_code = $studentHelper['major_code'];
+        $batch = $studentHelper['batch'];
+        $semester = $studentHelper['semester'];
+
+        $phone = $studentHelper['phone'];
+        $email = $studentHelper['email'];
+        $gender = $studentHelper['gender'];
+
+        $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
+        $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+
+        $studentDetails = [
+            'stud_index' => $stud_id,
+            'stud_full_name' => $stud_full_name,
+            'stud_email' => $email ?? null,
+            'stud_phone' => $phone ?? null,
+            'faculty_code' => $faculty_code ?? null,
+            'major_code' => $major_code ?? null,
+            'faculty' => $faculty_desc_e ?? null,
+            'major' => $major_desc_e ?? null,
+            'batch' => $batch ?? null,
+            'sem' => (int) $semester,
+            'gender' => $gender,
+        ];
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Student Details',
+            'studentDetails' => $studentDetails,
+        ];
+    }
+
     public function getResult()
     {
 
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated'
-            ];
+        $auth = Helper::authenticatedStudent();
+        if (!$auth['success']) {
+            return $auth;
         }
 
         //Check tab status
@@ -539,14 +505,13 @@ class StudentRepository
             return $status;
         }
 
-        $user = Auth::user();
+        $studentHelper = Helper::studentData();
 
-        $stud_id = $user->stud_index;
-        $faculty_code = $user->faculty_code;
-        $major_code = $user->major_code;
-        $batch = $user->batch;
-        $semester = $user->semester;
-
+        $stud_id = $studentHelper['stud_id'];
+        $faculty_code = $studentHelper['faculty_code'];
+        $major_code = $studentHelper['major_code'];
+        $batch = $studentHelper['batch'];
+        $semester = $studentHelper['semester'];
 
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:result";
 
@@ -619,21 +584,6 @@ class StudentRepository
     public function getFees()
     {
 
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated'
-            ];
-        }
-
-        //Check tab status
-        $status = Helper::checkTabStatus('fee');
-        if (!$status['success']) {
-            return $status;
-        }
-
-        $user = Auth::user();
         $feeDetails = [];
         $studentDetails = [];
 
@@ -643,18 +593,31 @@ class StudentRepository
         // $batch = '2022';
         // $semester = 8;
 
-        $stud_id = $user->stud_index;
-        $faculty_code = $user->faculty_code;
-        $major_code = $user->major_code;
-        $batch = $user->batch;
-        $semester = $user->semester;
-        $stud_full_name = $user->name;
-        $stud_phone = $user->phone ?? null;
-        $stud_email = $user->email ?? null;
+        $auth = Helper::authenticatedStudent();
+        if (!$auth['success']) {
+            return $auth;
+        }
+
+
+        //Check tab status
+        $status = Helper::checkTabStatus('fee');
+        if (!$status['success']) {
+            return $status;
+        }
+
+        $studentHelper = Helper::studentData();
+
+        $stud_id = $studentHelper['stud_id'];
+        $stud_full_name = $studentHelper['stud_full_name'];
+        $faculty_code = $studentHelper['faculty_code'];
+        $major_code = $studentHelper['major_code'];
+        $batch = $studentHelper['batch'];
+        $semester = $studentHelper['semester'];
+        $phone = $studentHelper['phone'];
 
         $current_date = now()->format('Y-m-d');
         $registration_closed = false;
-        $start_date = null;
+
         $end_date = null;
         $viewData = null;
         $total_fee_bank = 0;
@@ -694,7 +657,6 @@ class StudentRepository
             $fees_type = in_array($semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
 
             $feeDetails = [
-                // 'start_date' => $start_date,
                 'total_fees' => $total_fee_bank,
                 'fees_type' => $fees_type,
                 'end_date' => $end_date,
@@ -707,7 +669,7 @@ class StudentRepository
                 'stud_index' => $stud_id,
                 'stud_full_name' => $stud_full_name,
                 'stud_email' => $stud_email ?? null,
-                'stud_phone' => $stud_phone,
+                'stud_phone' => $phone,
                 'batch' => $batch ?? null,
                 'sem' => (int) $semester,
             ];
@@ -732,12 +694,10 @@ class StudentRepository
     public function getTimetable()
     {
 
-        if (!Auth::check() || !Auth::user()) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated',
-            ];
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
         }
 
         //Check tab status
@@ -746,19 +706,25 @@ class StudentRepository
             return $status;
         }
 
-        $user = Auth::user();
+        $studentHelper = Helper::studentData();
 
-        $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
+        $stud_id = $studentHelper['stud_id'];
+        $faculty_code = $studentHelper['faculty_code'];
+        $major_code = $studentHelper['major_code'];
+        $batch = $studentHelper['batch'];
+        $semester = $studentHelper['semester'];
+
+        $timetableCacheKey = "student:timetable:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
 
         $timetable = Cache::remember(
             $timetableCacheKey,
             now()->addHour(),
             fn() => $this->externalDatabase->getStudentTimetable(
-                $user->stud_index,
-                $user->faculty_code,
-                $user->major_code,
-                $user->batch,
-                $user->semester
+                $stud_id,
+                $faculty_code,
+                $major_code,
+                $batch,
+                $semester
             )
         );
 
@@ -781,9 +747,9 @@ class StudentRepository
     public function updatePassword($data)
     {
 
-        $currentPassword = trim($data['current_password'] ?? '');
-        $newPassword = trim($data['new_password'] ?? '');
-        $newPasswordConfirm = $data['new_password_confirm'] ?? '';
+        $currentPassword = trim($data['current_password'] ?? null);
+        $newPassword = trim($data['new_password'] ?? null);
+        $newPasswordConfirm = trim($data['new_password_confirm'] ?? null);
 
         //Check application status
         $applicationStatus = Helper::checkApplicationStatus();
@@ -800,8 +766,9 @@ class StudentRepository
         }
 
         $user = Auth::user();
-        $stud_id = $user->stud_index;
-        $old_password = $user->password;
+        $studentHelper = Helper::studentData();
+
+        $old_password = $studentHelper['password'];
 
         if (!Hash::check($currentPassword, $old_password)) {
             return [
@@ -846,6 +813,7 @@ class StudentRepository
         // if ($currentToken) {
         //     $user->tokens()->where('id', $currentToken->id)->delete();
         // }
+
         $currentToken = $user->currentAccessToken();
         if ($currentToken instanceof PersonalAccessToken) {
             $user->tokens()->where('id', $currentToken->id)->delete();

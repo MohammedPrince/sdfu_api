@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Students;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StudIndexValidation;
 use App\Http\Requests\StudIndePasswordValidation;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
@@ -21,8 +20,8 @@ class MainController extends Controller
     public function login(Request $request)
     {
 
-        $studIndex = trim($request->input('stud_index', ''));
-        $studPassword = $request->input('stud_password', '');
+        $studIndex = trim($request->input('stud_index', null));
+        $studPassword = $request->input('stud_password', null);
 
         $data = ['stud_index' => $studIndex, 'stud_password' => $studPassword];
 
@@ -48,6 +47,7 @@ class MainController extends Controller
 
     public function mainData()
     {
+
         $result = $this->studentService->mainData();
 
         if (!$result['success']) {
@@ -74,6 +74,7 @@ class MainController extends Controller
 
     public function getProfile()
     {
+
         $result = $this->studentService->getProfile();
 
         if ($result['success']) {
@@ -94,9 +95,9 @@ class MainController extends Controller
         }
     }
 
-
     public function getResult()
     {
+
         $result = $this->studentService->getResult();
 
         if ($result['success']) {
@@ -117,6 +118,7 @@ class MainController extends Controller
             ], $result['code']);
         }
     }
+
     public function getFees()
     {
         $result = $this->studentService->getFees();
@@ -142,6 +144,7 @@ class MainController extends Controller
 
     public function getTimetable()
     {
+
         $result = $this->studentService->getTimetable();
 
         if ($result['success']) {
@@ -165,9 +168,9 @@ class MainController extends Controller
     public function updatePassword(StudIndePasswordValidation $request)
     {
 
-        $current_password = $request->input('current_password', '');
-        $newPassword = $request->input('new_password', '');
-        $newPasswordConfirm = $request->input('new_password_confirm', '');
+        $current_password = $request->input('current_password', null);
+        $newPassword = $request->input('new_password', null);
+        $newPasswordConfirm = $request->input('new_password_confirm', null);
 
         $data = ['current_password' => $current_password, 'new_password' => $newPassword, 'new_password_confirm' => $newPasswordConfirm];
 
@@ -221,29 +224,4 @@ class MainController extends Controller
             'message' => 'Welcome to the SDFU application',
         ], 200);
     }
-
-    public function checkIndex(StudIndexValidation $request)
-    {
-
-        $data = $request->validated();
-        $result = $this->studentService->studentCheck($data);
-
-        if ($result['success']) {
-            return response()->json([
-                'status' => 'success',
-                'code' => $result['code'],
-                'message' => $result['message'],
-                'data' => [
-                    'studIndex' => $result['studIndex'],
-                ]
-            ], $result['code']);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'code' => $result['code'],
-                'error' => $result['message']
-            ], $result['code']);
-        }
-    }
-
 }

@@ -29,6 +29,7 @@ class User extends Authenticatable
         'major_code',
         'batch',
         'semester',
+        'gender',
         'role_id'
     ];
 

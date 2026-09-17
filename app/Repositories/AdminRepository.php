@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\ExternalDatabaseService;
+use App\Models\Notification;
+use App\Models\Visitor;
 
 class AdminRepository
 {
@@ -113,6 +115,91 @@ class AdminRepository
                 'timetable_active' => (bool) $setting->timetable_active,
             ];
         });
+    }
+
+    public function countCourses(): int
+    {
+        // Update this later when your course source/table is finalized.
+        return 0;
+    }
+
+    public function countNotifications(): int
+    {
+        return Notification::count();
+    }
+
+    public function getVisitorCounts(): array
+    {
+        return [
+            'today' => Visitor::whereDate('created_at', today())->count(),
+
+            'month' => Visitor::whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month)
+                ->count(),
+
+            'total' => Visitor::count(),
+        ];
+    }
+
+    public function getRecentNotifications()
+    {
+        return Notification::latest()
+            ->take(5)
+            ->get();
+    }
+
+    public function getApplicationStatus(): array
+    {
+        $settings = SystemSetting::query()
+            ->orderBy('id')
+            ->get();
+
+        return [
+            'active' => $settings->contains(
+                fn($setting) => (bool) $setting->api_active
+            ),
+
+            'result_active' => $settings->contains(
+                fn($setting) => (bool) $setting->result_active
+            ),
+
+            'timetable_active' => $settings->contains(
+                fn($setting) => (bool) $setting->timetable_active
+            ),
+
+            'fee_active' => $settings->contains(
+                fn($setting) => (bool) $setting->fee_active
+            ),
+        ];
+    }
+
+    public function getApplicationOverview(): array
+    {
+        $settings = SystemSetting::query()->get();
+
+        return [
+            'total' => $settings->count(),
+
+            'active' => $settings
+                ->where('api_active', true)
+                ->count(),
+
+            'inactive' => $settings
+                ->where('api_active', false)
+                ->count(),
+
+            'result_active' => $settings
+                ->where('result_active', true)
+                ->count(),
+
+            'timetable_active' => $settings
+                ->where('timetable_active', true)
+                ->count(),
+
+            'fee_active' => $settings
+                ->where('fee_active', true)
+                ->count(),
+        ];
     }
 
     public function getFaculties()

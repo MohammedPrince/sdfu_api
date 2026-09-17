@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\AdminRepository;
-use Illuminate\Database\Eloquent\Collection;
+
 
 class AdminService
 {
@@ -61,7 +61,32 @@ class AdminService
 
     public function getSavedSettings()
     {
-      return $this->adminRepository->getSavedSettings();   
+        return $this->adminRepository->getSavedSettings();
+    }
+
+    public function countCourses()
+    {
+        return $this->adminRepository->countCourses();
+    }
+
+    public function countNotifications()
+    {
+        return $this->adminRepository->countNotifications();
+    }
+
+    public function getVisitorCounts()
+    {
+        return $this->adminRepository->getVisitorCounts();
+    }
+
+    public function getRecentNotifications()
+    {
+        return $this->adminRepository->getRecentNotifications();
+    }
+
+    public function getApplicationOverview()
+    {
+        return $this->adminRepository->getApplicationOverview();
     }
 
 }

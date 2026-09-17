@@ -13,11 +13,6 @@ class StudentService
         $this->studentRepository = $studentRepository;
     }
 
-    public function studentCheck($data)
-    {
-        return $this->studentRepository->studentCheck($data);
-    }
-
     public function login($data): array
     {
         return $this->studentRepository->login($data);

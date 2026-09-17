@@ -66,6 +66,7 @@ class ExternalDatabaseService
                 'c.curr_sem',
                 'c.faculty_code',
                 'c.major_code',
+                'c.sex_code',
             ])
             ->first();
     }

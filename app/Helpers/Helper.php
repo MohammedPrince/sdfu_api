@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Request;
 class Helper
 {
 
+
+
     //Application Helpers
     public static function recordVisitor(): void
     {
@@ -70,6 +72,48 @@ class Helper
     }
 
     //API Helpers
+    public static function authenticatedStudent(): array
+    {
+        if (!Auth::check() || !Auth::user()) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'user' => Auth::user(),
+        ];
+    }
+
+    public static function studentData(): ?array
+    {
+        if (!Auth::check() || !Auth::user()) {
+            return null;
+        }
+
+        $user = Auth::user();
+
+        return [
+            'user' => $user,
+            'stud_id' => $user->stud_index,
+            'stud_full_name' => $user->name,
+            'password' => $user->password,
+
+            'faculty_code' => $user->faculty_code,
+            'major_code' => $user->major_code,
+
+            'batch' => $user->batch,
+            'semester' => $user->semester,
+            //Personal
+            'phone' => $user->phone ?? null,
+            'email' => $user->email ?? null,
+            'gender' => $user->gender ?? null,
+        ];
+    }
     public static function authenticatedUser()
     {
         return Auth::check() ? Auth::user() : null;
