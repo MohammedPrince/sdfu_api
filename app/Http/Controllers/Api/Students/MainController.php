@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Students;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StudIndexValidation;
+use App\Http\Requests\StudIndePasswordValidation;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
 
@@ -15,15 +16,6 @@ class MainController extends Controller
     public function __construct(StudentService $studentService)
     {
         $this->studentService = $studentService;
-    }
-
-    public function test()
-    {
-        return response()->json([
-            'status' => 'success',
-            'code' => 200,
-            'message' => 'Welcome to the SDFU application',
-        ], 200);
     }
 
     public function login(Request $request)
@@ -54,6 +46,32 @@ class MainController extends Controller
         }
     }
 
+    public function mainData()
+    {
+        $result = $this->studentService->mainData();
+
+        if (!$result['success']) {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'code' => 200,
+            'message' => 'Main Data Retrieved Successfully',
+            'data' => [
+                'studentDetails' => $result['studentDetails'],
+                'semesterResult' => $result['semesterResult'],
+                'feeDetails' => $result['feeDetails'],
+                'timetable' => $result['timetable'],
+                'appStatus' => $result['appStatus'],
+            ],
+        ]);
+    }
+
     public function getProfile()
     {
         $result = $this->studentService->getProfile();
@@ -76,56 +94,6 @@ class MainController extends Controller
         }
     }
 
-    public function checkIndex(StudIndexValidation $request)
-    {
-
-        $data = $request->validated();
-
-        $result = $this->studentService->studentCheck($data);
-
-        if ($result['success']) {
-            return response()->json([
-                'status' => 'success',
-                'code' => $result['code'],
-                'message' => $result['message'],
-                'data' => [
-                    'studIndex' => $result['studIndex'],
-                ]
-            ], $result['code']);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'code' => $result['code'],
-                'error' => $result['message']
-            ], $result['code']);
-        }
-
-    }
-
-    public function mainData()
-    {
-        $result = $this->studentService->mainData();
-
-        if (!$result['success']) {
-            return response()->json([
-                'status' => 'error',
-                'code' => $result['code'],
-                'error' => $result['message'],
-            ], $result['code']);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'code' => 200,
-            'message' => 'Main Data Retrieved Successfully',
-            'data' => [
-                'studentDetails' => $result['studentDetails'],
-                'semesterResult' => $result['semesterResult'],
-                'feeDetails' => $result['feeDetails'],
-                'timetable' => $result['timetable'],
-            ],
-        ]);
-    }
 
     public function getResult()
     {
@@ -137,7 +105,7 @@ class MainController extends Controller
                 'code' => $result['code'],
                 'message' => $result['message'],
                 'data' => [
-                    'studentDetails' => $result['studentDetails'],
+                    // 'studentDetails' => $result['studentDetails'],
                     'semesterResult' => $result['semesterResult'],
                 ],
             ], $result['code']);
@@ -149,7 +117,6 @@ class MainController extends Controller
             ], $result['code']);
         }
     }
-
     public function getFees()
     {
         $result = $this->studentService->getFees();
@@ -160,7 +127,7 @@ class MainController extends Controller
                 'code' => $result['code'],
                 'message' => $result['message'],
                 'data' => [
-                    'studentDetails' => $result['studentDetails'],
+                    // 'studentDetails' => $result['studentDetails'],
                     'feeDetails' => $result['feeDetails'],
                 ],
             ], $result['code']);
@@ -170,6 +137,58 @@ class MainController extends Controller
                 'code' => $result['code'],
                 'error' => $result['message'],
             ], $result['code']);
+        }
+    }
+
+    public function getTimetable()
+    {
+        $result = $this->studentService->getTimetable();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'timetableDetails' => $result['timetableDetails'],
+                ],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
+    public function updatePassword(StudIndePasswordValidation $request)
+    {
+
+        $current_password = $request->input('current_password', '');
+        $newPassword = $request->input('new_password', '');
+        $newPasswordConfirm = $request->input('new_password_confirm', '');
+
+        $data = ['current_password' => $current_password, 'new_password' => $newPassword, 'new_password_confirm' => $newPasswordConfirm];
+
+        $result = $this->studentService->updatePassword($data);
+
+        if ($result['success']) {
+
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+            ], $result['code']);
+
+        } else {
+
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+
         }
     }
 
@@ -183,6 +202,40 @@ class MainController extends Controller
                 'status' => 'success',
                 'code' => $result['code'],
                 'message' => $result['message'],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message']
+            ], $result['code']);
+        }
+    }
+
+    //Test functions
+    public function test()
+    {
+        return response()->json([
+            'status' => 'success',
+            'code' => 200,
+            'message' => 'Welcome to the SDFU application',
+        ], 200);
+    }
+
+    public function checkIndex(StudIndexValidation $request)
+    {
+
+        $data = $request->validated();
+        $result = $this->studentService->studentCheck($data);
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'studIndex' => $result['studIndex'],
+                ]
             ], $result['code']);
         } else {
             return response()->json([

@@ -3,21 +3,27 @@
 namespace App\Repositories;
 
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use App\Models\UserDevice;
+use App\Repositories\AdminRepository;
 use App\Services\ExternalDatabaseService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
+use App\Helpers\Helper;
 
 class StudentRepository
 {
     protected $externalDatabase;
+    protected $adminRepository;
 
     public function __construct()
     {
         $this->externalDatabase = new ExternalDatabaseService();
+        $this->adminRepository = new AdminRepository();
 
     }
 
@@ -82,8 +88,45 @@ class StudentRepository
             ];
         }
 
-        $student = $this->externalDatabase->getMoodleStudent($studIndex);
+        //Check local in users table
+        if (Auth::attempt(['stud_index' => $studIndex, 'password' => $studPassword,])) {
 
+            //dd('local tabel');
+
+            $user = Auth::user();
+
+            $stud_id = $user->stud_index;
+            $stud_full_name = $user->name;
+            $faculty_code = $user->faculty_code;
+            $major_code = $user->major_code;
+            $batch = $user->batch;
+            $semester = $user->semester;
+            $email = $user->email ?? null;
+            $phone = $user->phone ?? null;
+
+            $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
+            $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+
+            $expiresAt = Carbon::now()->addYear();
+            $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
+
+            $LoginDetails = [
+                'stud_index' => $studIndex,
+                'stud_full_name' => $stud_full_name,
+                'stud_email' => $email ?? null,
+                'stud_phone' => $phone,
+                'faculty_code' => $faculty_code ?? null,
+                'major_code' => $major_code ?? null,
+                'faculty' => $faculty_desc_e ?? null,
+                'major' => $major_desc_e ?? null,
+                'batch' => $batch ?? null,
+                'sem' => (int) $semester,
+                'token' => $token->plainTextToken,
+                'token_expires_at' => $expiresAt->toISOString(),
+            ];
+        }
+
+        $student = $this->externalDatabase->getMoodleStudent($studIndex);
         if (!$student) {
 
             RateLimiter::hit($rateLimitKey, 300);
@@ -140,15 +183,14 @@ class StudentRepository
             $user = User::create([
                 'stud_index' => $studIndex,
                 'name' => $stud_full_name,
-                'email' => !empty($student->email)
-                    ? $student->email
-                    : null,
+                'email' => !empty($student->email) ? $student->email : null,
                 'phone' => $phone,
                 'faculty_code' => $studentDetails->faculty_code ?? null,
                 'major_code' => $studentDetails->major_code ?? null,
                 'batch' => $studentDetails->batch ?? null,
                 'semester' => (int) $studentDetails->curr_sem,
                 'password' => Hash::make(Str::random(64)),
+                'role_id' => 2,
             ]);
 
         } else {
@@ -156,9 +198,7 @@ class StudentRepository
             $user->update([
                 'name' => $stud_full_name,
                 'phone' => $phone,
-                'email' => !empty($student->email)
-                    ? $student->email
-                    : $user->email,
+                'email' => !empty($student->email) ? $student->email : $user->email,
                 'faculty_code' => $studentDetails->faculty_code ?? null,
                 'major_code' => $studentDetails->major_code ?? null,
                 'batch' => $studentDetails->batch ?? null,
@@ -167,12 +207,7 @@ class StudentRepository
         }
 
         $expiresAt = Carbon::now()->addYear();
-
-        $token = $user->createToken(
-            'student-mobile-app',
-            ['*'],
-            $expiresAt
-        );
+        $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
 
         $LoginDetails = [
             'stud_index' => $studIndex,
@@ -208,6 +243,11 @@ class StudentRepository
             ];
         }
 
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
         $studentDetails = [];
 
         $user = Auth::user();
@@ -223,7 +263,7 @@ class StudentRepository
 
         $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
         $major_desc_e = $this->externalDatabase->getMajorName($major_code);
-    
+
         $studentDetails = [
             'stud_index' => $stud_id,
             'stud_full_name' => $stud_full_name,
@@ -244,245 +284,9 @@ class StudentRepository
             'studentDetails' => $studentDetails,
         ];
     }
-
-    //Without Cache
-    // public function mainData()
-    // {
-    //     if (!Auth::check() || !Auth::user()) {
-    //         return [
-    //             'success' => false,
-    //             'code' => 401,
-    //             'message' => 'Student not authenticated'
-    //         ];
-    //     }
-
-    //     $user = Auth::user();
-
-    //     $stud_id = $user->stud_index;
-    //     $faculty_code = $user->faculty_code;
-    //     $major_code = $user->major_code;
-    //     $batch = $user->batch;
-    //     $semester = $user->semester;
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Fees Variables
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $current_date = now()->format('Y-m-d');
-    //     $registration_closed = false;
-    //     $end_date = null;
-    //     $viewData = null;
-    //     $total_fee_bank = 0;
-    //     $status = null;
-    //     $fees_type = null;
-    //     $today = Carbon::today();
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Student Details
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $studentDetails = $this->externalDatabase->getStudentDetails($stud_id);
-
-    //     if (!$studentDetails) {
-    //         return [
-    //             'success' => false,
-    //             'code' => 404,
-    //             'message' => 'Student Profile Not Found'
-    //         ];
-    //     }
-
-    //     $stud_full_name = trim($studentDetails->stud_name . ' ' .$studentDetails->stud_surname . ' ' .$studentDetails->familyname . ' ' .$studentDetails->lastName);
-
-    //     $faculty = $this->externalDatabase->getFacultyName($faculty_code);
-    //     $major = $this->externalDatabase->getMajorName($major_code);
-
-    //     $studentData = [
-    //         'stud_id' => $stud_id,
-    //         'student_name' => $stud_full_name,
-    //         'email' => $studentDetails->stud_email ?? null,
-    //         'phone' => $studentDetails->stud_tel_mobile ?? null,
-
-    //         'faculty_code' => $faculty_code,
-    //         'major_code' => $major_code,
-
-    //         'faculty' => $faculty,
-    //         'major' => $major,
-
-    //         'batch' => $batch,
-    //         'semester' => (int) $semester,
-    //     ];
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Semester Result
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $results = $this->externalDatabase->getStudentResult(
-    //         $stud_id,
-    //         $faculty_code,
-    //         $major_code,
-    //         $batch,
-    //         $semester
-    //     );
-
-    //     $semesterResult = null;
-
-    //     if (!empty($results)) {
-
-    //         $first = $results[0];
-
-    //         $courses = [];
-
-    //         foreach ($results as $result) {
-
-    //             $courses[] = [
-    //                 'course_code' => $result['course_code'],
-    //                 'course_name' => $result['course_name'],
-    //                 'course_units' => $result['course_units'],
-    //                 'grade' => $result['grade'],
-    //                 'points' => round((float) $result['points']),
-    //                 'remark' => $result['remark'],
-    //                 'result_status' => $result['result_status'],
-    //             ];
-    //         }
-
-    //         $semesterResult = [
-    //             'semester' => $first['semester'],
-    //             // Keep 2 decimal places
-    //             'gpa' => round((float) $first['gpa'], 2),
-    //             'cgpa' => round((float) $first['cgpa'], 2),
-    //             'status' => $first['status'],
-    //             'courses' => $courses,
-    //         ];
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Fee Details
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $feeDetails = $this->externalDatabase->getStudentFees(
-    //         $stud_id,
-    //         $faculty_code,
-    //         $major_code,
-    //         $batch,
-    //         $semester
-    //     );
-
-    //     if ($feeDetails) {
-
-    //         $start_date = $feeDetails->start_date;
-    //         $end_date = $feeDetails->end_date;
-    //         $viewData = $feeDetails->viewData;
-    //         $total_fee_bank = $feeDetails->total_fee_bank;
-
-    //         $registration_closed = $current_date > $end_date;
-
-    //         $endDate = Carbon::parse($end_date)->startOfDay();
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Days Remaining
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         if ($endDate->isSameDay($today)) {
-    //             $daysRemaining = 1;
-    //         } elseif ($endDate->isFuture()) {
-    //             $daysRemaining = $today->diffInDays($endDate);
-    //         } else {
-    //             $daysRemaining = 0;
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Registration Status
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         if ($registration_closed) {
-
-    //             $status = 'Registration is closed.';
-
-    //         } elseif ($total_fee_bank == 0 || $viewData == 0) {
-
-    //             $status = 'Check with faculty registrar for fee details';
-
-    //         } elseif ($viewData == 2) {
-
-    //             $status = 'Paid';
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Fees Type
-    //         |--------------------------------------------------------------------------
-    //         */
-
-    //         $fees_type = in_array((int) $semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
-
-    //         $feeDetails = [
-    //             'total_fees' => $total_fee_bank,
-    //             'fees_type' => $fees_type,
-    //             'end_date' => $end_date,
-    //             'days_remaining' => $daysRemaining,
-    //             'registration_closed' => $registration_closed,
-    //             'status' => $status,
-    //         ];
-
-    //     } else {
-
-    //         // No fee record
-    //         $feeDetails = null;
-    //     }
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Timetable
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     $timetable = [];
-
-    //     // Later:
-    //     // $timetable = $this->externalDatabase->getStudentTimetable(
-    //     //     $stud_id,
-    //     //     $faculty_code,
-    //     //     $major_code,
-    //     //     $batch,
-    //     //     $semester
-    //     // );
-
-    //     /*
-    //     |--------------------------------------------------------------------------
-    //     | Main Data Response
-    //     |--------------------------------------------------------------------------
-    //     */
-
-    //     return [
-    //         'success' => true,
-    //         'code' => 200,
-    //         'message' => 'Main Data Retrieved Successfully',
-
-    //         'studentDetails' => $studentData,
-
-    //         'semesterResult' => $semesterResult,
-
-    //         'feeDetails' => $feeDetails,
-
-    //         'timetable' => $timetable,
-    //     ];
-    // }
-
-
     public function mainData()
     {
+
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
@@ -499,18 +303,33 @@ class StudentRepository
         $batch = $user->batch;
         $semester = $user->semester;
 
+        //Check application status Active/Disable
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        $settings = $applicationStatus['settings'];
+
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
 
         // Cache key base — unique per student per academic context
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
 
+        // $settings = $this->adminRepository->getSystemSettings(
+        //     $faculty_code,
+        //     $major_code,
+        //     $batch,
+        //     $semester
+        // );
+
         /*
         |--------------------------------------------------------------------------
         | Student Details + Result (changes rarely — cache 1 hour)
         |--------------------------------------------------------------------------
         */
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 3600, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 0, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
             $studentDetails = $this->externalDatabase->getStudentDetails($stud_id);
 
             if (!$studentDetails) {
@@ -560,7 +379,7 @@ class StudentRepository
                         'course_name' => $result['course_name'],
                         'course_units' => $result['course_units'],
                         'grade' => $result['grade'],
-                        'points' => round((float) $result['points']),
+                        'points' => $result['points'],
                         'remark' => $result['remark'],
                         'result_status' => $result['result_status'],
                     ];
@@ -568,8 +387,8 @@ class StudentRepository
 
                 $semesterResult = [
                     'semester' => $first['semester'],
-                    'gpa' => round((float) $first['gpa'], 2),
-                    'cgpa' => round((float) $first['cgpa'], 2),
+                    'gpa' => $first['gpa'],
+                    'cgpa' => $first['cgpa'],
                     'status' => $first['status'],
                     'courses' => $courses,
                 ];
@@ -661,7 +480,35 @@ class StudentRepository
         | Timetable
         |--------------------------------------------------------------------------
         */
-        $timetable = []; // Later: also cache once implemented
+
+        $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
+
+        $timetable = Cache::remember(
+            $timetableCacheKey,
+            now()->addHour(),
+            fn() => $this->externalDatabase->getStudentTimetable(
+                $user->stud_index,
+                $user->faculty_code,
+                $user->major_code,
+                $user->batch,
+                $user->semester
+            )
+        );
+
+        if (empty($timetable) || !isset($timetable['days'])) {
+            $timetable = ['days' => []];
+        }
+
+        //App status
+        $appStatus = [
+            'active' => (bool) $settings->api_active,
+
+            'tabs_status' => [
+                'fee' => (bool) $settings->fee_active,
+                'result' => (bool) $settings->result_active,
+                'timetable' => (bool) $settings->timetable_active,
+            ],
+        ];
 
         return [
             'success' => true,
@@ -671,17 +518,25 @@ class StudentRepository
             'semesterResult' => $semesterResult,
             'feeDetails' => $feeDetails,
             'timetable' => $timetable,
+            'appStatus' => $appStatus,
         ];
     }
 
     public function getResult()
     {
+
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
                 'code' => 401,
                 'message' => 'Student not authenticated'
             ];
+        }
+
+        //Check tab status
+        $status = Helper::checkTabStatus('result');
+        if (!$status['success']) {
+            return $status;
         }
 
         $user = Auth::user();
@@ -691,6 +546,7 @@ class StudentRepository
         $major_code = $user->major_code;
         $batch = $user->batch;
         $semester = $user->semester;
+
 
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:result";
 
@@ -759,6 +615,7 @@ class StudentRepository
             'semesterResult' => $payload['semesterResult'],
         ];
     }
+
     public function getFees()
     {
 
@@ -768,6 +625,12 @@ class StudentRepository
                 'code' => 401,
                 'message' => 'Student not authenticated'
             ];
+        }
+
+        //Check tab status
+        $status = Helper::checkTabStatus('fee');
+        if (!$status['success']) {
+            return $status;
         }
 
         $user = Auth::user();
@@ -864,10 +727,146 @@ class StudentRepository
                 'message' => 'Fee Details Not Found'
             ];
         }
+    }
+
+    public function getTimetable()
+    {
+
+        if (!Auth::check() || !Auth::user()) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        //Check tab status
+        $status = Helper::checkTabStatus('timetable');
+        if (!$status['success']) {
+            return $status;
+        }
+
+        $user = Auth::user();
+
+        $timetableCacheKey = "student:timetable:{$user->stud_index}:{$user->faculty_code}:{$user->major_code}:{$user->batch}:{$user->semester}";
+
+        $timetable = Cache::remember(
+            $timetableCacheKey,
+            now()->addHour(),
+            fn() => $this->externalDatabase->getStudentTimetable(
+                $user->stud_index,
+                $user->faculty_code,
+                $user->major_code,
+                $user->batch,
+                $user->semester
+            )
+        );
+
+        if (!empty($timetable['days'])) {
+            return [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Timetable Retrieved Successfully',
+                'timetableDetails' => $timetable,
+            ];
+        }
+
+        return [
+            'success' => false,
+            'code' => 404,
+            'message' => 'Timetable Not Found',
+        ];
+    }
+
+    public function updatePassword($data)
+    {
+
+        $currentPassword = trim($data['current_password'] ?? '');
+        $newPassword = trim($data['new_password'] ?? '');
+        $newPasswordConfirm = $data['new_password_confirm'] ?? '';
+
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        if (!Auth::check() || !Auth::user()) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated'
+            ];
+        }
+
+        $user = Auth::user();
+        $stud_id = $user->stud_index;
+        $old_password = $user->password;
+
+        if (!Hash::check($currentPassword, $old_password)) {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Current password not correct, try again'
+            ];
+        }
+
+        if (!password_verify($currentPassword, $old_password)) {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Current password not correct, try again'
+            ];
+        }
+
+        if ($newPassword != $newPasswordConfirm) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Password is miss-match'
+            ];
+        }
+
+        //Update it on Moodle DB
+        // $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id, $newPassword);
+        // if (!$moodleUpdatedPassword) {
+        //     return [
+        //         'success' => false,
+        //         'code' => 500,
+        //         'message' => 'Password updated locally, but Moodle password update failed',
+        //     ];
+        // }
+
+        //Update it on SDFU DB
+        $user->password = Hash::make($newPasswordConfirm);
+        $user->save();
+
+        //Delete current user token
+        // $currentToken = $user->currentAccessToken();
+        // if ($currentToken) {
+        //     $user->tokens()->where('id', $currentToken->id)->delete();
+        // }
+        $currentToken = $user->currentAccessToken();
+        if ($currentToken instanceof PersonalAccessToken) {
+            $user->tokens()->where('id', $currentToken->id)->delete();
+        }
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Password updated, token deleted successfully',
+        ];
 
     }
+
     public function logout()
     {
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
         if (Auth::check()) {
             if (Auth::user()->tokens()->delete()) {
                 return ['success' => true, 'code' => 200, 'message' => 'logout success'];
@@ -881,5 +880,86 @@ class StudentRepository
         } else {
             return ['success' => false, 'code' => 401, 'message' => 'Student not found'];
         }
+    }
+
+
+    //Notifications
+    public function registerToken($request)
+    {
+
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        $user = $request->user();
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        UserDevice::updateOrCreate(
+            [
+                'fcm_token' => $request->input('token'),
+            ],
+            [
+                'user_id' => $user->id,
+                'device_type' => $request->input('device_type'),
+                'device_name' => $request->input('device_name'),
+                'app_version' => $request->input('app_version'),
+                'last_seen_at' => now(),
+                'is_active' => true,
+            ]
+        );
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'FCM token registered successfully',
+        ];
+    }
+
+    public function unregisterToken($request): array
+    {
+
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+        $user = $request->user();
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        $token = UserDevice::where('user_id', $user->id)->where('fcm_token', $request->input('token'))->first();
+
+        if (!$token) {
+            return [
+                'success' => false,
+                'code' => 404,
+                'message' => 'FCM token not found for this student',
+            ];
+        }
+
+        $token->update([
+            'is_active' => false,
+        ]);
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'FCM token removed successfully',
+        ];
     }
 }
