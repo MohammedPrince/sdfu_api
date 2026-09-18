@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
+use App\Models\User;
 use App\Services\AdminService;
 use Illuminate\Http\Request;
+
 
 
 class MainController extends Controller
@@ -155,11 +157,8 @@ class MainController extends Controller
         ];
 
         $students = $this->adminService->getStudents($filters);
-
         $faculties = $this->adminService->getFaculties();
-
         $majors = $this->adminService->getMajors();
-
         $batches = $this->adminService->getStudentBatches();
 
         return view('admin.students', compact(
@@ -171,30 +170,43 @@ class MainController extends Controller
         ));
     }
 
-    public function showStudents(User $student)
+    public function showStudents(string $studentId)
     {
-        abort_unless($student->role_id === 2, 404);
+        $id = base64_decode($studentId, true);
+
+        if ($id === false || !ctype_digit($id)) {
+            abort(404);
+        }
+
+        $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
 
         $student = $this->adminService->getStudentDetails($student);
-
-        return view('admin.students.show', compact('student'));
+        return view('admin.student-details', compact('student'));
     }
 
-    public function updateStudentStatus(Request $request, User $student)
+    public function updateStudentStatus(Request $request, string $studentId)
     {
-        abort_unless($student->role_id === 2, 404);
+        $id = base64_decode($studentId, true);
 
-        $validated = $request->validate([
-            'is_active' => ['required', 'boolean'],
-        ]);
+        if ($id === false || !ctype_digit($id)) {
+            abort(404);
+        }
 
-        $student->update([
-            'is_active' => (bool) $validated['is_active'],
-        ]);
+        $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
+        $isActive = $request->boolean('is_active');
+
+        $this->adminService->updateStudentStatus($student,$isActive);
 
         return redirect()
-            ->route('admin.students.show', $student)
-            ->with('success', 'Student account status updated successfully.');
+            ->route('admin.students.show', [
+                'studentId' => $studentId,
+            ])
+            ->with(
+                'success',
+                $isActive
+                ? 'Student account activated successfully.'
+                : 'Student account disabled successfully.'
+            );
     }
     //Studnets End
 

@@ -79,8 +79,8 @@
         </div>
 
         <a href="{{ url('/admin/students') }}"
-            class="admin-nav-item
-            {{ request()->is('admin/students') ? 'active' : '' }}">
+            class="admin-nav-item {{ request()->is('admin/students*') ? 'active' : '' }}">
+
             <span class="admin-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none">
                     <path d="M16 21V19C16 16.8 14.2 15 12 15H6C3.8 15 2 16.8 2 19V21" stroke="currentColor"
@@ -97,7 +97,7 @@
             </span>
 
             <span class="admin-nav-text">
-                Studnets
+                Students
             </span>
         </a>
 

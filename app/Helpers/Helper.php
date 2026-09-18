@@ -3,14 +3,14 @@
 namespace App\Helpers;
 
 use App\Models\SystemSetting;
-use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use App\Models\Visitor;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Str;
 
 class Helper
 {
-
-
 
     //Application Helpers
     public static function recordVisitor(): void
@@ -69,6 +69,36 @@ class Helper
                 ];
             }
         );
+    }
+
+    public static function getStudentAccountStatus(User $student): bool
+    {
+        $setting = SystemSetting::where('faculty_code', $student->faculty_code)
+            ->where('major_code', $student->major_code)
+            ->where('batch', $student->batch)
+            ->where('semester', $student->semester)
+            ->first();
+
+        return $setting
+            ? (bool) $setting->api_active
+            : false;
+    }
+
+    public static function studentToken(User $student): string
+    {
+        do {
+            $token = Str::upper(Str::random(3));
+        } while (
+            cache()->has("student_token:{$token}")
+        );
+
+        cache()->put(
+            "student_token:{$token}",
+            $student->id,
+            now()->addMinutes(30)
+        );
+
+        return $token;
     }
 
     //API Helpers

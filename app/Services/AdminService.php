@@ -105,4 +105,10 @@ class AdminService
         return $this->adminRepository->getStudentDetails($data);
     }
 
+    public function updateStudentStatus($student, $isActive): void
+    {
+        $this->adminRepository->updateStudentStatus($student, $isActive);
+    }
+    //Studnets End
+
 }

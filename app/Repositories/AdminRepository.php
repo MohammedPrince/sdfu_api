@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Helper;
+use App\Models\Notification;
 use App\Models\SystemSetting;
 use App\Models\User;
-use App\Services\ExternalDatabaseService;
-use App\Models\Notification;
 use App\Models\Visitor;
+use App\Services\ExternalDatabaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -406,6 +407,8 @@ class AdminRepository
 
     public function getStudentDetails(User $student): User
     {
+        abort_unless($student->role_id === 2, 404);
+
         $student->load([
             'devices' => function ($query) {
                 $query->latest('last_seen_at');
@@ -432,7 +435,32 @@ class AdminRepository
                 ->whereNull('read_at')
                 ->count();
 
+        // Student Desk account status
+        $student->account_active = Helper::getStudentAccountStatus($student);
+
         return $student;
     }
+
+
+    public function updateStudentStatus(User $student, bool $isActive): void
+    {
+        abort_unless($student->role_id === 2, 404);
+
+        SystemSetting::updateOrCreate(
+            [
+                'faculty_code' => $student->faculty_code,
+                'major_code' => $student->major_code,
+                'batch' => $student->batch,
+                'semester' => $student->semester,
+            ],
+            [
+                'api_active' => $isActive,
+                'fee_active' => $isActive,
+                'result_active' => $isActive,
+                'timetable_active' => $isActive,
+            ]
+        );
+    }
+
 
 }

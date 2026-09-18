@@ -203,16 +203,16 @@
 
                                 </select>
 
-                        
-                                    <button type="submit" class="btn-primary">
-                                        Search 
-                                    </button>
 
-                                    <a href="{{ route('admin.students') }}" class="btn-secondary">
-                                        Clear
-                                    </a>
+                                <button type="submit" class="btn-primary">
+                                    Search
+                                </button>
 
-                             
+                                <a href="{{ route('admin.students') }}" class="btn-secondary">
+                                    Clear
+                                </a>
+
+
 
                             </div>
 
@@ -416,7 +416,8 @@
                                     {{-- View --}}
                                     <td>
 
-                                        <a href="{{ route('admin.students.show', $student) }}" class="btn-edit btn-sm">
+                                        <a href="{{ route('admin.students.show', base64_encode($student->id)) }}"
+                                            class="btn-edit btn-sm">
                                             View
                                         </a>
 
