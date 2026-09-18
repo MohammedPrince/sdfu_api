@@ -24,10 +24,14 @@ class NotificationController extends Controller
     {
         $faculties = $this->adminService->getFaculties();
         $batches = $this->adminService->getBatches();
+        $notifications = $this->adminService->getPushedNotifications();
+
         return view('admin.notifications', compact(
             'faculties',
-            'batches'
+            'batches',
+            'notifications'
         ));
+
     }
 
 

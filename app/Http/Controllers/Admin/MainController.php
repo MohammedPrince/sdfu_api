@@ -195,7 +195,7 @@ class MainController extends Controller
         $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
         $isActive = $request->boolean('is_active');
 
-        $this->adminService->updateStudentStatus($student,$isActive);
+        $this->adminService->updateStudentStatus($student, $isActive);
 
         return redirect()
             ->route('admin.students.show', [
@@ -207,6 +207,39 @@ class MainController extends Controller
                 ? 'Student account activated successfully.'
                 : 'Student account disabled successfully.'
             );
+    }
+
+    public function reports(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_code' => ['nullable', 'string', 'max:50'],
+            'major_code' => ['nullable', 'string', 'max:50'],
+            'batch' => ['nullable', 'string', 'max:50'],
+            'semester' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+        ]);
+
+        $report = $this->adminService->getReports($validated);
+
+        $faculties = $this->adminService->getFaculties();
+        $batches = $this->adminService->getBatches();
+
+        $majors = collect();
+
+        if (!empty($validated['faculty_code'])) {
+            $majors = $this->adminService->getMajorsByFaculty(
+                $validated['faculty_code']
+            );
+        }
+
+        return view('admin.reports', [
+            'report' => $report,
+            'faculties' => $faculties,
+            'majors' => $majors,
+            'batches' => $batches,
+            'filters' => $validated,
+        ]);
     }
     //Studnets End
 

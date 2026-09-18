@@ -2555,7 +2555,7 @@ button,
     gap: 20px;
 }
 
-.student-details-grid > .admin-card {
+.student-details-grid>.admin-card {
     min-width: 0;
 }
 
@@ -2583,7 +2583,7 @@ button,
     padding: 4px 20px;
 }
 
-.details-list > div {
+.details-list>div {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2592,7 +2592,7 @@ button,
     border-bottom: 1px solid #f0e8e9;
 }
 
-.details-list > div:last-child {
+.details-list>div:last-child {
     border-bottom: 0;
 }
 
@@ -2669,11 +2669,11 @@ button,
     transition: .2s ease;
 }
 
-.switch input:checked + .slider {
+.switch input:checked+.slider {
     background: #7b1932;
 }
 
-.switch input:checked + .slider::before {
+.switch input:checked+.slider::before {
     transform: translateX(21px);
 }
 
@@ -2834,7 +2834,7 @@ button,
    STUDENT TABLE CONTAINER
    ========================================================= */
 
-.saved-settings-card > .table-responsive {
+.saved-settings-card>.table-responsive {
     margin: 0 20px;
     width: calc(100% - 40px);
 
@@ -2850,20 +2850,20 @@ button,
     scrollbar-color: #c9b7bc transparent;
 }
 
-.saved-settings-card > .table-responsive::-webkit-scrollbar {
+.saved-settings-card>.table-responsive::-webkit-scrollbar {
     height: 7px;
 }
 
-.saved-settings-card > .table-responsive::-webkit-scrollbar-track {
+.saved-settings-card>.table-responsive::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.saved-settings-card > .table-responsive::-webkit-scrollbar-thumb {
+.saved-settings-card>.table-responsive::-webkit-scrollbar-thumb {
     background: #c9b7bc;
     border-radius: 10px;
 }
 
-.saved-settings-card > .table-responsive::-webkit-scrollbar-thumb:hover {
+.saved-settings-card>.table-responsive::-webkit-scrollbar-thumb:hover {
     background: #a9949a;
 }
 
@@ -2956,6 +2956,7 @@ button,
 .students-table tbody td:first-child {
     padding-left: 17px;
 }
+
 .student-table-info {
     display: flex;
     align-items: center;
@@ -3093,7 +3094,7 @@ button,
    SPACE BELOW TABLE
    ========================================================= */
 
-.saved-settings-card > .table-responsive {
+.saved-settings-card>.table-responsive {
     margin-bottom: 22px;
 }
 
@@ -3166,5 +3167,519 @@ button,
     .form-actions {
         justify-content: flex-start;
     }
-
 }
+
+/* =========================================================
+   Reports
+   ========================================================= */
+
+.reports-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+
+/* =========================================================
+   Filters
+   ========================================================= */
+
+.reports-filter-card {
+    margin-bottom: 0;
+}
+
+.reports-filter-form {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.reports-filter-form .form-group {
+    min-width: 0;
+}
+
+.reports-filter-actions {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-top: 4px;
+}
+
+
+/* =========================================================
+   Main Statistics
+   ========================================================= */
+
+.report-stat-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(6, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.report-stat-card {
+    min-height: 130px;
+    padding: 18px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background: #fff;
+    border: 1px solid #eee1e4;
+    border-radius: 13px;
+
+    box-shadow: 0 3px 12px rgba(75, 35, 43, .035);
+}
+
+.report-stat-card span {
+    color: #927f84;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.report-stat-card strong {
+    margin-top: 8px;
+
+    color: #74152d;
+    font-size: 27px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.report-stat-card small {
+    margin-top: 8px;
+
+    color: #a4979a;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   Two Columns
+   ========================================================= */
+
+.reports-two-column {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr) minmax(0, 1fr);
+
+    gap: 24px;
+}
+
+.report-card {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   Report Lists
+   ========================================================= */
+
+.report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    margin-top: 4px;
+}
+
+.report-list-row {
+    min-height: 46px;
+    padding: 8px 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #f1e9eb;
+}
+
+.report-list-row:last-child {
+    border-bottom: 0;
+}
+
+.report-list-row strong {
+    color: #5d484e;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.report-list-row span {
+    min-width: 34px;
+
+    text-align: right;
+
+    color: #74152d;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   Semester
+   ========================================================= */
+
+.semester-report-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+.semester-report-item {
+    min-height: 75px;
+    padding: 12px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background: #faf6f7;
+    border: 1px solid #eee1e4;
+    border-radius: 10px;
+}
+
+.semester-report-item span {
+    color: #907e83;
+    font-size: 10px;
+}
+
+.semester-report-item strong {
+    margin-top: 5px;
+
+    color: #74152d;
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   Application
+   ========================================================= */
+
+.application-report-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(6, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+.application-report-grid>div {
+    min-height: 90px;
+    padding: 14px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background: #faf6f7;
+    border: 1px solid #eee1e4;
+    border-radius: 10px;
+}
+
+.application-report-grid span {
+    color: #938186;
+    font-size: 10px;
+}
+
+.application-report-grid strong {
+    margin-top: 7px;
+
+    color: #74152d;
+    font-size: 20px;
+}
+
+.report-success {
+    color: #34704b !important;
+}
+
+.report-danger {
+    color: #9b4350 !important;
+}
+
+
+/* =========================================================
+   Devices / Notifications
+   ========================================================= */
+
+.device-summary {
+    display: flex;
+    gap: 10px;
+
+    margin-bottom: 16px;
+}
+
+.device-summary>div {
+    flex: 1;
+
+    padding: 13px;
+
+    background: #faf6f7;
+    border: 1px solid #eee1e4;
+    border-radius: 10px;
+}
+
+.device-summary span {
+    display: block;
+
+    color: #958388;
+    font-size: 10px;
+}
+
+.device-summary strong {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #74152d;
+    font-size: 20px;
+}
+
+
+/* =========================================================
+   Visitors
+   ========================================================= */
+
+.visitor-report-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+.visitor-report-grid>div {
+    padding: 15px;
+
+    background: #faf6f7;
+    border: 1px solid #eee1e4;
+    border-radius: 10px;
+}
+
+.visitor-report-grid span {
+    display: block;
+
+    color: #938186;
+    font-size: 10px;
+}
+
+.visitor-report-grid strong {
+    display: block;
+
+    margin-top: 6px;
+
+    color: #74152d;
+    font-size: 23px;
+}
+
+
+/* =========================================================
+   Visitor Chart
+   ========================================================= */
+
+.visitor-bars {
+    height: 190px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 14px;
+
+    margin-top: 30px;
+    padding: 0 10px 4px;
+
+    border-bottom: 1px solid #eee1e4;
+}
+
+.visitor-bar-item {
+    height: 100%;
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.visitor-bar-value {
+    min-height: 16px;
+
+    margin-bottom: 6px;
+
+    color: #74152d;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.visitor-bar-track {
+    width: 100%;
+    max-width: 38px;
+    height: 125px;
+
+    display: flex;
+    align-items: flex-end;
+
+    background: #f6edef;
+    border-radius: 7px 7px 3px 3px;
+    overflow: hidden;
+}
+
+.visitor-bar-fill {
+    width: 100%;
+
+    min-height: 2px;
+
+    background: #8b3047;
+    border-radius: 7px 7px 2px 2px;
+
+    transition: height .25s ease;
+}
+
+.visitor-bar-item>span {
+    margin-top: 8px;
+
+    color: #95868a;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   Reports Table
+   ========================================================= */
+
+.reports-table {
+    min-width: 760px;
+}
+
+.reports-table tbody td {
+    height: 58px;
+}
+
+
+/* =========================================================
+   Empty
+   ========================================================= */
+
+.report-empty {
+    padding: 30px 10px;
+
+    text-align: center;
+
+    color: #a09296;
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1300px) {
+
+    .report-stat-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .application-report-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .reports-filter-form {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 1000px) {
+
+    .reports-two-column {
+        grid-template-columns: 1fr;
+    }
+
+    .reports-filter-form {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .report-stat-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .reports-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .application-report-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .semester-report-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .visitor-report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .device-summary {
+        flex-direction: column;
+    }
+
+    .reports-filter-actions {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* =========================================================
+   Print
+   ========================================================= */
+
+@media print {
+
+    .admin-sidebar,
+    .admin-header,
+    .reports-filter-card,
+    .btn,
+    button {
+        display: none !important;
+    }
+
+    .reports-page {
+        gap: 15px;
+    }
+
+    .reports-two-column {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-card,
+    .report-stat-card {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    body {
+        background: #fff !important;
+    }
+}
+

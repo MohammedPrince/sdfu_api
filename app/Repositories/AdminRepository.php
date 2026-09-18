@@ -6,10 +6,12 @@ use App\Helpers\Helper;
 use App\Models\Notification;
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Models\Visitor;
 use App\Services\ExternalDatabaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
 class AdminRepository
 {
@@ -460,6 +462,498 @@ class AdminRepository
                 'timetable_active' => $isActive,
             ]
         );
+    }
+
+    public function getReports(array $filters = []): array
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Date Range
+        |--------------------------------------------------------------------------
+        */
+
+        $dateFrom = !empty($filters['date_from'])
+            ? Carbon::parse($filters['date_from'])->startOfDay()
+            : now()->startOfMonth();
+
+        $dateTo = !empty($filters['date_to'])
+            ? Carbon::parse($filters['date_to'])->endOfDay()
+            : now()->endOfDay();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student Query
+        |--------------------------------------------------------------------------
+        */
+
+        $studentQuery = User::query()
+            ->where('role_id', 2);
+
+
+        if (!empty($filters['faculty_code'])) {
+            $studentQuery->where(
+                'faculty_code',
+                $filters['faculty_code']
+            );
+        }
+
+
+        if (!empty($filters['major_code'])) {
+            $studentQuery->where(
+                'major_code',
+                $filters['major_code']
+            );
+        }
+
+
+        if (!empty($filters['batch'])) {
+            $studentQuery->where(
+                'batch',
+                $filters['batch']
+            );
+        }
+
+
+        if (!empty($filters['semester'])) {
+            $studentQuery->where(
+                'semester',
+                $filters['semester']
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Basic Student Statistics
+        |--------------------------------------------------------------------------
+        */
+
+        $totalStudents = (clone $studentQuery)->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | System Settings
+        |--------------------------------------------------------------------------
+        */
+
+        $settingsQuery = SystemSetting::query();
+
+
+        if (!empty($filters['faculty_code'])) {
+            $settingsQuery->where(
+                'faculty_code',
+                $filters['faculty_code']
+            );
+        }
+
+
+        if (!empty($filters['major_code'])) {
+            $settingsQuery->where(
+                'major_code',
+                $filters['major_code']
+            );
+        }
+
+
+        if (!empty($filters['batch'])) {
+            $settingsQuery->where(
+                'batch',
+                $filters['batch']
+            );
+        }
+
+
+        if (!empty($filters['semester'])) {
+            $settingsQuery->where(
+                'semester',
+                $filters['semester']
+            );
+        }
+
+
+        $settings = $settingsQuery->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application Status
+        |--------------------------------------------------------------------------
+        */
+
+        $activeSettings = $settings
+            ->where('api_active', true)
+            ->count();
+
+        $inactiveSettings = $settings
+            ->where('api_active', false)
+            ->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student Account Status
+        |
+        | Status is determined from SystemSetting.api_active
+        |--------------------------------------------------------------------------
+        */
+
+        $activeStudents = 0;
+        $disabledStudents = 0;
+
+        $settingsMap = $settings->keyBy(function ($setting) {
+
+            return implode('|', [
+                $setting->faculty_code,
+                $setting->major_code,
+                $setting->batch,
+                $setting->semester,
+            ]);
+
+        });
+
+
+        foreach ((clone $studentQuery)->get() as $student) {
+
+            $key = implode('|', [
+                $student->faculty_code,
+                $student->major_code,
+                $student->batch,
+                $student->semester,
+            ]);
+
+            $setting = $settingsMap->get($key);
+
+            if ($setting && (bool) $setting->api_active) {
+                $activeStudents++;
+            } else {
+                $disabledStudents++;
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty Distribution
+        |--------------------------------------------------------------------------
+        */
+
+        $facultyDistribution = (clone $studentQuery)
+            ->selectRaw('faculty_code, COUNT(*) as total')
+            ->groupBy('faculty_code')
+            ->orderByDesc('total')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Major Distribution
+        |--------------------------------------------------------------------------
+        */
+
+        $majorDistribution = (clone $studentQuery)
+            ->selectRaw('major_code, COUNT(*) as total')
+            ->groupBy('major_code')
+            ->orderByDesc('total')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Batch Distribution
+        |--------------------------------------------------------------------------
+        */
+
+        $batchDistribution = (clone $studentQuery)
+            ->selectRaw('batch, COUNT(*) as total')
+            ->groupBy('batch')
+            ->orderBy('batch')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Semester Distribution
+        |--------------------------------------------------------------------------
+        */
+
+        $semesterDistribution = (clone $studentQuery)
+            ->selectRaw('semester, COUNT(*) as total')
+            ->groupBy('semester')
+            ->orderBy('semester')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Devices
+        |--------------------------------------------------------------------------
+        */
+
+        $deviceQuery = UserDevice::query()
+            ->whereHas('user', function ($query) use ($filters) {
+
+                $query->where('role_id', 2);
+
+                if (!empty($filters['faculty_code'])) {
+                    $query->where(
+                        'faculty_code',
+                        $filters['faculty_code']
+                    );
+                }
+
+                if (!empty($filters['major_code'])) {
+                    $query->where(
+                        'major_code',
+                        $filters['major_code']
+                    );
+                }
+
+                if (!empty($filters['batch'])) {
+                    $query->where(
+                        'batch',
+                        $filters['batch']
+                    );
+                }
+
+                if (!empty($filters['semester'])) {
+                    $query->where(
+                        'semester',
+                        $filters['semester']
+                    );
+                }
+            });
+
+
+        $totalDevices = (clone $deviceQuery)->count();
+
+        $activeDevices = (clone $deviceQuery)
+            ->where('is_active', true)
+            ->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Device Types
+        |--------------------------------------------------------------------------
+        */
+
+        $deviceTypes = (clone $deviceQuery)
+            ->selectRaw(
+                "COALESCE(device_type, 'Unknown') as device_type, COUNT(*) as total"
+            )
+            ->groupBy('device_type')
+            ->orderByDesc('total')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notifications
+        |--------------------------------------------------------------------------
+        */
+
+        $notificationQuery = Notification::query()
+            ->whereBetween('created_at', [
+                $dateFrom,
+                $dateTo,
+            ]);
+
+
+        $totalNotifications = (clone $notificationQuery)->count();
+
+        $readNotifications = (clone $notificationQuery)
+            ->whereNotNull('read_at')
+            ->count();
+
+        $unreadNotifications = (clone $notificationQuery)
+            ->whereNull('read_at')
+            ->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Types
+        |--------------------------------------------------------------------------
+        */
+
+        $notificationTypes = (clone $notificationQuery)
+            ->selectRaw(
+                "COALESCE(type, 'general') as type, COUNT(*) as total"
+            )
+            ->groupBy('type')
+            ->orderByDesc('total')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Visitors
+        |--------------------------------------------------------------------------
+        */
+
+        $visitorsToday = Visitor::whereDate(
+            'created_at',
+            today()
+        )->count();
+
+
+        $visitorsMonth = Visitor::whereYear(
+            'created_at',
+            now()->year
+        )
+            ->whereMonth(
+                'created_at',
+                now()->month
+            )
+            ->count();
+
+
+        $visitorsTotal = Visitor::count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Visitor Activity
+        |--------------------------------------------------------------------------
+        */
+
+        $visitorActivity = collect();
+
+        for ($i = 6; $i >= 0; $i--) {
+
+            $date = now()->subDays($i);
+
+            $visitorActivity->push([
+                'date' => $date->format('d M'),
+                'total' => Visitor::whereDate(
+                    'created_at',
+                    $date->toDateString()
+                )->count(),
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recent Student Activity
+        |--------------------------------------------------------------------------
+        */
+
+        $recentActivity = UserDevice::query()
+            ->with([
+                'user:id,name,stud_index,faculty_code,major_code,batch,semester',
+            ])
+            ->whereNotNull('last_seen_at')
+            ->whereHas('user', function ($query) use ($filters) {
+
+                $query->where('role_id', 2);
+
+                if (!empty($filters['faculty_code'])) {
+                    $query->where(
+                        'faculty_code',
+                        $filters['faculty_code']
+                    );
+                }
+
+                if (!empty($filters['major_code'])) {
+                    $query->where(
+                        'major_code',
+                        $filters['major_code']
+                    );
+                }
+
+                if (!empty($filters['batch'])) {
+                    $query->where(
+                        'batch',
+                        $filters['batch']
+                    );
+                }
+
+                if (!empty($filters['semester'])) {
+                    $query->where(
+                        'semester',
+                        $filters['semester']
+                    );
+                }
+            })
+            ->orderByDesc('last_seen_at')
+            ->take(8)
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return Report
+        |--------------------------------------------------------------------------
+        */
+
+        return [
+            'students' => [
+                'total' => $totalStudents,
+                'active' => $activeStudents,
+                'disabled' => $disabledStudents,
+            ],
+
+            'application' => [
+                'total' => $settings->count(),
+                'active' => $activeSettings,
+                'inactive' => $inactiveSettings,
+
+                'fee_active' => $settings
+                    ->where('fee_active', true)
+                    ->count(),
+
+                'result_active' => $settings
+                    ->where('result_active', true)
+                    ->count(),
+
+                'timetable_active' => $settings
+                    ->where('timetable_active', true)
+                    ->count(),
+            ],
+
+            'faculty_distribution' => $facultyDistribution,
+
+            'major_distribution' => $majorDistribution,
+
+            'batch_distribution' => $batchDistribution,
+
+            'semester_distribution' => $semesterDistribution,
+
+            'devices' => [
+                'total' => $totalDevices,
+                'active' => $activeDevices,
+            ],
+
+            'device_types' => $deviceTypes,
+
+            'notifications' => [
+                'total' => $totalNotifications,
+                'read' => $readNotifications,
+                'unread' => $unreadNotifications,
+            ],
+
+            'notification_types' => $notificationTypes,
+
+            'visitors' => [
+                'today' => $visitorsToday,
+                'month' => $visitorsMonth,
+                'total' => $visitorsTotal,
+            ],
+
+            'visitor_activity' => $visitorActivity,
+
+            'recent_activity' => $recentActivity,
+        ];
+    }
+
+    public function getPushedNotifications()
+    {
+        return Notification::with('user')
+            ->latest('created_at')
+            ->paginate(10);
     }
 
 

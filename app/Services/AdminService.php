@@ -90,6 +90,11 @@ class AdminService
     }
 
     //Studnets Start
+    public function getPushedNotifications()
+    {
+        return $this->adminRepository->getPushedNotifications();
+    }
+
     public function getStudents($data)
     {
         return $this->adminRepository->getStudents($data);
@@ -108,6 +113,11 @@ class AdminService
     public function updateStudentStatus($student, $isActive): void
     {
         $this->adminRepository->updateStudentStatus($student, $isActive);
+    }
+
+    public function getReports(array $filters = []): array
+    {
+        return $this->adminRepository->getReports($filters);
     }
     //Studnets End
 

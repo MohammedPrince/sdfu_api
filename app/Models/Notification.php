@@ -25,4 +25,11 @@ class Notification extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getPushedNotifications()
+    {
+        return Notification::with('user')
+            ->latest('created_at')
+            ->paginate(10);
+    }
 }

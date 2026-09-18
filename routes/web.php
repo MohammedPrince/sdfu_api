@@ -51,6 +51,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/students/{studentId}', [MainController::class, 'showStudents'])->name('students.show');
         Route::patch('/students/{studentId}/status', [MainController::class, 'updateStudentStatus'])->name('students.status');
 
+        //Reports
+        Route::get('/reports', [MainController::class, 'reports'])->name('reports');
+
         //Get majors based of faculty_code. JS
         Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');
 

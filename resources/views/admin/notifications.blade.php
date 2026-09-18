@@ -10,131 +10,197 @@
 
     <div class="manage-page">
 
-        {{-- Success Message --}}
+        {{-- =========================================================
+             SUCCESS MESSAGE
+             ========================================================= --}}
+
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
 
-        {{-- Error Message --}}
+
+        {{-- =========================================================
+             ERROR MESSAGE
+             ========================================================= --}}
+
         @if ($errors->any())
+
             <div class="alert alert-danger">
+
                 <ul>
+
                     @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                        <li>
+                            {{ $error }}
+                        </li>
                     @endforeach
+
                 </ul>
+
             </div>
+
         @endif
 
 
-        {{-- ========================================================= --}}
-        {{-- NOTIFICATION CARDS --}}
-        {{-- ========================================================= --}}
+        {{-- =========================================================
+             NOTIFICATION CARDS
+             ========================================================= --}}
 
         <div class="notification-grid">
 
-            {{-- ===================================================== --}}
-            {{-- LEFT: PUSH TO ALL STUDENTS --}}
-            {{-- ===================================================== --}}
+
+            {{-- =====================================================
+                 LEFT: PUSH TO ALL STUDENTS
+                 ===================================================== --}}
 
             <div class="admin-card">
 
                 <div class="admin-card-header">
+
                     <div>
-                        <h3>Push to All Students</h3>
+
+                        <h3>
+                            Push to All Students
+                        </h3>
 
                         <p>
                             Send a notification to all students matching the selected
                             faculty, major, batch and semester.
                         </p>
+
                     </div>
+
                 </div>
 
+
                 <form method="POST" action="{{ route('admin.notifications.push') }}">
+
                     @csrf
+
+
+                    {{-- =================================================
+                         ACADEMIC GROUP
+                         ================================================= --}}
 
                     <div class="settings-section">
 
-                        <h4>Academic Group</h4>
+                        <h4>
+                            Academic Group
+                        </h4>
+
 
                         <div class="form-grid">
 
+
                             {{-- Faculty --}}
+
                             <div class="form-group">
+
                                 <label for="faculty_code">
                                     Faculty
                                 </label>
 
+
                                 <select name="faculty_code" id="faculty_code" class="form-control" required>
+
                                     <option value="">
                                         Select Faculty
                                     </option>
 
+
                                     @foreach ($faculties as $faculty)
                                         <option value="{{ $faculty->faculty_code }}"
                                             {{ old('faculty_code') == $faculty->faculty_code ? 'selected' : '' }}>
+
                                             {{ $faculty->faculty_desc_e }}
+
                                         </option>
                                     @endforeach
+
                                 </select>
+
                             </div>
 
 
                             {{-- Major --}}
+
                             <div class="form-group">
+
                                 <label for="major_code">
                                     Major
                                 </label>
 
+
                                 <select name="major_code" id="major_code" class="form-control" required disabled>
+
                                     <option value="">
                                         Select Major
                                     </option>
+
                                 </select>
+
                             </div>
 
 
                             {{-- Batch --}}
+
                             <div class="form-group">
+
                                 <label for="batch">
                                     Batch
                                 </label>
 
+
                                 <select name="batch" id="batch" class="form-control" required>
+
                                     <option value="">
                                         Select Batch
                                     </option>
 
+
                                     @foreach ($batches as $batch)
                                         <option value="{{ $batch->batch }}"
                                             {{ old('batch') == $batch->batch ? 'selected' : '' }}>
+
                                             {{ $batch->batch }}
+
                                         </option>
                                     @endforeach
+
                                 </select>
+
                             </div>
 
 
                             {{-- Semester --}}
+
                             <div class="form-group">
+
                                 <label for="semester">
                                     Semester
                                 </label>
 
+
                                 <select name="semester" id="semester" class="form-control" required>
+
                                     <option value="">
                                         Select Semester
                                     </option>
 
+
                                     @for ($semester = 1; $semester <= 12; $semester++)
                                         <option value="{{ $semester }}"
                                             {{ old('semester') == $semester ? 'selected' : '' }}>
+
                                             {{ $semester }}
+
                                         </option>
                                     @endfor
+
                                 </select>
+
                             </div>
 
                         </div>
@@ -142,30 +208,47 @@
                     </div>
 
 
-                    {{-- Notification --}}
+                    {{-- =================================================
+                         NOTIFICATION
+                         ================================================= --}}
+
                     <div class="settings-section">
 
-                        <h4>Notification</h4>
+                        <h4>
+                            Notification
+                        </h4>
+
 
                         <div class="form-grid">
 
+
+                            {{-- Title --}}
+
                             <div class="form-group">
+
                                 <label for="title">
                                     Title
                                 </label>
 
+
                                 <input type="text" name="title" id="title" class="form-control"
                                     value="{{ old('title') }}" maxlength="255" required placeholder="Notification title">
+
                             </div>
 
 
+                            {{-- Body --}}
+
                             <div class="form-group">
+
                                 <label for="body">
                                     Body
                                 </label>
 
+
                                 <textarea name="body" id="body" class="form-control" rows="5" maxlength="2000" required
                                     placeholder="Write notification message...">{{ old('body') }}</textarea>
+
                             </div>
 
                         </div>
@@ -173,10 +256,16 @@
                     </div>
 
 
+                    {{-- Submit --}}
+
                     <div class="form-actions">
+
                         <button type="submit" class="btn-primary">
+
                             Push to All Students
+
                         </button>
+
                     </div>
 
                 </form>
@@ -184,21 +273,25 @@
             </div>
 
 
-            {{-- ===================================================== --}}
-            {{-- RIGHT: PUSH TO ONE STUDENT --}}
-            {{-- ===================================================== --}}
+            {{-- =====================================================
+                 RIGHT: PUSH TO ONE STUDENT
+                 ===================================================== --}}
 
             <div class="admin-card">
 
                 <div class="admin-card-header">
 
                     <div>
-                        <h3>Push to One Student</h3>
+
+                        <h3>
+                            Push to One Student
+                        </h3>
 
                         <p>
                             Send a notification directly to one student using the
                             student index number.
                         </p>
+
                     </div>
 
                 </div>
@@ -209,9 +302,16 @@
                     @csrf
 
 
+                    {{-- =================================================
+                         STUDENT
+                         ================================================= --}}
+
                     <div class="settings-section">
 
-                        <h4>Student</h4>
+                        <h4>
+                            Student
+                        </h4>
+
 
                         <div class="form-grid">
 
@@ -220,6 +320,7 @@
                                 <label for="student_index">
                                     Student Index
                                 </label>
+
 
                                 <input type="text" name="student_index" id="student_index" class="form-control"
                                     value="{{ old('student_index') }}" maxlength="100" required
@@ -232,12 +333,21 @@
                     </div>
 
 
-                    {{-- Notification --}}
+                    {{-- =================================================
+                         NOTIFICATION
+                         ================================================= --}}
+
                     <div class="settings-section">
 
-                        <h4>Notification</h4>
+                        <h4>
+                            Notification
+                        </h4>
+
 
                         <div class="form-grid">
+
+
+                            {{-- Title --}}
 
                             <div class="form-group">
 
@@ -245,17 +355,21 @@
                                     Title
                                 </label>
 
+
                                 <input type="text" name="title" id="one_title" class="form-control"
                                     value="{{ old('title') }}" maxlength="255" required placeholder="Notification title">
 
                             </div>
 
 
+                            {{-- Body --}}
+
                             <div class="form-group">
 
                                 <label for="one_body">
                                     Body
                                 </label>
+
 
                                 <textarea name="body" id="one_body" class="form-control" rows="5" maxlength="2000" required
                                     placeholder="Write notification message...">{{ old('body') }}</textarea>
@@ -266,10 +380,15 @@
 
                     </div>
 
+
+                    {{-- Submit --}}
+
                     <div class="form-actions">
 
                         <button type="submit" class="btn-primary">
+
                             Push Notification
+
                         </button>
 
                     </div>
@@ -280,7 +399,254 @@
 
         </div>
 
+
+        {{-- =========================================================
+             PUSHED NOTIFICATIONS
+             ========================================================= --}}
+
+         <div class="admin-card saved-settings-card">
+
+
+            {{-- =====================================================
+                 HEADER
+                 ===================================================== --}}
+
+            <div class="admin-card-header">
+
+                <div>
+
+                    <h3>
+                        Pushed Notifications
+                    </h3>
+
+                    <p>
+                        Notification history sent to students through the
+                        Student Desk application.
+                    </p>
+
+                </div>
+
+
+                <div class="notifications-count">
+
+                    <strong>
+                        {{ number_format($notifications->total()) }}
+                    </strong>
+
+                    <span>
+                        {{ $notifications->total() === 1 ? 'Notification' : 'Notifications' }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            {{-- =====================================================
+                 TABLE
+                 ===================================================== --}}
+
+            <div class="table-responsive notification-history-wrapper">
+
+                <table class="settings-table notification-history-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Student
+                            </th>
+
+                            <th>
+                                Student Index
+                            </th>
+
+                            <th>
+                                Title
+                            </th>
+
+                            <th>
+                                Message
+                            </th>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Sent At
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @forelse ($notifications as $notification)
+                            <tr>
+
+
+                                {{-- Student --}}
+
+                                <td>
+
+                                    @if ($notification->user)
+                                        <div class="notification-student-info">
+
+                                         
+
+                                            <div>
+
+                                                <strong>
+                                                    {{ $notification->user->name ?? 'Student' }}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+                                    @else
+                                        <span class="notification-deleted-user">
+                                            Student account removed
+                                        </span>
+                                    @endif
+
+                                </td>
+
+
+                                {{-- Student Index --}}
+
+                                <td>
+
+                                    @if ($notification->user)
+                                        <span class="notification-student-index">
+                                            {{ $notification->user->stud_index }}
+                                        </span>
+                                    @else
+                                        <span class="notification-muted">
+                                            —
+                                        </span>
+                                    @endif
+
+                                </td>
+
+
+                                {{-- Title --}}
+
+                                <td>
+
+                                    <strong class="notification-title">
+                                        {{ $notification->title }}
+                                    </strong>
+
+                                </td>
+
+
+                                {{-- Body --}}
+
+                                <td>
+
+                                    <span class="notification-body">
+                                        {{ $notification->body }}
+                                    </span>
+
+                                </td>
+
+
+                                {{-- Type --}}
+
+                                <td>
+
+                                    <span class="notification-type">
+                                        {{ ucfirst($notification->type ?? 'general') }}
+                                    </span>
+
+                                </td>
+
+
+                                {{-- Status --}}
+
+                                <td>
+
+                                    @if ($notification->read_at)
+                                        <span class="notification-status read">
+                                            Read
+                                        </span>
+                                    @else
+                                        <span class="notification-status unread">
+                                            Unread
+                                        </span>
+                                    @endif
+
+                                </td>
+
+
+                                {{-- Sent At --}}
+
+                                <td>
+
+                                    <div class="notification-date">
+
+                                        <strong>
+                                            {{ $notification->created_at->format('d M Y') }}
+                                        </strong>
+
+                                        <span>
+                                            {{ $notification->created_at->format('h:i A') }}
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        @empty
+
+                            <tr>
+
+                                <td colspan="7" class="notifications-empty">
+
+                                    No pushed notifications yet.
+
+                                </td>
+
+                            </tr>
+                        @endforelse
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            {{-- =====================================================
+                 PAGINATION
+                 ===================================================== --}}
+
+            @if ($notifications->hasPages())
+                <div class="notifications-pagination">
+
+                    {{ $notifications->withQueryString()->links() }}
+
+                </div>
+            @endif
+
+        </div>
+
     </div>
+
+
+    {{-- =========================================================
+         SCRIPTS
+         ========================================================= --}}
 
     @push('scripts')
         <script>
