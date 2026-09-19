@@ -29,16 +29,20 @@ class StudentRepository
 
     public function login($data)
     {
-
         $studIndex = trim($data['stud_index'] ?? '');
         $studPassword = $data['stud_password'] ?? '';
 
         $rateLimitKey = 'student-login:' . strtolower($studIndex) . '|' . request()->ip();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Rate limit
+        |--------------------------------------------------------------------------
+        */
+
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
 
             $seconds = RateLimiter::availableIn($rateLimitKey);
-
             $minutes = ceil($seconds / 60);
 
             return [
@@ -48,6 +52,12 @@ class StudentRepository
                 'retry_after' => $seconds,
             ];
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
 
         if (empty($studIndex) || empty($studPassword)) {
 
@@ -60,178 +70,179 @@ class StudentRepository
             ];
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Try local users table
+        |--------------------------------------------------------------------------
+        */
 
-
-
-        //Check local in users table
-        if (Auth::attempt(['stud_index' => $studIndex, 'password' => $studPassword,])) {
-
-            //dd('local tabel');
+        if (
+            Auth::attempt([
+                'stud_index' => $studIndex,
+                'password' => $studPassword,
+                'role_id' => 2,
+            ])
+        ) {
 
             $user = Auth::user();
-            $studentHelper = Helper::studentData();
 
-            $stud_full_name = $studentHelper['stud_full_name'];
-            $faculty_code = $studentHelper['faculty_code'];
-            $major_code = $studentHelper['major_code'];
-            $batch = $studentHelper['batch'];
-            $semester = $studentHelper['semester'];
-
-            $phone = $studentHelper['phone'];
-            $email = $studentHelper['email'];
-            $gender = $studentHelper['gender'];
-
-            $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-            $major_desc_e = $this->externalDatabase->getMajorName($major_code);
-
-            $expiresAt = Carbon::now()->addYear();
-            $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
-
-
-            //Check application status Active/Disable
-            $applicationStatus = Helper::checkApplicationStatus();
-            if (!$applicationStatus['success']) {
-                return $applicationStatus;
-            }
-
-            $settings = $applicationStatus['settings'];
-
-            //App status
-            $appStatus = [
-                'active' => (bool) $settings->api_active,
-                'tabs_status' => [
-                    'fee' => (bool) $settings->fee_active,
-                    'result' => (bool) $settings->result_active,
-                    'timetable' => (bool) $settings->timetable_active,
-                ],
-            ];
-
-            $LoginDetails = [
-                'stud_index' => $studIndex,
-                'stud_full_name' => $stud_full_name,
-                'stud_email' => $email ?? null,
-                'stud_phone' => $phone,
-                'faculty_code' => $faculty_code ?? null,
-                'major_code' => $major_code ?? null,
-                'faculty' => $faculty_desc_e ?? null,
-                'major' => $major_desc_e ?? null,
-                'batch' => $batch ?? null,
-                'sem' => (int) $semester,
-                'gender' => $gender ?? null,
-                'token' => $token->plainTextToken,
-                'token_expires_at' => $expiresAt->toISOString(),
-
-                // App status
-                'app_status' => $appStatus,
-            ];
-        }
-
-        $student = $this->externalDatabase->getMoodleStudent($studIndex);
-        if (!$student) {
-
-            RateLimiter::hit($rateLimitKey, 300);
-
-            return [
-                'success' => false,
-                'code' => 404,
-                'message' => 'Student Index Not Exists',
-            ];
-        }
-
-        if (!password_verify($studPassword, $student->password)) {
-
-            RateLimiter::hit($rateLimitKey, 300);
-
-            $attempts = RateLimiter::attempts($rateLimitKey);
-            $remaining = max(0, 3 - $attempts);
-
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Invalid Student Index or Password',
-                'attempts_remaining' => $remaining,
-            ];
-        }
-
-        RateLimiter::clear($rateLimitKey);
-
-        $studentDetails = $this->externalDatabase->getStudentDetails($studIndex);
-
-        if (!$studentDetails) {
-
-            return [
-                'success' => false,
-                'code' => 404,
-                'message' => 'Student Profile Not Found',
-            ];
-        }
-
-        $stud_full_name =
-            $studentDetails->stud_name . ' ' .
-            $studentDetails->stud_surname . ' ' .
-            $studentDetails->familyname . ' ' .
-            $studentDetails->lastName;
-
-        $faculty_desc_e = $this->externalDatabase->getFacultyName($studentDetails->faculty_code);
-        $major_desc_e = $this->externalDatabase->getMajorName($studentDetails->major_code);
-        $phone = $studentDetails->stud_tel_mobile ?? null;
-        $gender = match ((int) ($studentDetails->sex_code ?? 0)) {
-            1 => 'Male',
-            2 => 'Female',
-            3 => 'Other',
-            default => null,
-        };
-
-        $user = User::where('stud_index', $studIndex)->first();
-
-        if (!$user) {
-
-            $user = User::create([
-                'stud_index' => $studIndex,
-                'name' => $stud_full_name,
-                'email' => !empty($student->email) ? $student->email : null,
-                'phone' => $phone,
-                'faculty_code' => $studentDetails->faculty_code ?? null,
-                'major_code' => $studentDetails->major_code ?? null,
-                'batch' => $studentDetails->batch ?? null,
-                'semester' => (int) $studentDetails->curr_sem,
-                'password' => Hash::make(Str::random(64)),
-                'gender' => $gender,
-                'role_id' => 2,
-            ]);
+            RateLimiter::clear($rateLimitKey);
 
         } else {
 
-            $user->update([
-                'name' => $stud_full_name,
-                'phone' => $phone,
-                'email' => !empty($student->email) ? $student->email : $user->email,
-                'faculty_code' => $studentDetails->faculty_code ?? null,
-                'major_code' => $studentDetails->major_code ?? null,
-                'batch' => $studentDetails->batch ?? null,
-                'semester' => (int) $studentDetails->curr_sem,
-                'gender' => $gender,
-            ]);
+            /*
+            |--------------------------------------------------------------------------
+            | Try Moodle
+            |--------------------------------------------------------------------------
+            */
+
+            $student = $this->externalDatabase->getMoodleStudent($studIndex);
+
+            if (!$student) {
+
+                RateLimiter::hit($rateLimitKey, 300);
+
+                return [
+                    'success' => false,
+                    'code' => 404,
+                    'message' => 'Student Index Not Exists',
+                ];
+            }
+
+            if (!password_verify($studPassword, $student->password)) {
+
+                RateLimiter::hit($rateLimitKey, 300);
+
+                $attempts = RateLimiter::attempts($rateLimitKey);
+                $remaining = max(0, 3 - $attempts);
+
+                return [
+                    'success' => false,
+                    'code' => 401,
+                    'message' => 'Invalid Student Index or Password',
+                    'attempts_remaining' => $remaining,
+                ];
+            }
+
+            RateLimiter::clear($rateLimitKey);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get SIS student details
+            |--------------------------------------------------------------------------
+            */
+
+            $studentDetails = $this->externalDatabase->getStudentDetails($studIndex);
+
+            if (!$studentDetails) {
+
+                return [
+                    'success' => false,
+                    'code' => 404,
+                    'message' => 'Student Profile Not Found',
+                ];
+            }
+
+            $stud_full_name =
+                trim(
+                    $studentDetails->stud_name . ' ' .
+                    $studentDetails->stud_surname . ' ' .
+                    $studentDetails->familyname . ' ' .
+                    $studentDetails->lastName
+                );
+
+            $faculty_code = $studentDetails->faculty_code ?? null;
+            $major_code = $studentDetails->major_code ?? null;
+            $batch = $studentDetails->batch ?? null;
+            $semester = (int) ($studentDetails->curr_sem ?? 0);
+
+            $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
+
+            $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+
+            $phone = $studentDetails->stud_tel_mobile ?? null;
+
+            $gender = match ((int) ($studentDetails->sex_code ?? 0)) {
+                1 => 'Male',
+                2 => 'Female',
+                3 => 'Other',
+                default => null,
+            };
+
+            /*
+            |--------------------------------------------------------------------------
+            | Create or update local user
+            |--------------------------------------------------------------------------
+            */
+
+            $user = User::where('stud_index', $studIndex)->where('role_id', 2)->first();
+
+            if (!$user) {
+
+                $user = User::create([
+                    'stud_index' => $studIndex,
+                    'name' => $stud_full_name,
+                    'email' => !empty($student->email)
+                        ? $student->email
+                        : null,
+                    'phone' => $phone,
+                    'faculty_code' => $faculty_code,
+                    'major_code' => $major_code,
+                    'batch' => $batch,
+                    'semester' => $semester,
+                    'password' => Hash::make(Str::random(64)),
+                    'gender' => $gender,
+                    'role_id' => 2,
+                ]);
+
+            } else {
+
+                $user->update([
+                    'name' => $stud_full_name,
+                    'phone' => $phone,
+                    'email' => !empty($student->email)
+                        ? $student->email
+                        : $user->email,
+                    'faculty_code' => $faculty_code,
+                    'major_code' => $major_code,
+                    'batch' => $batch,
+                    'semester' => $semester,
+                    'gender' => $gender,
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Authenticate local user
+            |--------------------------------------------------------------------------
+            */
+
+            Auth::login($user);
         }
 
-        //Delete old token if exist
-        $user->tokens()->delete();
+        /*
+        |--------------------------------------------------------------------------
+        | Application status
+        |--------------------------------------------------------------------------
+        */
 
-        //Create new token
-        $expiresAt = Carbon::now()->addYear();
-        $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
-
-        //Check application status Active/Disable
         $applicationStatus = Helper::checkApplicationStatus();
+
         if (!$applicationStatus['success']) {
             return $applicationStatus;
         }
 
         $settings = $applicationStatus['settings'];
 
-        //App status
+        /*
+        |--------------------------------------------------------------------------
+        | App status
+        |--------------------------------------------------------------------------
+        */
+
         $appStatus = [
             'active' => (bool) $settings->api_active,
+
             'tabs_status' => [
                 'fee' => (bool) $settings->fee_active,
                 'result' => (bool) $settings->result_active,
@@ -239,21 +250,75 @@ class StudentRepository
             ],
         ];
 
+        /*
+        |--------------------------------------------------------------------------
+        | User information
+        |--------------------------------------------------------------------------
+        */
+
+        $user = Auth::user();
+
+        $stud_full_name = $user->name;
+        $faculty_code = $user->faculty_code;
+        $major_code = $user->major_code;
+        $batch = $user->batch;
+        $semester = $user->semester;
+        $phone = $user->phone;
+        $email = $user->email;
+        $gender = $user->gender;
+
+        $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
+
+        $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete old Sanctum tokens
+        |--------------------------------------------------------------------------
+        */
+
+        $user->tokens()->delete();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create new Sanctum token
+        |--------------------------------------------------------------------------
+        */
+
+        $expiresAt = Carbon::now()->addYear();
+
+        $token = $user->createToken(
+            'student-mobile-app',
+            ['*'],
+            $expiresAt
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login details
+        |--------------------------------------------------------------------------
+        */
+
         $LoginDetails = [
-            'stud_index' => $studIndex,
+            'stud_index' => $user->stud_index,
             'stud_full_name' => $stud_full_name,
-            'stud_email' => $studentDetails->stud_email ?? null,
+            'stud_email' => $email,
             'stud_phone' => $phone,
-            'faculty_code' => $studentDetails->faculty_code ?? null,
-            'major_code' => $studentDetails->major_code ?? null,
-            'faculty' => $faculty_desc_e ?? null,
-            'major' => $major_desc_e ?? null,
-            'batch' => $studentDetails->batch ?? null,
-            'sem' => (int) $studentDetails->curr_sem,
+
+            'faculty_code' => $faculty_code,
+            'major_code' => $major_code,
+
+            'faculty' => $faculty_desc_e,
+            'major' => $major_desc_e,
+
+            'batch' => $batch,
+            'sem' => (int) $semester,
+
             'gender' => $gender,
+
             'token' => $token->plainTextToken,
             'token_expires_at' => $expiresAt->toISOString(),
-            // App status
+
             'app_status' => $appStatus,
         ];
 
@@ -481,7 +546,6 @@ class StudentRepository
             'appStatus' => $appStatus,
         ];
     }
-
     public function getProfile()
     {
 
