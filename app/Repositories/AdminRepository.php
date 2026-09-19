@@ -327,7 +327,6 @@ class AdminRepository
                 ]);
             });
 
-
         $faculties = $this->externalDatabase->faculties()->keyBy('faculty_code');
         $majors = $this->externalDatabase->majors()->keyBy('major_code');
 
