@@ -515,7 +515,7 @@ class StudentRepository
 
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:result";
 
-        $payload = Cache::remember($cacheKey, 3600, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+       // $payload = Cache::remember($cacheKey, 3600, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
             $results = $this->externalDatabase->getStudentResult(
                 $stud_id,
                 $faculty_code,
@@ -562,7 +562,8 @@ class StudentRepository
                     'courses' => $courses,
                 ],
             ];
-        });
+
+       // }); Cache Comment
 
         if ($payload === null) {
             return [
