@@ -60,6 +60,9 @@ class StudentRepository
             ];
         }
 
+
+
+
         //Check local in users table
         if (Auth::attempt(['stud_index' => $studIndex, 'password' => $studPassword,])) {
 
@@ -84,6 +87,25 @@ class StudentRepository
             $expiresAt = Carbon::now()->addYear();
             $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
 
+
+            //Check application status Active/Disable
+            $applicationStatus = Helper::checkApplicationStatus();
+            if (!$applicationStatus['success']) {
+                return $applicationStatus;
+            }
+
+            $settings = $applicationStatus['settings'];
+
+            //App status
+            $appStatus = [
+                'active' => (bool) $settings->api_active,
+                'tabs_status' => [
+                    'fee' => (bool) $settings->fee_active,
+                    'result' => (bool) $settings->result_active,
+                    'timetable' => (bool) $settings->timetable_active,
+                ],
+            ];
+
             $LoginDetails = [
                 'stud_index' => $studIndex,
                 'stud_full_name' => $stud_full_name,
@@ -98,6 +120,9 @@ class StudentRepository
                 'gender' => $gender ?? null,
                 'token' => $token->plainTextToken,
                 'token_expires_at' => $expiresAt->toISOString(),
+
+                // App status
+                'app_status' => $appStatus,
             ];
         }
 
@@ -196,6 +221,24 @@ class StudentRepository
         $expiresAt = Carbon::now()->addYear();
         $token = $user->createToken('student-mobile-app', ['*'], $expiresAt);
 
+        //Check application status Active/Disable
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        $settings = $applicationStatus['settings'];
+
+        //App status
+        $appStatus = [
+            'active' => (bool) $settings->api_active,
+            'tabs_status' => [
+                'fee' => (bool) $settings->fee_active,
+                'result' => (bool) $settings->result_active,
+                'timetable' => (bool) $settings->timetable_active,
+            ],
+        ];
+
         $LoginDetails = [
             'stud_index' => $studIndex,
             'stud_full_name' => $stud_full_name,
@@ -210,6 +253,8 @@ class StudentRepository
             'gender' => $gender,
             'token' => $token->plainTextToken,
             'token_expires_at' => $expiresAt->toISOString(),
+            // App status
+            'app_status' => $appStatus,
         ];
 
         return [
@@ -562,7 +607,7 @@ class StudentRepository
                     'courses' => $courses,
                 ],
             ];
-       });
+        });
 
         if ($payload === null) {
             return [
