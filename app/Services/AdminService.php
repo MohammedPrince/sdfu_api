@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\AdminRepository;
+use Illuminate\Support\Collection;
 
 
 class AdminService
@@ -39,7 +40,7 @@ class AdminService
     }
 
     //Helpers functions
-    public function getFaculties()
+    public function getFaculties(): Collection
     {
         return $this->adminRepository->getFaculties();
     }

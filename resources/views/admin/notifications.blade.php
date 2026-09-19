@@ -404,7 +404,7 @@
              PUSHED NOTIFICATIONS
              ========================================================= --}}
 
-         <div class="admin-card saved-settings-card">
+        <div class="admin-card saved-settings-card">
 
 
             {{-- =====================================================
@@ -492,7 +492,6 @@
                         @forelse ($notifications as $notification)
                             <tr>
 
-
                                 {{-- Student --}}
 
                                 <td>
@@ -500,7 +499,6 @@
                                     @if ($notification->user)
                                         <div class="notification-student-info">
 
-                                         
 
                                             <div>
 
