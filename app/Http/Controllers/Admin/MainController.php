@@ -98,28 +98,7 @@ class MainController extends Controller
             'timetable_active' => ['required', 'boolean'],
         ]);
 
-        if (!empty($validated['id'])) {
-
-            $setting = SystemSetting::findOrFail($validated['id']);
-
-            $setting->update([
-                'faculty_code' => $validated['faculty_code'],
-                'major_code' => $validated['major_code'],
-                'batch' => $validated['batch'],
-                'semester' => $validated['semester'],
-
-                'api_active' => $request->boolean('api_active'),
-                'fee_active' => $request->boolean('fee_active'),
-                'result_active' => $request->boolean('result_active'),
-                'timetable_active' => $request->boolean('timetable_active'),
-            ]);
-
-            return redirect()
-                ->route('admin.manage')
-                ->with('success', 'Application settings updated successfully.');
-        }
-
-        SystemSetting::create([
+        $data = [
             'faculty_code' => $validated['faculty_code'],
             'major_code' => $validated['major_code'],
             'batch' => $validated['batch'],
@@ -129,11 +108,55 @@ class MainController extends Controller
             'fee_active' => $request->boolean('fee_active'),
             'result_active' => $request->boolean('result_active'),
             'timetable_active' => $request->boolean('timetable_active'),
-        ]);
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Edit existing setting
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($validated['id'])) {
+
+            $setting = SystemSetting::findOrFail($validated['id']);
+
+            $setting->update($data);
+
+            return redirect()
+                ->route('admin.manage')
+                ->with(
+                    'success',
+                    'Application settings updated successfully.'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create or update academic setting
+        |--------------------------------------------------------------------------
+        */
+
+        SystemSetting::updateOrCreate(
+            [
+                'faculty_code' => $validated['faculty_code'],
+                'major_code' => $validated['major_code'],
+                'batch' => $validated['batch'],
+                'semester' => $validated['semester'],
+            ],
+            [
+                'api_active' => $data['api_active'],
+                'fee_active' => $data['fee_active'],
+                'result_active' => $data['result_active'],
+                'timetable_active' => $data['timetable_active'],
+            ]
+        );
 
         return redirect()
             ->route('admin.manage')
-            ->with('success', 'Application settings saved successfully.');
+            ->with(
+                'success',
+                'Application settings saved successfully.'
+            );
     }
 
     public function getMajors(string $faculty_code)
