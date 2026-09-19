@@ -556,8 +556,8 @@ class StudentRepository
                 'studentDetails' => $studentDetails,
                 'semesterResult' => [
                     'semester' => $first['semester'],
-                    'gpa' => round((float) $first['gpa'], 2),
-                    'cgpa' => round((float) $first['cgpa']),
+                    'gpa' => number_format((float) $first['gpa'], 2, '.', ''),
+                    'cgpa' => number_format((float) $first['cgpa'], 2, '.', ''),
                     'status' => $first['status'],
                     'courses' => $courses,
                 ],
