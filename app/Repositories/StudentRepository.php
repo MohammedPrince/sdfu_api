@@ -25,7 +25,6 @@ class StudentRepository
     {
         $this->externalDatabase = new ExternalDatabaseService();
         $this->adminRepository = new AdminRepository();
-
     }
 
     public function login($data)
@@ -34,7 +33,6 @@ class StudentRepository
         $studPassword = $data['stud_password'] ?? '';
 
         $rateLimitKey = 'student-login:' . strtolower($studIndex) . '|' . request()->ip();
-
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
 
@@ -69,7 +67,6 @@ class StudentRepository
         ) {
 
             $user = Auth::user();
-
             RateLimiter::clear($rateLimitKey);
 
         } else {
@@ -129,7 +126,6 @@ class StudentRepository
             $semester = (int) ($studentDetails->curr_sem ?? 0);
 
             $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-
             $major_desc_e = $this->externalDatabase->getMajorName($major_code);
 
             $phone = $studentDetails->stud_tel_mobile ?? null;
@@ -253,6 +249,7 @@ class StudentRepository
             'studentDetails' => $LoginDetails,
         ];
     }
+
     public function mainData()
     {
 
@@ -264,6 +261,7 @@ class StudentRepository
 
         $studentHelper = Helper::studentData();
 
+        $user_id = $studentHelper['id'];
         $stud_id = $studentHelper['stud_id'];
         $stud_full_name = $studentHelper['stud_full_name'];
         $faculty_code = $studentHelper['faculty_code'];
@@ -448,6 +446,7 @@ class StudentRepository
         }
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
+        $notificationToggled = UserDevice::where('user_id', $user_id)->where('is_active', true)->exists();
 
         //App status
         $appStatus = [
@@ -458,6 +457,7 @@ class StudentRepository
                 'result' => (bool) $settings->result_active && !$resultMaintenanceMode,
                 'timetable' => (bool) $settings->timetable_active,
             ],
+            'notificationToggled' => $notificationToggled,
         ];
 
         return [
@@ -471,6 +471,7 @@ class StudentRepository
             'appStatus' => $appStatus,
         ];
     }
+
     public function getProfile()
     {
 
