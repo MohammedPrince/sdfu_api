@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Helper;
+use App\Models\Notification;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Repositories\AdminRepository;
@@ -13,7 +15,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
-use App\Helpers\Helper;
 
 class StudentRepository
 {
@@ -34,11 +35,6 @@ class StudentRepository
 
         $rateLimitKey = 'student-login:' . strtolower($studIndex) . '|' . request()->ip();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Rate limit
-        |--------------------------------------------------------------------------
-        */
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
 
@@ -53,12 +49,6 @@ class StudentRepository
             ];
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validation
-        |--------------------------------------------------------------------------
-        */
-
         if (empty($studIndex) || empty($studPassword)) {
 
             RateLimiter::hit($rateLimitKey, 300);
@@ -69,12 +59,6 @@ class StudentRepository
                 'message' => 'Student Index and Password are required',
             ];
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Try local users table
-        |--------------------------------------------------------------------------
-        */
 
         if (
             Auth::attempt([
@@ -89,12 +73,6 @@ class StudentRepository
             RateLimiter::clear($rateLimitKey);
 
         } else {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Try Moodle
-            |--------------------------------------------------------------------------
-            */
 
             $student = $this->externalDatabase->getMoodleStudent($studIndex);
 
@@ -125,12 +103,6 @@ class StudentRepository
             }
 
             RateLimiter::clear($rateLimitKey);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Get SIS student details
-            |--------------------------------------------------------------------------
-            */
 
             $studentDetails = $this->externalDatabase->getStudentDetails($studIndex);
 
@@ -169,12 +141,6 @@ class StudentRepository
                 default => null,
             };
 
-            /*
-            |--------------------------------------------------------------------------
-            | Create or update local user
-            |--------------------------------------------------------------------------
-            */
-
             $user = User::where('stud_index', $studIndex)->where('role_id', 2)->first();
 
             if (!$user) {
@@ -211,20 +177,8 @@ class StudentRepository
                 ]);
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Authenticate local user
-            |--------------------------------------------------------------------------
-            */
-
             Auth::login($user);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Application status
-        |--------------------------------------------------------------------------
-        */
 
         $applicationStatus = Helper::checkApplicationStatus();
 
@@ -233,12 +187,6 @@ class StudentRepository
         }
 
         $settings = $applicationStatus['settings'];
-
-        /*
-        |--------------------------------------------------------------------------
-        | App status
-        |--------------------------------------------------------------------------
-        */
 
         $appStatus = [
             'active' => (bool) $settings->api_active,
@@ -249,12 +197,6 @@ class StudentRepository
                 'timetable' => (bool) $settings->timetable_active,
             ],
         ];
-
-        /*
-        |--------------------------------------------------------------------------
-        | User information
-        |--------------------------------------------------------------------------
-        */
 
         $user = Auth::user();
 
@@ -268,22 +210,9 @@ class StudentRepository
         $gender = $user->gender;
 
         $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-
         $major_desc_e = $this->externalDatabase->getMajorName($major_code);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Delete old Sanctum tokens
-        |--------------------------------------------------------------------------
-        */
-
         $user->tokens()->delete();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create new Sanctum token
-        |--------------------------------------------------------------------------
-        */
 
         $expiresAt = Carbon::now()->addYear();
 
@@ -293,11 +222,6 @@ class StudentRepository
             $expiresAt
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Login details
-        |--------------------------------------------------------------------------
-        */
 
         $LoginDetails = [
             'stud_index' => $user->stud_index,
@@ -329,7 +253,6 @@ class StudentRepository
             'studentDetails' => $LoginDetails,
         ];
     }
-
     public function mainData()
     {
 
@@ -913,7 +836,7 @@ class StudentRepository
         // }
 
         //Update it on SDFU DB
-        $user->password = Hash::make($newPasswordConfirm);
+        $user->password = Hash::make($newPassword);
         $user->save();
 
         //Delete current user token
@@ -958,8 +881,185 @@ class StudentRepository
         }
     }
 
-
     //Notifications
+    public function getNotifications()
+    {
+        // Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        // Get authenticated student
+        $studentHelper = Helper::studentData();
+
+        if (!$studentHelper) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        // Helper::studentData() returns stud_id
+        $user_id = $studentHelper['id'];
+
+        // Get notifications for this student
+        $notifications = Notification::query()
+            ->where('user_id', $user_id)
+            ->latest('created_at')
+            ->paginate(20);
+
+        // Unread notification count
+        $unreadCount = Notification::query()
+            ->where('user_id', $user_id)
+            ->whereNull('read_at')
+            ->count();
+
+        // Format notification details
+        $notificationsDetails = $notifications->getCollection()
+            ->map(function ($notification) {
+
+                return [
+                    'id' => $notification->id,
+                    'title' => $notification->title,
+                    'body' => $notification->body,
+                    'type' => $notification->type,
+
+                    'is_read' => !is_null($notification->read_at),
+                    'read_at' => $notification->read_at,
+                    'created_at' => $notification->created_at?->toISOString(),
+                ];
+
+            })
+            ->values()
+            ->toArray();
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Notifications Retrieved Successfully',
+
+            'notificationsDetails' => [
+                'notifications' => $notificationsDetails,
+
+                'unread_count' => $unreadCount,
+
+                'pagination' => [
+                    'current_page' => $notifications->currentPage(),
+                    'per_page' => $notifications->perPage(),
+                    'total' => $notifications->total(),
+                    'last_page' => $notifications->lastPage(),
+                    'has_more' => $notifications->hasMorePages(),
+                ],
+            ],
+        ];
+    }
+
+    public function markNotificationAsRead($notificationId)
+    {
+        // Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        // Get authenticated student
+        $studentHelper = Helper::studentData();
+
+        if (!$studentHelper || !isset($studentHelper['user'])) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        $user_id = $studentHelper['user']->id;
+
+        // Find notification belonging to this student
+        $notification = Notification::query()
+            ->where('id', $notificationId)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if (!$notification) {
+            return [
+                'success' => false,
+                'code' => 404,
+                'message' => 'Notification not found',
+            ];
+        }
+
+        // Mark as read
+        if (is_null($notification->read_at)) {
+            $notification->update([
+                'read_at' => now(),
+            ]);
+        }
+
+        // Get remaining unread count
+        $unreadCount = Notification::query()
+            ->where('user_id', $user_id)
+            ->whereNull('read_at')
+            ->count();
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Notification marked as read successfully',
+            'notificationDetails' => [
+                'id' => $notification->id,
+                'is_read' => true,
+                'read_at' => $notification->fresh()->read_at?->toISOString(),
+            ],
+            'unread_count' => $unreadCount,
+        ];
+    }
+
+    public function markAllNotificationsAsRead()
+    {
+        // Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        // Get authenticated student
+        $studentHelper = Helper::studentData();
+
+        if (!$studentHelper || !isset($studentHelper['user'])) {
+            return [
+                'success' => false,
+                'code' => 401,
+                'message' => 'Student not authenticated',
+            ];
+        }
+
+        $user_id = $studentHelper['user']->id;
+
+        // Mark all unread notifications as read
+        $updatedCount = Notification::query()
+            ->where('user_id', $user_id)
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+            ]);
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'All notifications marked as read successfully',
+            'notificationDetails' => [
+                'updated_count' => $updatedCount,
+                'unread_count' => 0,
+            ],
+        ];
+    }
+
     public function registerToken($request)
     {
 

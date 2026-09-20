@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\Visitor;
+use App\Services\ExternalDatabaseService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
@@ -129,6 +130,7 @@ class Helper
 
         return [
             'user' => $user,
+            'id' => $user->id,
             'stud_id' => $user->stud_index,
             'stud_full_name' => $user->name,
             'password' => $user->password,
@@ -199,6 +201,7 @@ class Helper
 
     public static function checkTabStatus(string $tab): array
     {
+
         if (!self::isAuthenticated()) {
             return [
                 'success' => false,
@@ -255,11 +258,33 @@ class Helper
             ];
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Result Maintenance Mode
+        |--------------------------------------------------------------------------
+        |
+        | Even if result_active = 1 in system_settings,
+        | maintenance_mode.maintenance_status = 1 will disable Result.
+        |
+        */
+
+        if ($tab === 'result') {
+
+            $externalDatabase = app(ExternalDatabaseService::class);
+
+            if ($externalDatabase->resultMaintenanceMode()) {
+                return [
+                    'success' => false,
+                    'code' => 403,
+                    'message' => 'result is currently unavailable',
+                ];
+            }
+        }
+
         return [
             'success' => true,
             'code' => 200,
             'message' => ucfirst($tab) . ' is active',
         ];
     }
-
 }

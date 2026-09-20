@@ -17,6 +17,82 @@ class NotificationController extends Controller
         $this->studentService = $studentService;
     }
 
+    public function getNotifications()
+    {
+        $result = $this->studentService->getNotifications();
+
+        if ($result['success']) {
+
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'notificationsDetails' => $result['notificationsDetails'],
+                ],
+            ], $result['code']);
+
+        } else {
+
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message'],
+            ], $result['code']);
+        }
+    }
+
+    //Read One
+    public function markNotificationAsRead($notificationId)
+    {
+        $result = $this->studentService->markNotificationAsRead($notificationId);
+
+        if ($result['success']) {
+
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'notificationDetails' => $result['notificationDetails'],
+                    'unread_count' => $result['unread_count'],
+                ],
+            ], $result['code']);
+
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'code' => $result['code'],
+            'error' => $result['message'],
+        ], $result['code']);
+    }
+
+    //Read All
+    public function markAllNotificationsAsRead()
+    {
+        $result = $this->studentService->markAllNotificationsAsRead();
+
+        if ($result['success']) {
+
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+                'data' => [
+                    'notificationDetails' => $result['notificationDetails'],
+                ],
+            ], $result['code']);
+
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'code' => $result['code'],
+            'error' => $result['message'],
+        ], $result['code']);
+    }
+
     public function registerToken(RegisterFcmTokenRequest $request)
     {
 

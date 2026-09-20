@@ -19,7 +19,6 @@ class NotificationController extends Controller
 
     }
 
-
     public function index()
     {
         $faculties = $this->adminService->getFaculties();
@@ -31,7 +30,6 @@ class NotificationController extends Controller
             'batches',
             'notifications'
         ));
-
     }
 
 
@@ -68,6 +66,12 @@ class NotificationController extends Controller
                 'max:12',
             ],
 
+            'notification_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
             'title' => [
                 'required',
                 'string',
@@ -92,6 +96,8 @@ class NotificationController extends Controller
             batch: $validated['batch'],
 
             semester: (int) $validated['semester'],
+
+            notification_type: $validated['notification_type'],
 
             title: $validated['title'],
 
@@ -122,6 +128,12 @@ class NotificationController extends Controller
                 'max:100',
             ],
 
+            'notification_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
             'title' => [
                 'required',
                 'string',
@@ -140,6 +152,8 @@ class NotificationController extends Controller
         $sent = $this->firebaseNotificationService->sendToStudentIndex(
 
             studentIndex: $validated['student_index'],
+
+            notification_type: $validated['notification_type'],
 
             title: $validated['title'],
 

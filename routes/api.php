@@ -18,6 +18,7 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
 
     // Protected
     Route::middleware('auth:sanctum')->group(function () {
+
         //Main data. App launch
         Route::post('/mainData', [MainController::class, 'mainData']);
         Route::post('/profile', [MainController::class, 'getProfile']);
@@ -25,11 +26,14 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
         Route::post('/fees', [MainController::class, 'getFees']);
         Route::post('/timetable', [MainController::class, 'getTimetable']);
         Route::post('/password', [MainController::class, 'updatePassword']);
-        //Notification
-        Route::post('/notifications/token',[NotificationController::class, 'registerToken']);
 
-        Route::post('/notifications/token/remove',[NotificationController::class, 'unregisterToken']);
-        
+        //Notification
+        Route::get('/notifications', [NotificationController::class, 'getNotifications']);
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markNotificationAsRead']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllNotificationsAsRead']);
+        Route::post('/notifications/token', [NotificationController::class, 'registerToken']);
+        Route::post('/notifications/token/remove', [NotificationController::class, 'unregisterToken']);
+
         //Logout
         Route::post('/logout', [MainController::class, 'logout']);
     });

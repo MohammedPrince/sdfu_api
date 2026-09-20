@@ -222,6 +222,25 @@
                         <div class="form-grid">
 
 
+                            <div class="form-group">
+
+                                <label for="student_index">
+                                    Notification Type
+                                </label>
+
+                                <select name="notification_type" id="notification_type" class="form-control" required>
+
+                                    <option value="">Select Type</option>
+                                    <option value="General">Announcement</option>
+                                    <option value="timetable">Timetable</option>
+                                    <option value="result">Result</option>
+                                    <option value="fees">Fees</option>
+
+                                </select>
+
+                            </div>
+
+
                             {{-- Title --}}
 
                             <div class="form-group">
@@ -244,7 +263,6 @@
                                 <label for="body">
                                     Body
                                 </label>
-
 
                                 <textarea name="body" id="body" class="form-control" rows="5" maxlength="2000" required
                                     placeholder="Write notification message...">{{ old('body') }}</textarea>
@@ -328,6 +346,24 @@
 
                             </div>
 
+                            <div class="form-group">
+
+                                <label for="student_index">
+                                    Notification Type
+                                </label>
+
+                                <select name="notification_type" id="notification_type" class="form-control" required>
+
+                                    <option value="">Select Type</option>
+                                    <option value="General">Announcement</option>
+                                    <option value="timetable">Timetable</option>
+                                    <option value="result">Result</option>
+                                    <option value="fees">Fees</option>
+
+                                </select>
+
+                            </div>
+
                         </div>
 
                     </div>
@@ -357,7 +393,8 @@
 
 
                                 <input type="text" name="title" id="one_title" class="form-control"
-                                    value="{{ old('title') }}" maxlength="255" required placeholder="Notification title">
+                                    value="{{ old('title') }}" maxlength="255" required
+                                    placeholder="Notification title">
 
                             </div>
 

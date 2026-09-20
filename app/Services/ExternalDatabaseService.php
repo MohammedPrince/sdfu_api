@@ -126,6 +126,15 @@ class ExternalDatabaseService
     |--------------------------------------------------------------------------
     */
 
+    public function resultMaintenanceMode(): bool
+    {
+        $status = DB::connection('mysql_sis')
+            ->table('maintenance_mode')
+            ->value('maintenance_status');
+
+        return (int) $status === 1;
+    }
+
     public function getStudentResult(
         $stud_id,
         $facultyCode,

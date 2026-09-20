@@ -49,6 +49,21 @@ class StudentService
     }
 
     //Notifications
+    public function getNotifications()
+    {
+        return $this->studentRepository->getNotifications();
+    }
+
+    public function markNotificationAsRead($notificationId)
+    {
+        return $this->studentRepository->markNotificationAsRead($notificationId);
+    }
+
+     public function markAllNotificationsAsRead()
+    {
+        return $this->studentRepository->markAllNotificationsAsRead();
+    }
+    
     public function registerToken($data)
     {
         return $this->studentRepository->registerToken($data);

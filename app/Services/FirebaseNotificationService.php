@@ -24,12 +24,15 @@ class FirebaseNotificationService
      */
     public function sendToStudentIndex(
         string $studentIndex,
+        string $notification_type,
         string $title,
         string $body,
-        string $type = 'general',
         array $data = []
     ): bool {
 
+
+        $type = $notification_type;
+        
         $user = User::where('stud_index', $studentIndex)->where('role_id', 2)->first();
 
         if (!$user) {
@@ -71,11 +74,14 @@ class FirebaseNotificationService
         string $majorCode,
         string $batch,
         int $semester,
+        string $notification_type,
         string $title,
         string $body,
-        string $type = 'general',
+
         array $data = []
     ): int {
+
+        $type = $notification_type;
 
         $users = User::where('role_id', 2)
             ->where('faculty_code', $facultyCode)
