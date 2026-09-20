@@ -447,13 +447,15 @@ class StudentRepository
             $timetable = ['days' => []];
         }
 
+        $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
+
         //App status
         $appStatus = [
             'active' => (bool) $settings->api_active,
 
             'tabs_status' => [
                 'fee' => (bool) $settings->fee_active,
-                'result' => (bool) $settings->result_active,
+                'result' => (bool) $settings->result_active && !$resultMaintenanceMode,
                 'timetable' => (bool) $settings->timetable_active,
             ],
         ];
