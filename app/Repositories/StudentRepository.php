@@ -184,15 +184,6 @@ class StudentRepository
 
         $settings = $applicationStatus['settings'];
 
-        $appStatus = [
-            'active' => (bool) $settings->api_active,
-
-            'tabs_status' => [
-                'fee' => (bool) $settings->fee_active,
-                'result' => (bool) $settings->result_active,
-                'timetable' => (bool) $settings->timetable_active,
-            ],
-        ];
 
         $user = Auth::user();
 
@@ -219,7 +210,21 @@ class StudentRepository
         );
 
 
+        $notificationToggled = UserDevice::where('user_id', $user->id)->where('is_active', true)->exists();
+
+        $appStatus = [
+            'active' => (bool) $settings->api_active,
+
+            'tabs_status' => [
+                'fee' => (bool) $settings->fee_active,
+                'result' => (bool) $settings->result_active,
+                'timetable' => (bool) $settings->timetable_active,
+            ],
+            'notificationToggled' => $notificationToggled,
+        ];
+
         $LoginDetails = [
+
             'stud_index' => $user->stud_index,
             'stud_full_name' => $stud_full_name,
             'stud_email' => $email,
