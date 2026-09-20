@@ -231,7 +231,7 @@
                                 <select name="notification_type" id="notification_type" class="form-control" required>
 
                                     <option value="">Select Type</option>
-                                    <option value="General">Announcement</option>
+                                    <option value="general">Announcement</option>
                                     <option value="timetable">Timetable</option>
                                     <option value="result">Result</option>
                                     <option value="fees">Fees</option>
