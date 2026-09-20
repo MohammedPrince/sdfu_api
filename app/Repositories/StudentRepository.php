@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class StudentRepository
@@ -703,7 +702,7 @@ class StudentRepository
             $studentDetails = [
                 'stud_index' => $stud_id,
                 'stud_full_name' => $stud_full_name,
-                'stud_email' => $stud_email ?? null,
+                'stud_email' => $email ?? null,
                 'stud_phone' => $phone,
                 'batch' => $batch ?? null,
                 'sem' => (int) $semester,
@@ -804,14 +803,6 @@ class StudentRepository
         $studentHelper = Helper::studentData();
 
         $old_password = $studentHelper['password'];
-
-        if (!Hash::check($currentPassword, $old_password)) {
-            return [
-                'success' => false,
-                'code' => 422,
-                'message' => 'Current password not correct, try again'
-            ];
-        }
 
         if (!password_verify($currentPassword, $old_password)) {
             return [
