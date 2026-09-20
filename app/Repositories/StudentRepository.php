@@ -29,6 +29,7 @@ class StudentRepository
 
     public function login($data)
     {
+
         $studIndex = trim($data['stud_index'] ?? '');
         $studPassword = $data['stud_password'] ?? '';
 
@@ -152,7 +153,7 @@ class StudentRepository
                     'major_code' => $major_code,
                     'batch' => $batch,
                     'semester' => $semester,
-                    'password' => Hash::make(Str::random(64)),
+                    'password' => $student->password,
                     'gender' => $gender,
                     'role_id' => 2,
                 ]);
