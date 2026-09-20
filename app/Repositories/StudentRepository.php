@@ -209,7 +209,6 @@ class StudentRepository
             $expiresAt
         );
 
-
         $notificationToggled = UserDevice::where('user_id', $user->id)->where('is_active', true)->exists();
 
         $appStatus = [
@@ -411,9 +410,7 @@ class StudentRepository
                     $status = 'Paid';
                 }
 
-                $fees_type = in_array((int) $semester, [1, 3, 5, 7])
-                    ? 'Year, Registration Fees'
-                    : 'Registration Fee';
+                $fees_type = in_array((int) $semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
 
                 return [
                     'total_fees' => $total_fee_bank,
@@ -486,7 +483,6 @@ class StudentRepository
         if (!$auth['success']) {
             return $auth;
         }
-
 
         $applicationStatus = Helper::checkApplicationStatus();
         if (!$applicationStatus['success']) {
@@ -838,7 +834,7 @@ class StudentRepository
         //Update it on SDFU DB
         $user->password = Hash::make($newPassword);
         $user->save();
-
+        
         //Delete current user token
         // $currentToken = $user->currentAccessToken();
         // if ($currentToken) {

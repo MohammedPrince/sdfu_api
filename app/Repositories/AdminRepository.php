@@ -876,11 +876,7 @@ class AdminRepository
                         $filters['semester']
                     );
                 }
-            })
-            ->orderByDesc('last_seen_at')
-            ->take(8)
-            ->get();
-
+            })->orderByDesc('last_seen_at')->paginate(8, ['*'], 'activity_page')->appends(request()->except('activity_page'));
 
         /*
         |--------------------------------------------------------------------------

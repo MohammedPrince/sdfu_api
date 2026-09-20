@@ -125,7 +125,7 @@
                         @for ($semester = 1; $semester <= 10; $semester++)
                             <option value="{{ $semester }}" @selected((string) ($filters['semester'] ?? '') === (string) $semester)>
 
-                             {{ $semester }}
+                                {{ $semester }}
 
                             </option>
                         @endfor
@@ -651,6 +651,12 @@
                     </tbody>
 
                 </table>
+
+                @if ($report['recent_activity']->hasPages())
+                    <div class="pagination-wrapper">
+                        {{ $report['recent_activity']->onEachSide(1)->links() }}
+                    </div>
+                @endif
 
             </div>
 
