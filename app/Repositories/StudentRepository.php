@@ -901,16 +901,10 @@ class StudentRepository
         $user_id = $studentHelper['id'];
 
         // Get notifications for this student
-        $notifications = Notification::query()
-            ->where('user_id', $user_id)
-            ->latest('created_at')
-            ->paginate(20);
+        $notifications = Notification::query()->where('user_id', $user_id)->latest('created_at')->paginate(20);
 
         // Unread notification count
-        $unreadCount = Notification::query()
-            ->where('user_id', $user_id)
-            ->whereNull('read_at')
-            ->count();
+        $unreadCount = Notification::query()->where('user_id', $user_id)->whereNull('read_at')->count();
 
         // Format notification details
         $notificationsDetails = $notifications->getCollection()
@@ -927,9 +921,7 @@ class StudentRepository
                     'created_at' => $notification->created_at?->toISOString(),
                 ];
 
-            })
-            ->values()
-            ->toArray();
+            })->values()->toArray();
 
         return [
             'success' => true,
@@ -938,7 +930,6 @@ class StudentRepository
 
             'notificationsDetails' => [
                 'notifications' => $notificationsDetails,
-
                 'unread_count' => $unreadCount,
 
                 'pagination' => [
@@ -975,10 +966,7 @@ class StudentRepository
         $user_id = $studentHelper['user']->id;
 
         // Find notification belonging to this student
-        $notification = Notification::query()
-            ->where('id', $notificationId)
-            ->where('user_id', $user_id)
-            ->first();
+        $notification = Notification::query()->where('id', $notificationId)->where('user_id', $user_id)->first();
 
         if (!$notification) {
             return [
@@ -996,10 +984,7 @@ class StudentRepository
         }
 
         // Get remaining unread count
-        $unreadCount = Notification::query()
-            ->where('user_id', $user_id)
-            ->whereNull('read_at')
-            ->count();
+        $unreadCount = Notification::query()->where('user_id', $user_id)->whereNull('read_at')->count();
 
         return [
             'success' => true,
@@ -1037,9 +1022,7 @@ class StudentRepository
         $user_id = $studentHelper['user']->id;
 
         // Mark all unread notifications as read
-        $updatedCount = Notification::query()
-            ->where('user_id', $user_id)
-            ->whereNull('read_at')
+        $updatedCount = Notification::query()->where('user_id', $user_id)->whereNull('read_at')
             ->update([
                 'read_at' => now(),
             ]);
