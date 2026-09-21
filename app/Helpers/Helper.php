@@ -158,7 +158,7 @@ class Helper
 
     public static function checkApplicationStatus(): array
     {
-
+        
         if (!self::isAuthenticated()) {
             return [
                 'success' => false,
@@ -175,20 +175,31 @@ class Helper
             ->where('semester', $user->semester)
             ->first();
 
-        // No settings found = application is active by default
+        /*
+        |--------------------------------------------------------------------------
+        | No settings found
+        |--------------------------------------------------------------------------
+        | Application is active by default.
+        |
+        | Create an in-memory model only.
+        | Nothing is saved to the database.
+        |--------------------------------------------------------------------------
+        */
+
         if (!$settings) {
-            return [
-                'success' => true,
-                'code' => 200,
-                'message' => 'Application is active',
-                'settings' => [
-                    'api_active' => true,
-                    'fee_active' => true,
-                    'result_active' => true,
-                    'timetable_active' => true,
-                ],
-            ];
+            $settings = new SystemSetting([
+                'api_active' => true,
+                'fee_active' => true,
+                'result_active' => true,
+                'timetable_active' => true,
+            ]);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application disabled
+        |--------------------------------------------------------------------------
+        */
 
         if (!(bool) $settings->api_active) {
             return [
