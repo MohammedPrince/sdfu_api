@@ -290,7 +290,6 @@
 
                         </thead>
 
-
                         <tbody>
 
                             @forelse($students as $student)

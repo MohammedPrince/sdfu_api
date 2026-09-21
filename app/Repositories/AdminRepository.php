@@ -371,18 +371,17 @@ class AdminRepository
 
             $setting = $settings->get($settingKey);
 
-
             if (!$setting) {
 
-                $student->account_active = false;
-                $student->account_status = 'Disabled';
+                // No setting means the student is active by default.
+                $student->account_active = true;
+                $student->account_status = 'Active';
 
             } else {
 
                 $student->account_active = (bool) $setting->api_active;
 
-                $student->account_status =
-                    $setting->api_active
+                $student->account_status = $setting->api_active
                     ? 'Active'
                     : 'Disabled';
             }
