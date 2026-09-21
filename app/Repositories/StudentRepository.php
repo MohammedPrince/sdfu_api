@@ -306,7 +306,8 @@ class StudentRepository
         $major = $this->externalDatabase->getMajorName($major_code);
 
         // Cache key base — unique per student per academic context
-        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
+        // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
+        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
         $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 0, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $faculty, $major, $stud_full_name, $phone, $email, $gender) {
 
             $studentData = [
