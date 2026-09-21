@@ -464,9 +464,9 @@ class StudentRepository
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
         $notificationToggled = UserDevice::where('user_id', $user_id)->where('is_active', true)->exists();
-        if(!$notificationToggled){
-            $notificationToggled = true;
-        }
+        // if(!$notificationToggled){
+        //     $notificationToggled = true;
+        // }
 
         //App status
         $appStatus = [
