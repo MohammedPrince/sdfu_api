@@ -5,14 +5,26 @@
 @section('content')
 
     <main class="page">
+
+        {{-- =========================================================
+             BACKGROUND FLARES
+        ========================================================== --}}
         <div class="flares" aria-hidden="true">
-            <span class="flare"></span>
-            <span class="flare"></span>
-            <span class="flare"></span>
-            <span class="flare"></span>
+
+            <span class="flare flare-1"></span>
+            <span class="flare flare-2"></span>
+            <span class="flare flare-3"></span>
+            <span class="flare flare-4"></span>
+
+            <span class="flare flare-5"></span>
+            <span class="flare flare-6"></span>
+
         </div>
 
-        {{-- Hero --}}
+
+        {{-- =========================================================
+             HERO
+        ========================================================== --}}
         <section class="hero">
 
             <div class="hero-content">
@@ -25,6 +37,7 @@
 
                 </div>
 
+
                 <h1>
 
                     Everything you need,
@@ -32,6 +45,7 @@
                     <span>in one place.</span>
 
                 </h1>
+
 
                 <p class="hero-text">
 
@@ -41,14 +55,34 @@
 
                 </p>
 
+
                 <div class="hero-actions">
-                    <a href="#services" class="secondary-button">Explore services</a>
+
+                    <a href="#services" class="secondary-button">
+
+                        Explore services
+
+                        <svg viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            aria-hidden="true">
+
+                            <path d="M5 12h14" />
+                            <path d="m13 6 6 6-6 6" />
+
+                        </svg>
+
+                    </a>
+
                 </div>
 
             </div>
 
 
-            {{-- Dashboard Preview --}}
+            {{-- =====================================================
+                 DASHBOARD PREVIEW
+            ====================================================== --}}
             <div class="panel-wrapper">
 
                 <div class="panel-glow"></div>
@@ -77,9 +111,13 @@
 
                         </div>
 
+
                         <div class="notification">
 
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                            <svg viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7">
 
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9" />
 
@@ -112,7 +150,10 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <svg viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8">
 
                                     <path d="M4 19V5" />
 
@@ -140,14 +181,15 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <svg viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8">
 
                                     <rect x="3" y="5" width="18" height="15" rx="2" />
 
                                     <path d="M7 3v4" />
-
                                     <path d="M17 3v4" />
-
                                     <path d="M3 10h18" />
 
                                 </svg>
@@ -170,7 +212,10 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <svg viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8">
 
                                     <circle cx="12" cy="12" r="9" />
 
@@ -196,14 +241,15 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <svg viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8">
 
                                     <rect x="3" y="5" width="18" height="14" rx="2" />
 
                                     <path d="M7 9h10" />
-
                                     <path d="M7 13h4" />
-
                                     <path d="M15 13h2" />
 
                                 </svg>
@@ -222,6 +268,8 @@
 
                     </div>
 
+
+                    {{-- Application status --}}
                     <div class="status-card">
 
                         <div>
@@ -233,7 +281,11 @@
                         </div>
 
                         <div class="status-value status-available">
-                            ● Available
+
+                            <span class="status-pulse"></span>
+
+                            Available
+
                         </div>
 
                     </div>
@@ -244,7 +296,10 @@
 
         </section>
 
-        {{-- App Download --}}
+
+        {{-- =========================================================
+             APP DOWNLOAD
+        ========================================================== --}}
         <section class="app-download">
 
             <div class="section-heading">
@@ -258,6 +313,7 @@
                 </p>
 
             </div>
+
 
             <div class="store-grid">
 
@@ -276,8 +332,15 @@
                     </div>
 
                     <div>
-                        <div class="store-eyebrow">Download on the</div>
-                        <div class="store-title">App Store</div>
+
+                        <div class="store-eyebrow">
+                            Download on the
+                        </div>
+
+                        <div class="store-title">
+                            App Store
+                        </div>
+
                     </div>
 
                 </a>
@@ -291,15 +354,22 @@
                         <svg viewBox="0 0 24 24" fill="currentColor">
 
                             <path
-                                d="M6.5 3.5 8.6 7a12.9 12.9 0 0 1 6.8 0l2.1-3.5.9.5-2 3.4A8.6 8.6 0 0 1 21 15H3a8.6 8.6 0 0 1 4.6-7.6l-2-3.4.9-.5ZM8 11.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM3 16.5h18V19a2 2 0 0 1-2 2h-1v1.2a1.3 1.3 0 0 1-2.6 0V21H8.6v1.2a1.3 1.3 0 0 1-2.6 0V21H5a2 2 0 0 1-2-2v-2.5Z" />
+                                d="M6.5 3.5 8.6 7a12.9 12.9 0 0 1 6.8 0l2.1-3.5.9.5-2 3.4A8.6 8.6 0 0 1 21 15H3a8.6 8.6 0 0 1 4.6-7.6l-2-3.4.9-.5ZM8 11.2a1 1 0 1 0 0 2 1 1 0 0 0-0-2Zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM3 16.5h18V19a2 2 0 0 1-2 2h-1v1.2a1.3 1.3 0 0 1-2.6 0V21H8.6v1.2a1.3 1.3 0 0 1-2.6 0V21H5a2 2 0 0 1-2-2v-2.5Z" />
 
                         </svg>
 
                     </div>
 
                     <div>
-                        <div class="store-eyebrow">Get it on</div>
-                        <div class="store-title">Google Play</div>
+
+                        <div class="store-eyebrow">
+                            Get it on
+                        </div>
+
+                        <div class="store-title">
+                            Google Play
+                        </div>
+
                     </div>
 
                 </a>
@@ -308,7 +378,10 @@
 
         </section>
 
-        {{-- Services --}}
+
+        {{-- =========================================================
+             SERVICES
+        ========================================================== --}}
         <section class="features" id="services">
 
             <div class="section-heading">
@@ -323,6 +396,7 @@
 
             </div>
 
+
             <div class="feature-grid">
 
                 {{-- Semester Results --}}
@@ -330,12 +404,13 @@
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8">
 
                             <path d="M4 19V5" />
-
                             <path d="M4 5h13a3 3 0 0 1 3 3v11H7a3 3 0 0 0-3 3" />
-
                             <path d="M7 19h13" />
 
                         </svg>
@@ -352,19 +427,20 @@
 
                 </div>
 
+
                 {{-- Timetable --}}
                 <div class="feature">
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8">
 
                             <rect x="3" y="5" width="18" height="15" rx="2" />
-
                             <path d="M7 3v4" />
-
                             <path d="M17 3v4" />
-
                             <path d="M3 10h18" />
 
                         </svg>
@@ -381,23 +457,23 @@
 
                 </div>
 
+
                 {{-- Registration --}}
                 <div class="feature">
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8">
 
                             <path d="M4 7h16" />
-
                             <path d="M4 12h16" />
-
                             <path d="M4 17h16" />
 
                             <circle cx="8" cy="7" r="1" />
-
                             <circle cx="8" cy="12" r="1" />
-
                             <circle cx="8" cy="17" r="1" />
 
                         </svg>
@@ -414,19 +490,21 @@
 
                 </div>
 
+
                 {{-- Registration Fees --}}
                 <div class="feature">
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8">
 
                             <rect x="3" y="5" width="18" height="14" rx="2" />
 
                             <path d="M7 9h10" />
-
                             <path d="M7 13h4" />
-
                             <path d="M15 13h2" />
 
                         </svg>
@@ -445,36 +523,85 @@
 
             </div>
 
+
+            {{-- =====================================================
+                 VISITOR COUNTER
+            ====================================================== --}}
             <div class="visitor-counter">
 
                 <div class="visitor-stat">
+
                     <div class="visitor-stat-icon">
+
                         <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor"
-                                stroke-width="1.8" stroke-linejoin="round" />
-                            <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8" />
+
+                            <path
+                                d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linejoin="round" />
+
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="2.5"
+                                stroke="currentColor"
+                                stroke-width="1.8" />
+
                         </svg>
+
                     </div>
 
                     <div>
-                        <span class="visitor-label">Visitors today</span>
-                        <strong>{{ number_format($visitorCount['today']) }}</strong>
+
+                        <span class="visitor-label">
+                            Visitors today
+                        </span>
+
+                        <strong>
+                            {{ number_format($visitorCount['today']) }}
+                        </strong>
+
                     </div>
+
                 </div>
 
+
                 <div class="visitor-stat">
+
                     <div class="visitor-stat-icon">
+
                         <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M4 19V5M4 19H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                            <path d="M7 15L10 11L13 13L19 7" stroke="currentColor" stroke-width="1.8"
-                                stroke-linecap="round" stroke-linejoin="round" />
+
+                            <path
+                                d="M4 19V5M4 19H20"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round" />
+
+                            <path
+                                d="M7 15L10 11L13 13L19 7"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round" />
+
                         </svg>
+
                     </div>
 
                     <div>
-                        <span class="visitor-label">Total visits</span>
-                        <strong>{{ number_format($visitorCount['total']) }}</strong>
+
+                        <span class="visitor-label">
+                            Total visits
+                        </span>
+
+                        <strong>
+                            {{ number_format($visitorCount['total']) }}
+                        </strong>
+
                     </div>
+
                 </div>
 
             </div>

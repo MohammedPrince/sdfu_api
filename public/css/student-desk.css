@@ -901,3 +901,621 @@ footer span {
         transform: translateY(0);
     }
 }
+
+/* ============================================================
+   LANDING PAGE BACKGROUND
+============================================================ */
+
+.page {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fffdfb 0%,
+            #ffffff 48%,
+            #fbfdff 100%
+        );
+}
+
+
+/* ============================================================
+   FLARE SYSTEM
+============================================================ */
+
+.flares {
+    position: absolute;
+    inset: 0;
+
+    z-index: -1;
+
+    overflow: hidden;
+
+    pointer-events: none;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Base flare
+|--------------------------------------------------------------------------
+*/
+
+.flare {
+    position: absolute;
+
+    width: 420px;
+    height: 420px;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    opacity: .65;
+
+    filter: blur(55px);
+
+    will-change: transform, opacity;
+
+    mix-blend-mode: multiply;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(245, 116, 80, .15) 0%,
+            rgba(247, 148, 116, .09) 30%,
+            rgba(255, 210, 190, .04) 48%,
+            transparent 72%
+        );
+}
+
+
+/* ============================================================
+   FLARE 1
+   Warm glow around upper-left hero area
+============================================================ */
+
+.flare-1 {
+
+    width: 480px;
+    height: 480px;
+
+    top: -220px;
+    left: -100px;
+
+    animation:
+        flareMoveOne
+        18s
+        ease-in-out
+        infinite;
+}
+
+
+/* ============================================================
+   FLARE 2
+   Main hero coral glow
+============================================================ */
+
+.flare-2 {
+
+    width: 620px;
+    height: 620px;
+
+    top: 100px;
+    left: 32%;
+
+    opacity: .48;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(238, 78, 53, .14) 0%,
+            rgba(245, 119, 92, .08) 28%,
+            rgba(255, 190, 170, .04) 48%,
+            transparent 72%
+        );
+
+    animation:
+        flareMoveTwo
+        24s
+        ease-in-out
+        infinite;
+}
+
+
+/* ============================================================
+   FLARE 3
+   Cool blue contrast
+============================================================ */
+
+.flare-3 {
+
+    width: 520px;
+    height: 520px;
+
+    right: -170px;
+    top: 40px;
+
+    opacity: .42;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(71, 143, 230, .13) 0%,
+            rgba(102, 166, 239, .07) 32%,
+            transparent 70%
+        );
+
+    animation:
+        flareMoveThree
+        21s
+        ease-in-out
+        infinite;
+}
+
+
+/* ============================================================
+   FLARE 4
+   Lower warm glow
+============================================================ */
+
+.flare-4 {
+
+    width: 560px;
+    height: 560px;
+
+    left: 18%;
+    bottom: -330px;
+
+    opacity: .40;
+
+    animation:
+        flareMoveFour
+        26s
+        ease-in-out
+        infinite;
+}
+
+
+/* ============================================================
+   FLARE 5
+   Small moving blue highlight
+============================================================ */
+
+.flare-5 {
+
+    width: 280px;
+    height: 280px;
+
+    right: 30%;
+    bottom: 5%;
+
+    opacity: .22;
+
+    filter: blur(45px);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(84, 155, 239, .13),
+            transparent 70%
+        );
+
+    animation:
+        flareMoveFive
+        17s
+        ease-in-out
+        infinite;
+}
+
+
+/* ============================================================
+   FLARE 6
+   Very subtle background warmth
+============================================================ */
+
+.flare-6 {
+
+    width: 350px;
+    height: 350px;
+
+    right: 5%;
+    bottom: -160px;
+
+    opacity: .28;
+
+    filter: blur(50px);
+
+    animation:
+        flareMoveSix
+        23s
+        ease-in-out
+        infinite;
+}
+
+
+/* ============================================================
+   CONTINUOUS FLARE ANIMATIONS
+============================================================ */
+
+@keyframes flareMoveOne {
+
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(1);
+        opacity: .48;
+    }
+
+    25% {
+        transform:
+            translate3d(80px, 35px, 0)
+            scale(1.08);
+        opacity: .68;
+    }
+
+    50% {
+        transform:
+            translate3d(150px, 5px, 0)
+            scale(.94);
+        opacity: .52;
+    }
+
+    75% {
+        transform:
+            translate3d(70px, -35px, 0)
+            scale(1.05);
+        opacity: .64;
+    }
+}
+
+
+@keyframes flareMoveTwo {
+
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(.95);
+        opacity: .35;
+    }
+
+    25% {
+        transform:
+            translate3d(-80px, 35px, 0)
+            scale(1.08);
+        opacity: .52;
+    }
+
+    50% {
+        transform:
+            translate3d(70px, 80px, 0)
+            scale(1.02);
+        opacity: .40;
+    }
+
+    75% {
+        transform:
+            translate3d(120px, -20px, 0)
+            scale(1.10);
+        opacity: .50;
+    }
+}
+
+
+@keyframes flareMoveThree {
+
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(1);
+        opacity: .32;
+    }
+
+    30% {
+        transform:
+            translate3d(-70px, 50px, 0)
+            scale(1.10);
+        opacity: .48;
+    }
+
+    60% {
+        transform:
+            translate3d(-120px, -30px, 0)
+            scale(.94);
+        opacity: .35;
+    }
+
+    80% {
+        transform:
+            translate3d(-40px, -60px, 0)
+            scale(1.06);
+        opacity: .45;
+    }
+}
+
+
+@keyframes flareMoveFour {
+
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(1);
+        opacity: .28;
+    }
+
+    35% {
+        transform:
+            translate3d(100px, -70px, 0)
+            scale(1.12);
+        opacity: .42;
+    }
+
+    70% {
+        transform:
+            translate3d(-50px, -100px, 0)
+            scale(.92);
+        opacity: .34;
+    }
+}
+
+
+@keyframes flareMoveFive {
+
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(1);
+        opacity: .16;
+    }
+
+    50% {
+        transform:
+            translate3d(-100px, -50px, 0)
+            scale(1.25);
+        opacity: .30;
+    }
+}
+
+
+@keyframes flareMoveSix {
+
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(.95);
+        opacity: .20;
+    }
+
+    50% {
+        transform:
+            translate3d(-90px, -60px, 0)
+            scale(1.12);
+        opacity: .34;
+    }
+}
+
+
+/* ============================================================
+   HERO DEPTH
+============================================================ */
+
+.hero {
+    position: relative;
+    z-index: 1;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Soft radial atmosphere behind hero
+|--------------------------------------------------------------------------
+*/
+
+.hero::before {
+    content: "";
+
+    position: absolute;
+
+    width: 900px;
+    height: 600px;
+
+    left: 5%;
+    top: -150px;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(248, 118, 86, .055),
+            transparent 68%
+        );
+
+    filter: blur(20px);
+
+    pointer-events: none;
+
+    z-index: -1;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Blue atmosphere around dashboard
+|--------------------------------------------------------------------------
+*/
+
+.hero::after {
+    content: "";
+
+    position: absolute;
+
+    width: 700px;
+    height: 700px;
+
+    right: -180px;
+    top: 0;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(64, 142, 229, .065),
+            transparent 68%
+        );
+
+    filter: blur(20px);
+
+    pointer-events: none;
+
+    z-index: -1;
+}
+
+
+/* ============================================================
+   PANEL GLOW
+============================================================ */
+
+.panel-glow {
+    position: absolute;
+
+    width: 90%;
+    height: 90%;
+
+    left: 5%;
+    top: 5%;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(72, 143, 232, .14),
+            transparent 68%
+        );
+
+    filter: blur(45px);
+
+    opacity: .75;
+
+    animation:
+        panelGlowPulse
+        7s
+        ease-in-out
+        infinite;
+
+    pointer-events: none;
+}
+
+
+@keyframes panelGlowPulse {
+
+    0%,
+    100% {
+        transform: scale(.94);
+        opacity: .50;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: .85;
+    }
+
+}
+
+
+/* ============================================================
+   DASHBOARD FLOAT
+============================================================ */
+
+.panel {
+    animation:
+        dashboardFloat
+        8s
+        ease-in-out
+        infinite;
+}
+
+
+@keyframes dashboardFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+}
+
+
+/* ============================================================
+   STATUS PULSE
+============================================================ */
+
+.status-pulse {
+    display: inline-block;
+
+    width: 7px;
+    height: 7px;
+
+    margin-right: 6px;
+
+    border-radius: 50%;
+
+    background: #2eae72;
+
+    box-shadow:
+        0 0 0 0 rgba(46, 174, 114, .35);
+
+    animation:
+        statusPulse
+        2s
+        ease-out
+        infinite;
+}
+
+
+@keyframes statusPulse {
+
+    0% {
+        box-shadow:
+            0 0 0 0 rgba(46, 174, 114, .35);
+    }
+
+    70% {
+        box-shadow:
+            0 0 0 8px rgba(46, 174, 114, 0);
+    }
+
+    100% {
+        box-shadow:
+            0 0 0 0 rgba(46, 174, 114, 0);
+    }
+
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .flare,
+    .panel,
+    .panel-glow,
+    .status-pulse {
+
+        animation: none !important;
+
+    }
+
+}
