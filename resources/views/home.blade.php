@@ -4,7 +4,13 @@
 
 @section('content')
 
-    <main>
+    <main class="page">
+        <div class="flares" aria-hidden="true">
+            <span class="flare"></span>
+            <span class="flare"></span>
+            <span class="flare"></span>
+            <span class="flare"></span>
+        </div>
 
         {{-- Hero --}}
         <section class="hero">
@@ -317,9 +323,7 @@
 
             </div>
 
-
             <div class="feature-grid">
-
 
                 {{-- Semester Results --}}
                 <div class="feature">
@@ -347,7 +351,6 @@
                     </p>
 
                 </div>
-
 
                 {{-- Timetable --}}
                 <div class="feature">
@@ -377,7 +380,6 @@
                     </p>
 
                 </div>
-
 
                 {{-- Registration --}}
                 <div class="feature">
@@ -411,7 +413,6 @@
                     </p>
 
                 </div>
-
 
                 {{-- Registration Fees --}}
                 <div class="feature">
@@ -461,7 +462,6 @@
                     </div>
                 </div>
 
-
                 <div class="visitor-stat">
                     <div class="visitor-stat-icon">
                         <svg viewBox="0 0 24 24" fill="none">
@@ -480,8 +480,6 @@
             </div>
 
         </section>
-
-
 
     </main>
 
