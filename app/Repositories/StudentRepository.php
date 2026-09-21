@@ -308,7 +308,7 @@ class StudentRepository
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", 0, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $faculty, $major, $stud_full_name, $phone, $email, $gender) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addHours(1), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $faculty, $major, $stud_full_name, $phone, $email, $gender) {
 
             $studentData = [
                 'stud_id' => $stud_id,
@@ -464,6 +464,9 @@ class StudentRepository
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
         $notificationToggled = UserDevice::where('user_id', $user_id)->where('is_active', true)->exists();
+        if(!$notificationToggled){
+            $notificationToggled = true;
+        }
 
         //App status
         $appStatus = [
