@@ -184,7 +184,7 @@ class NotificationController extends Controller
 
     public function testFirebase()
     {
-        $token = 'ctlbPtcVSIuiZ1s_DkHUlj:APA91bGX7mYfc7ZsSe5KJ_OHiDq6inTEQF_MK7ok6IuzAarFj20nsn50Wb1KgPyU5WcwbE2a6SiAK2_WtskUYS3K41DaCt_bFZL7FY9xct9EDLx6WDKmu68';
+        $token = 'ciq7hF0MTHywke-_TCK_Nw:APA91bHzyhqEA2BvDIfjRotSmDMUpgi9YLXGFjvdiBTFw89hbpDZ94fvcPywEyK3peFXzImCnmSoFyO2OzmneY3BL1tcFmh1uafASUQ0Qw_fVd05qG7VfhE';
 
         $sent = $this->firebaseNotificationService->sendTestToken(
             $token,
