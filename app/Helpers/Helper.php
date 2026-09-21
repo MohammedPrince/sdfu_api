@@ -175,11 +175,18 @@ class Helper
             ->where('semester', $user->semester)
             ->first();
 
+        // No settings found = application is active by default
         if (!$settings) {
             return [
-                'success' => false,
-                'code' => 403,
-                'message' => 'Application settings not found',
+                'success' => true,
+                'code' => 200,
+                'message' => 'Application is active',
+                'settings' => [
+                    'api_active' => true,
+                    'fee_active' => true,
+                    'result_active' => true,
+                    'timetable_active' => true,
+                ],
             ];
         }
 
@@ -218,14 +225,7 @@ class Helper
             ->where('semester', $user->semester)
             ->first();
 
-        // if (!$settings) {
-        //     return [
-        //         'success' => false,
-        //         'code' => 403,
-        //         'message' => 'Application settings not found',
-        //     ];
-        // }
-
+        // No settings found = application is active by default
         if (!$settings) {
             return [
                 'success' => true,
