@@ -209,16 +209,30 @@ class StudentRepository
             $expiresAt
         );
 
+        $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
         $notificationToggled = UserDevice::where('user_id', $user->id)->where('is_active', true)->exists();
 
         $appStatus = [
-            'active' => (bool) $settings->api_active,
+            'active' => $settings
+                ? (bool) $settings->api_active
+                : true,
 
             'tabs_status' => [
-                'fee' => (bool) $settings->fee_active,
-                'result' => (bool) $settings->result_active,
-                'timetable' => (bool) $settings->timetable_active,
+                'fee' => $settings
+                    ? (bool) $settings->fee_active
+                    : true,
+
+                'result' => (
+                    $settings
+                    ? (bool) $settings->result_active
+                    : true
+                ) && !$resultMaintenanceMode,
+
+                'timetable' => $settings
+                    ? (bool) $settings->timetable_active
+                    : true,
             ],
+
             'notificationToggled' => $notificationToggled,
         ];
 
@@ -452,13 +466,26 @@ class StudentRepository
 
         //App status
         $appStatus = [
-            'active' => (bool) $settings->api_active,
+            'active' => $settings
+                ? (bool) $settings->api_active
+                : true,
 
             'tabs_status' => [
-                'fee' => (bool) $settings->fee_active,
-                'result' => (bool) $settings->result_active && !$resultMaintenanceMode,
-                'timetable' => (bool) $settings->timetable_active,
+                'fee' => $settings
+                    ? (bool) $settings->fee_active
+                    : true,
+
+                'result' => (
+                    $settings
+                    ? (bool) $settings->result_active
+                    : true
+                ) && !$resultMaintenanceMode,
+
+                'timetable' => $settings
+                    ? (bool) $settings->timetable_active
+                    : true,
             ],
+
             'notificationToggled' => $notificationToggled,
         ];
 
@@ -834,7 +861,7 @@ class StudentRepository
         //Update it on SDFU DB
         $user->password = Hash::make($newPassword);
         $user->save();
-        
+
         //Delete current user token
         // $currentToken = $user->currentAccessToken();
         // if ($currentToken) {
