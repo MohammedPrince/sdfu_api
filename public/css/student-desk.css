@@ -782,7 +782,7 @@ footer span {
 
     .primary-button,
     .secondary-button {
-        width: 100%;
+        width: auto;
     }
 
     .feature-grid {
