@@ -3684,35 +3684,90 @@ button,
 }
 
 /* Reports pagination */
-.pagination-wrapper {
+.pagination-wrapper.report-pagination {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 16px;
     margin-top: 20px;
 }
 
-.pagination-wrapper nav {
+.report-pagination-summary {
+    margin: 0;
+    color: var(--admin-text-muted);
+    font-size: 13px;
+}
+
+.pagination-wrapper.report-pagination nav {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
-.pagination-wrapper svg {
-    width: 18px !important;
-    height: 18px !important;
+.report-pagination-list {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-.pagination-wrapper a,
-.pagination-wrapper span {
+.pagination-wrapper .report-pagination-list a,
+.pagination-wrapper .report-pagination-list span {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 36px;
     height: 36px;
     padding: 0 10px;
-    font-size: 14px;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    background: var(--admin-white);
+    color: var(--admin-burgundy);
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
 
-.pagination-wrapper svg path {
-    vector-effect: none;
+.pagination-wrapper .report-pagination-list a:hover {
+    border-color: var(--admin-burgundy);
+    background: var(--admin-cream);
+}
+
+.pagination-wrapper .report-pagination-list .is-active {
+    border-color: var(--admin-burgundy);
+    background: var(--admin-burgundy);
+    color: var(--admin-white);
+}
+
+.pagination-wrapper .report-pagination-list .is-disabled {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+@media (max-width: 640px) {
+    .pagination-wrapper.report-pagination {
+        flex-direction: column;
+        justify-content: center;
+        align-items: stretch;
+    }
+
+    .report-pagination-summary {
+        text-align: center;
+    }
+
+    .pagination-wrapper.report-pagination nav {
+        justify-content: center;
+        margin-left: 0;
+    }
+
+    .report-pagination-list {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 }
