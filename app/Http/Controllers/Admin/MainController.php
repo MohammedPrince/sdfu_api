@@ -203,7 +203,6 @@ class MainController extends Controller
         }
 
         $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
-
         $student = $this->adminService->getStudentDetails($student);
         return view('admin.student-details', compact('student'));
     }
@@ -268,6 +267,7 @@ class MainController extends Controller
 
     public function manageTimeTable()
     {
+
         $faculties = $this->adminService->getFaculties();
         $majors = $this->adminService->getMajors();
         $batches = $this->adminService->getBatches();
@@ -305,8 +305,7 @@ class MainController extends Controller
             'ttid' => ['required', 'integer'],
         ]);
 
-        // Fetch timetable data from external database service
-        $timetableData = $this->adminService->getTimetable(
+        $result = $this->adminService->syncTimetableData(
             $validated['faculty_code'],
             $validated['major_code'],
             $validated['batch'],
@@ -314,46 +313,38 @@ class MainController extends Controller
             $validated['ttid']
         );
 
-        // Store timetable data in session to display in view
-        if (!empty($timetableData['days'])) {
-            // Format the timetable data for display
-            $formattedData = $this->formatTimetableForDisplay($timetableData);
+        if ($result['success']) {
             return redirect()
                 ->back()
-                ->with('timetable_data', $formattedData)
-                ->with('success', 'Timetable data fetched successfully!');
-        } else {
-            return redirect()
-                ->back()
-                ->with('error', 'No timetable data found for the selected criteria.');
+                ->with('success', $result['message']);
         }
+
+        return redirect()
+            ->back()
+            ->with(
+                'error',
+                'Failed to synchronize timetable: ' . $result['message']
+            );
     }
 
     public function saveServerConfig(Request $request)
     {
         $validated = $request->validate([
             'server_ip' => ['required', 'ip'],
-            'api_active' => ['boolean'],
         ]);
 
-        // Save server configuration to text file
         $configData = [
             'server_ip' => $validated['server_ip'],
-            'api_active' => $validated['api_active'],
         ];
 
-        // Ensure the config directory exists
         $configDir = storage_path('app/config');
         if (!File::exists($configDir)) {
             File::makeDirectory($configDir, 0755, true);
         }
 
-        // Save to JSON file
         File::put($configDir . '/server_config.json', json_encode($configData, JSON_PRETTY_PRINT));
 
-        return redirect()
-            ->back()
-            ->with('success', 'Server configuration saved successfully!');
+        return redirect()->back()->with('success', 'Server configuration saved successfully!');
     }
 
     // Helper method to format timetable data for display
@@ -383,6 +374,5 @@ class MainController extends Controller
         return $html;
     }
     //Studnets End
-
 
 }

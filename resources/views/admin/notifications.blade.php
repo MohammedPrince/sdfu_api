@@ -668,9 +668,7 @@
 
             @if ($notifications->hasPages())
                 <div class="notifications-pagination">
-
-                    {{ $notifications->withQueryString()->links() }}
-
+                    {{ $notifications->appends(request()->except('page'))->links() }}
                 </div>
             @endif
 

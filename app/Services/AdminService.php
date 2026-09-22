@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Repositories\AdminRepository;
 use Illuminate\Support\Collection;
 
-
 class AdminService
 {
 
@@ -127,4 +126,8 @@ class AdminService
     }
     //Studnets End
 
+    public function syncTimetableData(string $facultyCode, string $majorCode, string $batch, int $semester, int $ttid)
+    {
+        return $this->adminRepository->syncTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
+    }
 }

@@ -364,6 +364,7 @@ class ExternalDatabaseService
                 'remark' => $row->remark ?? '',
 
                 'gpa' => number_format((float) $row->gpa, 2, '.', ''),
+
                 'cgpa' => number_format((float) $row->cgpa, 2, '.', ''),
 
                 'status' => $row->status_desc_e,
@@ -588,6 +589,87 @@ class ExternalDatabaseService
         return ['days' => $days];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Timetable Tables - Raw Data Fetch Methods
+    |--------------------------------------------------------------------------
+    */
+
+    public function getLabTimetable($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        return DB::connection('mysql_ott')
+            ->table('lab_timetable')
+            ->where('TTID', $ttid)
+            ->where('Faculty_Code', $faculty_code)
+            ->where('Major_Code', $major_code)
+            ->where('Batch_Year', $batch)
+            ->where('Deleted', 0)
+            ->get();
+    }
+
+    public function getClassrooms($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        // Assuming tbl_classrooms is not filtered by timetable specifics, but we can still filter by faculty/major/batch if needed
+        return DB::connection('mysql_ott')
+            ->table('tbl_classrooms')
+            ->where('Faculty_Code', $faculty_code)
+            ->where('Major_Code', $major_code)
+            ->where('Batch_Year', $batch)
+            ->get();
+    }
+
+    public function getCourses($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        return DB::connection('mysql_ott')
+            ->table('tbl_courses')
+            ->where('Faculty_Code', $faculty_code)
+            ->where('Major_Code', $major_code)
+            ->where('Batch_Year', $batch)
+            ->where('new_course_flag', '<>', 0)
+            ->get();
+    }
+
+    public function getInstructors($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        return DB::connection('mysql_ott')
+            ->table('tbl_instructors')
+            ->where('Faculty_Code', $faculty_code)
+            ->where('Major_Code', $major_code)
+            ->where('Batch_Year', $batch)
+            ->get();
+    }
+
+    public function getSettingTimetable($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        return DB::connection('mysql_ott')
+            ->table('tbl_setting_timetable')
+            ->where('TTID', $ttid)
+            ->where('Faculty_Code', $faculty_code)
+            ->where('Major_Code', $major_code)
+            ->where('Batch_Year', $batch)
+            ->where('Dissolved', 0)
+            ->get();
+    }
+
+    public function getTim($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        return DB::connection('mysql_ott')
+            ->table('tim')
+            ->get(); // Assuming tim is not filtered by timetable specifics
+    }
+
+    public function getTimetables($faculty_code, $major_code, $batch, $semester, $ttid)
+    {
+        // Assuming there is a timetables table? If not, we might need to adjust.
+        return DB::connection('mysql_ott')
+            ->table('timetables')
+            ->where('TTID', $ttid)
+            ->where('Faculty_Code', $faculty_code)
+            ->where('Major_Code', $major_code)
+            ->where('Batch_Year', $batch)
+            ->get();
+    }
+
     public function updateMoodlePassword($username, $newPassword): bool
     {
 
@@ -657,12 +739,18 @@ class ExternalDatabaseService
 
     public function faculties(): Collection
     {
-        return DB::connection('mysql_sis')->table('faculty')->where('deleted', 0)->get();
+        return DB::connection('mysql_sis')
+            ->table('faculty')
+            ->where('deleted', 0)
+            ->get();
     }
 
     public function majors(): Collection
     {
-        return DB::connection('mysql_sis')->table('major')->where('deleted', 0)->get();
+        return DB::connection('mysql_sis')
+            ->table('major')
+            ->where('deleted', 0)
+            ->get();
     }
 
     public function batches(): Collection
@@ -674,13 +762,52 @@ class ExternalDatabaseService
             ->orderBy('batch')
             ->get();
     }
-
     public function majorsByFaculty(string $facultyCode): Collection
     {
         return DB::connection('mysql_sis')
             ->table('major')
             ->where('faculty_code', $facultyCode)
             ->get();
+    }
+
+    //DB Opreations
+
+    public function truncateTable(string $table): void
+    {
+        DB::table($table)->truncate();
+    }
+
+    public function insertTable(string $table, Collection|array $data): void
+    {
+        $rows = $data instanceof Collection
+            ? $data->toArray()
+            : $data;
+
+        if (empty($rows)) {
+            return;
+        }
+
+        DB::table($table)->insert($rows);
+    }
+
+    public function beginTransaction(): void
+    {
+        DB::beginTransaction();
+    }
+
+    public function commit(): void
+    {
+        DB::commit();
+    }
+
+    public function rollBack(): void
+    {
+        DB::rollBack();
+    }
+
+    public function transactionLevel(): int
+    {
+        return DB::transactionLevel();
     }
 
 }

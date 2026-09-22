@@ -100,6 +100,37 @@
             </span>
         </a>
 
+        <a href="{{ url('/admin/manage/timetable') }}"
+            class="admin-nav-item
+            {{ request()->is('admin/manage/timetable') ? 'active' : '' }}">
+            <span class="admin-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor"
+                        stroke-width="1.8" />
+
+                    <path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M7 14H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M12 14H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M17 14H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M7 18H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    <path d="M12 18H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+            </span>
+
+            <span class="admin-nav-text">
+                Pull Timetable
+            </span>
+        </a>
+
 
         <div class="admin-menu-label admin-menu-label-spaced">
             REPORTS

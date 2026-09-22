@@ -1,8 +1,8 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Manage Timetable')
+@section('title', 'Pull Timetable')
 
-@section('page-title', 'Manage Timetable')
+@section('page-title', 'Pull Timetable')
 
 @section('page-description', 'Fetch timetable data from local server and configure server connection')
 
@@ -28,7 +28,6 @@
             </div>
         @endif
 
-
         {{-- ========================================================= --}}
         {{-- TIMETABLE FETCH CONFIGURATION --}}
         {{-- ========================================================= --}}
@@ -36,10 +35,91 @@
         <div class="manage-settings-grid">
 
             {{-- ===================================================== --}}
+            {{-- RIGHT: SERVER CONFIGURATION --}}
+            {{-- ===================================================== --}}
+
+            <div class="admin-card server-config-card">
+
+                <div class="admin-card-header">
+
+                    <div>
+
+                        <h3>Server Configuration</h3>
+
+                        <p>
+                            Configure the local server IP address for API connections.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                @if (!$serverConfig)
+                    <div class="empty-state">
+
+                        <p>
+                            No server configuration found. Please save your server settings below.
+                        </p>
+
+                    </div>
+                @else
+                    <div class="settings-section">
+                        <h4>Current Server Settings</h4>
+                        <div class="config-item">
+                            <span class="config-label">Server IP:</span>
+                            <span class="config-value">{{ $serverConfig['server_ip'] ?? 'Not configured' }}</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">API Endpoint:</span>
+                            <span
+                                class="config-value">{{ $serverConfig['server_ip'] ? 'http://' . $serverConfig['server_ip'] . '/index.php' : 'Not configured' }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('admin.manage.timetable.server.config') }}">
+
+                    @csrf
+
+                    <div class="form-grid">
+
+                        <div class="form-group form-group-full">
+
+
+
+                            <label for="server_ip">
+                                Local Server IP Address
+                            </label>
+
+                            <input type="text" name="server_ip" id="search" class="form-control"
+                                placeholder="Enter server IP (e.g., 192.168.1.100)"
+                                value="{{ old('server_ip', $serverConfig['server_ip'] ?? '') }}">
+
+                            <small class="form-text text-muted">
+                                Enter the IP address of your local server where the index.php API is hosted.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-actions">
+
+                        <button type="submit" class="btn-primary">
+                            Save Configuration
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            {{-- ===================================================== --}}
             {{-- LEFT: FETCH TIMETABLE SETTINGS --}}
             {{-- ===================================================== --}}
 
-            <div class="admin-card">
+            <div class="admin-card saved-settings-card">
 
                 <div class="admin-card-header">
                     <div>
@@ -55,7 +135,6 @@
                 <form method="POST" action="{{ route('admin.manage.timetable.fetch') }}">
 
                     @csrf
-
                     {{-- Academic Selection --}}
                     <div class="settings-section">
 
@@ -86,7 +165,6 @@
 
                             </div>
 
-
                             {{-- Major --}}
                             <div class="form-group">
 
@@ -110,7 +188,6 @@
 
                             </div>
 
-
                             {{-- Batch --}}
                             <div class="form-group">
 
@@ -133,7 +210,6 @@
                                 </select>
 
                             </div>
-
 
                             {{-- Semester --}}
                             <div class="form-group">
@@ -170,16 +246,13 @@
                                         Select TTID
                                     </option>
                                     <!-- TTID options will be populated via JavaScript or can be hardcoded common values -->
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
                                     <option value="30">30</option>
+                                    <option value="31">31</option>
+                                    <option value="32">32</option>
+                                    <option value="33">33</option>
+                                    <option value="34">34</option>
+                                    <option value="35">35</option>
                                     <option value="40">40</option>
-                                    <option value="50">50</option>
                                 </select>
 
                             </div>
@@ -188,126 +261,10 @@
 
                     </div>
 
-
                     <div class="form-actions">
 
                         <button type="submit" class="btn-primary">
                             Fetch Timetable
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-
-            {{-- ===================================================== --}}
-            {{-- RIGHT: SERVER CONFIGURATION --}}
-            {{-- ===================================================== --}}
-
-            <div class="admin-card server-config-card">
-
-                <div class="admin-card-header">
-
-                    <div>
-
-                        <h3>Server Configuration</h3>
-
-                        <p>
-                            Configure the local server IP address for API connections.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                @if ($savedSettings->isEmpty())
-                    <div class="empty-state">
-
-                        <p>
-                            No server configuration found. Please save your server settings below.
-                        </p>
-
-                    </div>
-                @else
-                    <?php
-                    $serverConfig = null;
-                    foreach ($savedSettings as $setting) {
-                        if ($setting['faculty_code'] === 'SERVER_CONFIG' && $setting['major_code'] === 'TIMETABLE_API') {
-                            $serverConfig = $setting;
-                            break;
-                        }
-                    }
-                    ?>
-                    <div class="server-config-info">
-                        <h4>Current Server Settings</h4>
-                        <div class="config-item">
-                            <span class="config-label">Server IP:</span>
-                            <span
-                                class="config-value">{{ isset($serverConfig) && isset($serverConfig['server_ip']) ? $serverConfig['server_ip'] : 'Not configured' }}</span>
-                        </div>
-                        <div class="config-item">
-                            <span class="config-label">API Endpoint:</span>
-                            <span
-                                class="config-value">{{ isset($serverConfig) && isset($serverConfig['server_ip']) ? 'http://' . $serverConfig['server_ip'] . '/index.php' : 'Not configured' }}</span>
-                        </div>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('admin.manage.timetable.server.config') }}">
-
-                    @csrf
-                    <?php
-                    $serverConfig = null;
-                    foreach ($savedSettings as $setting) {
-                        if ($setting['faculty_code'] === 'SERVER_CONFIG' && $setting['major_code'] === 'TIMETABLE_API') {
-                            $serverConfig = $setting;
-                            break;
-                        }
-                    }
-                    ?>
-
-                    <div class="form-group">
-
-                        <label for="server_ip">
-                            Local Server IP Address
-                        </label>
-
-                        <input type="text" name="server_ip" id="server_ip" class="form-control"
-                            placeholder="Enter server IP (e.g., 192.168.1.100)"
-                            value="{{ old('server_ip', isset($serverConfig) && isset($serverConfig['server_ip']) ? $serverConfig['server_ip'] : '') }}">
-
-                        <small class="form-text text-muted">
-                            Enter the IP address of your local server where the index.php API is hosted.
-                        </small>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="api_active">
-                            Enable Timetable API
-                        </label>
-
-                        <label class="switch">
-
-                            <input type="hidden" name="api_active" value="0">
-
-                            <input type="checkbox" name="api_active" value="1"
-                                {{ old('api_active', isset($serverConfig) && isset($serverConfig['api_active']) ? $serverConfig['api_active'] : 1) ? 'checked' : '' }}>
-
-                            <span class="slider"></span>
-
-                        </label>
-
-                    </div>
-
-                    <div class="form-actions">
-
-                        <button type="submit" class="btn-primary">
-                            Save Server Configuration
                         </button>
 
                     </div>
@@ -341,46 +298,13 @@
 
             </div>
         @endif
-
     </div>
 
     @push('scripts')
         <script>
             window.adminMajorsUrl = @json(url('/admin/manage/majors'));
-
-            // AJAX call to update majors when faculty changes
-            document.getElementById('faculty_code')?.addEventListener('change', function(e) {
-                const facultyCode = e.target.value;
-                const majorSelect = document.getElementById('major_code');
-
-                if (!facultyCode) {
-                    majorSelect.innerHTML = '<option value="">Select Major</option>';
-                    return;
-                }
-
-                // Show loading state
-                majorSelect.innerHTML = '<option value="">Loading majors...</option>';
-                majorSelect.disabled = true;
-
-                fetch(window.adminMajorsUrl + '?faculty_code=' + encodeURIComponent(facultyCode))
-                    .then(response => response.json())
-                    .then(data => {
-                        majorSelect.innerHTML = '<option value="">Select Major</option>';
-                        data.forEach(major => {
-                            const option = document.createElement('option');
-                            option.value = major.major_code;
-                            option.textContent = major.major_desc_e;
-                            majorSelect.appendChild(option);
-                        });
-                        majorSelect.disabled = false;
-                    })
-                    .catch(() => {
-                        majorSelect.innerHTML = '<option value="">Select Major</option>';
-                        majorSelect.disabled = false;
-                    });
-            });
         </script>
-
         <script src="{{ asset('js/admin/script.js') }}"></script>
     @endpush
+
 @endsection
