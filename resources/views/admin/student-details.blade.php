@@ -41,8 +41,7 @@
 
 
             <div>
-
-                @if ($student->is_active)
+                @if ($student->account_active)
                     <span class="status-badge status-active large">
                         Active Account
                     </span>
@@ -51,7 +50,6 @@
                         Inactive Account
                     </span>
                 @endif
-
             </div>
 
         </div>
@@ -94,13 +92,11 @@
 
 
             <div class="student-stat-card">
-
                 <span>Account</span>
 
                 <strong>
-                    {{ $student->is_active ? 'Active' : 'Inactive' }}
+                    {{ $student->account_active ? 'Active' : 'Inactive' }}
                 </strong>
-
             </div>
 
         </div>
