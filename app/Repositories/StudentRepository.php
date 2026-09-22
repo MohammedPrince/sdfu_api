@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -302,13 +303,20 @@ class StudentRepository
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
 
-        $faculty = $this->externalDatabase->getFacultyName($faculty_code);
-        $major = $this->externalDatabase->getMajorName($major_code);
-
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addHours(1), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $faculty, $major, $stud_full_name, $phone, $email, $gender) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addHours(1), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_full_name, $phone, $email, $gender, $this, $cacheKey) {
+            Log::debug('Cache miss for student profile and result', ['cache_key' => "{$cacheKey}:profile_result", 'student_id' => $stud_id]);
+
+            // Fetch faculty and major names
+            Log::debug('Fetching faculty name', ['faculty_code' => $faculty_code]);
+            $faculty = $this->externalDatabase->getFacultyName($faculty_code);
+            Log::debug('Faculty name fetched', ['faculty' => $faculty]);
+
+            Log::debug('Fetching major name', ['major_code' => $major_code]);
+            $major = $this->externalDatabase->getMajorName($major_code);
+            Log::debug('Major name fetched', ['major' => $major]);
 
             $studentData = [
                 'stud_id' => $stud_id,
@@ -324,6 +332,7 @@ class StudentRepository
                 'gender' => $gender ?? null,
             ];
 
+            Log::debug('Fetching student result', ['stud_id' => $stud_id, 'faculty_code' => $faculty_code, 'major_code' => $major_code, 'batch' => $batch, 'semester' => $semester]);
             $results = $this->externalDatabase->getStudentResult(
                 $stud_id,
                 $faculty_code,
@@ -331,6 +340,7 @@ class StudentRepository
                 $batch,
                 $semester
             );
+            Log::debug('Student result fetched', ['count' => \count($results ?? [])]);
 
             $semesterResult = null;
 
@@ -365,13 +375,6 @@ class StudentRepository
             ];
         });
 
-        if ($studentAndResult === null) {
-            return [
-                'success' => false,
-                'code' => 404,
-                'message' => 'Student Profile Not Found'
-            ];
-        }
 
         $studentData = $studentAndResult['studentData'];
         $semesterResult = $studentAndResult['semesterResult'];
@@ -398,7 +401,14 @@ class StudentRepository
                 );
 
                 if (!$raw) {
-                    return null;
+                    return [
+                        'total_fees' => 0,
+                        'fees_type' => null,
+                        'end_date' => null,
+                        'days_remaining' => 0,
+                        'registration_closed' => false,
+                        'status' => null,
+                    ];
                 }
 
                 $end_date = $raw->end_date;

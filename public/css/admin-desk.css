@@ -3683,3 +3683,36 @@ button,
     }
 }
 
+/* Reports pagination */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination-wrapper nav {
+    display: flex;
+    align-items: center;
+}
+
+.pagination-wrapper svg {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.pagination-wrapper a,
+.pagination-wrapper span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.pagination-wrapper svg path {
+    vector-effect: none;
+}

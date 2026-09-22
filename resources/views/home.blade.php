@@ -62,11 +62,7 @@
 
                         Explore services
 
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
 
                             <path d="M5 12h14" />
                             <path d="m13 6 6 6-6 6" />
@@ -114,10 +110,7 @@
 
                         <div class="notification">
 
-                            <svg viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.7">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
 
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9" />
 
@@ -150,10 +143,7 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                                     <path d="M4 19V5" />
 
@@ -181,10 +171,7 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                                     <rect x="3" y="5" width="18" height="15" rx="2" />
 
@@ -212,10 +199,7 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                                     <circle cx="12" cy="12" r="9" />
 
@@ -241,10 +225,7 @@
 
                             <div class="mini-icon">
 
-                                <svg viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                                     <rect x="3" y="5" width="18" height="14" rx="2" />
 
@@ -404,10 +385,7 @@
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                             <path d="M4 19V5" />
                             <path d="M4 5h13a3 3 0 0 1 3 3v11H7a3 3 0 0 0-3 3" />
@@ -433,10 +411,7 @@
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                             <rect x="3" y="5" width="18" height="15" rx="2" />
                             <path d="M7 3v4" />
@@ -463,10 +438,7 @@
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                             <path d="M4 7h16" />
                             <path d="M4 12h16" />
@@ -496,10 +468,7 @@
 
                     <div class="feature-icon">
 
-                        <svg viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
 
                             <rect x="3" y="5" width="18" height="14" rx="2" />
 
@@ -535,18 +504,10 @@
 
                         <svg viewBox="0 0 24 24" fill="none">
 
-                            <path
-                                d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linejoin="round" />
+                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor"
+                                stroke-width="1.8" stroke-linejoin="round" />
 
-                            <circle
-                                cx="12"
-                                cy="12"
-                                r="2.5"
-                                stroke="currentColor"
-                                stroke-width="1.8" />
+                            <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8" />
 
                         </svg>
 
@@ -573,18 +534,10 @@
 
                         <svg viewBox="0 0 24 24" fill="none">
 
-                            <path
-                                d="M4 19V5M4 19H20"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round" />
+                            <path d="M4 19V5M4 19H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
 
-                            <path
-                                d="M7 15L10 11L13 13L19 7"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                                stroke-linecap="round"
-                                stroke-linejoin="round" />
+                            <path d="M7 15L10 11L13 13L19 7" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" />
 
                         </svg>
 
