@@ -60,6 +60,11 @@ class AdminService
         return $this->adminRepository->majorsByFaculty($facultyCode);
     }
 
+    public function getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid)
+    {
+        return $this->adminRepository->getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid);
+    }
+
     public function getSavedSettings()
     {
         return $this->adminRepository->getSavedSettings();

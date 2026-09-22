@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->id();
 
             // Academic scope
-            $table->unsignedBigInteger('faculty_code')->nullable();
-            $table->unsignedBigInteger('major_code')->nullable();
+            $table->string('faculty_code', 20)->nullable();
+            $table->string('major_code', 20)->nullable();
             $table->string('batch', 20)->nullable();
             $table->unsignedTinyInteger('semester')->nullable();
 

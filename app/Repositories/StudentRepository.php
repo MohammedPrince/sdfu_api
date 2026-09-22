@@ -306,7 +306,7 @@ class StudentRepository
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addHours(1), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_full_name, $phone, $email, $gender, $this, $cacheKey) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addHours(1), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_full_name, $phone, $email, $gender, $cacheKey) {
             Log::debug('Cache miss for student profile and result', ['cache_key' => "{$cacheKey}:profile_result", 'student_id' => $stud_id]);
 
             // Fetch faculty and major names

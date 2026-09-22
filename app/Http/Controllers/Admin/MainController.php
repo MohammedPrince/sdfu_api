@@ -8,6 +8,7 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\AdminService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 
 
@@ -263,6 +264,123 @@ class MainController extends Controller
             'batches' => $batches,
             'filters' => $validated,
         ]);
+    }
+
+    public function manageTimeTable()
+    {
+        $faculties = $this->adminService->getFaculties();
+        $majors = $this->adminService->getMajors();
+        $batches = $this->adminService->getBatches();
+
+        // For TTID, we'll need to get this from somewhere - let's use a default or get from settings
+        // For now, we'll pass empty arrays and let the view handle it or we can get from database
+        $savedSettings = $this->adminService->getSavedSettings();
+
+        // Load server configuration from file
+        $serverConfig = null;
+        $configFile = storage_path('app/config/server_config.json');
+        if (File::exists($configFile)) {
+            $configData = json_decode(File::get($configFile), true);
+            if (is_array($configData)) {
+                $serverConfig = $configData;
+            }
+        }
+
+        return view('admin.manage_timetable', compact(
+            'faculties',
+            'majors',
+            'batches',
+            'savedSettings',
+            'serverConfig'
+        ));
+    }
+
+    public function fetchTimetable(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_code' => ['required', 'string', 'max:50'],
+            'major_code' => ['required', 'string', 'max:50'],
+            'batch' => ['required', 'string', 'max:50'],
+            'semester' => ['required', 'integer', 'min:1', 'max:12'],
+            'ttid' => ['required', 'integer'],
+        ]);
+
+        // Fetch timetable data from external database service
+        $timetableData = $this->adminService->getTimetable(
+            $validated['faculty_code'],
+            $validated['major_code'],
+            $validated['batch'],
+            $validated['semester'],
+            $validated['ttid']
+        );
+
+        // Store timetable data in session to display in view
+        if (!empty($timetableData['days'])) {
+            // Format the timetable data for display
+            $formattedData = $this->formatTimetableForDisplay($timetableData);
+            return redirect()
+                ->back()
+                ->with('timetable_data', $formattedData)
+                ->with('success', 'Timetable data fetched successfully!');
+        } else {
+            return redirect()
+                ->back()
+                ->with('error', 'No timetable data found for the selected criteria.');
+        }
+    }
+
+    public function saveServerConfig(Request $request)
+    {
+        $validated = $request->validate([
+            'server_ip' => ['required', 'ip'],
+            'api_active' => ['boolean'],
+        ]);
+
+        // Save server configuration to text file
+        $configData = [
+            'server_ip' => $validated['server_ip'],
+            'api_active' => $validated['api_active'],
+        ];
+
+        // Ensure the config directory exists
+        $configDir = storage_path('app/config');
+        if (!File::exists($configDir)) {
+            File::makeDirectory($configDir, 0755, true);
+        }
+
+        // Save to JSON file
+        File::put($configDir . '/server_config.json', json_encode($configData, JSON_PRETTY_PRINT));
+
+        return redirect()
+            ->back()
+            ->with('success', 'Server configuration saved successfully!');
+    }
+
+    // Helper method to format timetable data for display
+    private function formatTimetableForDisplay($timetableData)
+    {
+        $html = '<div class="timetable-table-responsive">';
+        $html .= '<table class="timetable-table">';
+        $html .= '<thead><tr>';
+        $html .= '<th>Time/Day</th>';
+
+        // Add day headers
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        foreach ($days as $day) {
+            $html .= '<th>' . $day . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+
+        // We'll simplify this for now - in a real implementation, you'd format the data properly
+        // For now, we'll just show a success message and raw data
+        $html .= '<tr><td colspan="8">';
+        $html .= '<pre class="timetable-raw-data">' . print_r($timetableData, true) . '</pre>';
+        $html .= '</td></tr>';
+
+        $html .= '</tbody></table>';
+        $html .= '</div>';
+
+        return $html;
     }
     //Studnets End
 

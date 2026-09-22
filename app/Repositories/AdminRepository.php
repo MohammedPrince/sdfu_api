@@ -232,6 +232,20 @@ class AdminRepository
         return $majors;
     }
 
+    public function getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid)
+    {
+        // stud_id is not actually used in the getStudentTimetable method for the queries,
+        // but we need to pass something. We'll pass 0 as a placeholder.
+        return $this->externalDatabase->getStudentTimetable(
+            0, // stud_id - placeholder, not used in queries
+            $facultyCode,
+            $majorCode,
+            $batch,
+            $semester,
+            $ttid
+        );
+    }
+
     //Studnets Start
     public function getStudents(array $filters): LengthAwarePaginator
     {

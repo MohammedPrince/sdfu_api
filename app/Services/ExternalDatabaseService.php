@@ -409,7 +409,7 @@ class ExternalDatabaseService
             ->first();
     }
 
-    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester)
+    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester, $ttid = 40)
     {
         // NOTE: swap 'mysql_ott' for whatever this connection is actually
         // named in config/database.php — the original code's "mysql_fib"
@@ -418,11 +418,6 @@ class ExternalDatabaseService
 
         $group = 1;
         $newCourseFlag = 1;
-        $ttid = 40;
-
-        $faculty_code = 2;
-        $major_code = 2;
-        $batch = '2022';
 
         // Lecture/tutorial bindings — only keys that appear in $lectureQuery /
         // $fallbackQuery below. PDO throws "Invalid parameter number:

@@ -22,6 +22,7 @@ class SystemSetting extends Model
 
         'show_result',
         'show_timetable',
+        'server_ip',
     ];
 
     protected $casts = [
