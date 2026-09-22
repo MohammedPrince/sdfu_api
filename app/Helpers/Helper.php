@@ -80,9 +80,10 @@ class Helper
             ->where('semester', $student->semester)
             ->first();
 
+        // No setting = Active by default
         return $setting
             ? (bool) $setting->api_active
-            : false;
+            : true;
     }
 
     public static function studentToken(User $student): string
@@ -158,7 +159,7 @@ class Helper
 
     public static function checkApplicationStatus(): array
     {
-        
+
         if (!self::isAuthenticated()) {
             return [
                 'success' => false,
