@@ -1141,17 +1141,6 @@ class AdminRepository
                 'message' => $apiResponse['message']
                     ?? 'Local timetable server returned an error.',
                 'server_ip' => $serverIp,
-
-                'timetableData' => [
-                    'timetableDetails' => $timetableData ?? [],
-                    'classRoomDetails' => $classroomsData ?? [],
-                    'courseDetails' => $coursesData ?? [],
-                    'instructorDetails' => $instructorsData ?? [],
-                    'labTimetableDetails' => $labTimetableData ?? [],
-                    'settingTimetable' => $settingTimetableData ?? [],
-                    'timeDetails' => $timData ?? [],
-                    'seasonDetails' => $timetablesData ?? [],
-                ],
             ];
         }
 
@@ -1392,6 +1381,7 @@ class AdminRepository
                 'message' => 'Timetable synchronization completed successfully.',
                 'duration' => $duration . ' sec',
                 'server_ip' => $serverIp,
+
                 'records' => [
                     'lab_timetable' => $labCount,
                     'tbl_classrooms' => $classroomsCount,
@@ -1400,6 +1390,16 @@ class AdminRepository
                     'tbl_setting_timetable' => $settingCount,
                     'tim' => $timCount,
                     'timetables' => $timetablesCount,
+                ],
+                
+                'timetableData' => [
+                    'timetableDetails' => $localData['timetableDetails'] ?? [],
+                    'classRoomDetails' => $localData['classRoomDetails'] ?? [],
+                    'courseDetails' => $localData['courseDetails'] ?? [],
+                    'instructorDetails' => $localData['instructorDetails'] ?? [],
+                    'labTimetableDetails' => $localData['labTimetableDetails'] ?? [],
+                    'timeDetails' => $localData['timeDetails'] ?? [],
+                    'seasonDetails' => $localData['seasonDetails'] ?? [],
                 ],
             ];
 

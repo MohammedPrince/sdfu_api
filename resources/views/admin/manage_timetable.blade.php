@@ -9,6 +9,78 @@
 @section('content')
 
     <div class="manage-page">
+        <style>
+            .timetable-table-responsive {
+                overflow-x: auto;
+                margin-top: 1rem;
+            }
+
+            .timetable-grid {
+                min-width: 600px;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .timetable-grid th,
+            .timetable-grid td {
+                border: 1px solid #dee2e6;
+                padding: 0.75rem;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .time-slot-header {
+                background-color: #f8f9fa;
+                font-weight: bold;
+                width: 100px;
+            }
+
+            .day-header {
+                background-color: #e9ecef;
+                font-weight: 600;
+                min-width: 100px;
+            }
+
+            .time-slot {
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }
+
+            .timetable-cell {
+                min-height: 60px;
+                position: relative;
+            }
+
+            .timetable-cell.empty-cell {
+                background-color: #f8f9fa;
+            }
+
+            .timetable-cell:hover {
+                background-color: #e9ecef;
+                cursor: default;
+            }
+
+            .timetable-cell small {
+                display: block;
+                font-size: 0.75em;
+                opacity: 0.8;
+                margin-top: 0.25rem;
+            }
+
+            @media (max-width: 768px) {
+
+                .timetable-grid th,
+                .timetable-grid td {
+                    padding: 0.5rem;
+                    font-size: 0.875rem;
+                }
+
+                .time-slot-header,
+                .day-header {
+                    min-width: 80px;
+                }
+            }
+        </style>
 
         {{-- Success --}}
         @if (session('success'))
@@ -283,6 +355,7 @@
             <div class="admin-card timetable-results-card">
 
                 <div class="admin-card-header">
+
                     <div>
                         <h3>Timetable Data</h3>
 
@@ -290,12 +363,43 @@
                             Retrieved timetable data from local server.
                         </p>
                     </div>
+
                 </div>
 
+                {{-- Sync statistics --}}
+                @if (session('timetable_records'))
+                    <div class="settings-section">
+
+                        <h4>Synchronization Summary</h4>
+
+                        <div class="form-grid">
+
+                            @foreach (session('timetable_records') as $table => $count)
+                                <div class="config-item">
+
+                                    <span class="config-label">
+                                        {{ ucwords(str_replace('_', ' ', $table)) }}
+                                    </span>
+
+                                    <span class="config-value">
+                                        {{ $count }}
+                                    </span>
+
+                                </div>
+                            @endforeach
+
+                        </div>
+
+                    </div>
+                @endif
+
+                {{-- Timetable --}}
                 <div class="timetable-container">
+
                     @if (session('timetable_html'))
                         {!! session('timetable_html') !!}
                     @endif
+
                 </div>
 
             </div>

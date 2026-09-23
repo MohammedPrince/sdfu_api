@@ -356,14 +356,18 @@ class MainController extends Controller
 
         if ($result['success']) {
 
+            $timetableData = $result['timetableData'] ?? [];
+
             $timetableHtml = $this->formatTimetableForDisplay(
-                $result['timetableData'] ?? []
+                $timetableData
             );
 
             return redirect()
                 ->back()
                 ->with('success', $result['message'])
-                ->with('timetable_html', $timetableHtml);
+                ->with('timetable_data', $timetableData)
+                ->with('timetable_html', $timetableHtml)
+                ->with('timetable_records', $result['records'] ?? []);
         }
 
         return redirect()
@@ -395,26 +399,156 @@ class MainController extends Controller
 
         return redirect()->back()->with('success', 'Server configuration saved successfully!');
     }
+
     // Helper method to format timetable data for display
     private function formatTimetableForDisplay($timetableData)
     {
+        // Handle empty data
+        if (empty($timetableData)) {
+            return '<div class="alert alert-info">No timetable data available for the selected criteria.</div>';
+        }
+
+        // Define time slots (standard university timetable slots)
+        $timeSlots = [
+            '08:00 - 09:00',
+            '09:00 - 10:00',
+            '10:00 - 11:00',
+            '11:00 - 12:00',
+            '12:00 - 13:00',
+            '13:00 - 14:00',
+            '14:00 - 15:00',
+            '15:00 - 16:00',
+            '16:00 - 17:00'
+        ];
+
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Initialize timetable grid
+        $timetableGrid = [];
+        foreach ($timeSlots as $slot) {
+            $timetableGrid[$slot] = array_fill(0, count($days), '');
+        }
+
+        // Process timetable data - handle different possible data structures
+        if (is_array($timetableData)) {
+            // Check if it's a list of classes
+            if (!empty($timetableData) && is_array($timetableData[0])) {
+                foreach ($timetableData as $class) {
+                    // Handle different possible data structures
+                    $day = null;
+                    $startTime = null;
+                    $endTime = null;
+                    $subject = 'Unknown Subject';
+                    $room = '';
+                    $instructor = '';
+
+                    // Try to extract data from various possible formats
+                    if (isset($class['day'])) {
+                        $day = $class['day'];
+                    } elseif (isset($class['Day'])) {
+                        $day = $class['Day'];
+                    }
+
+                    if (isset($class['start_time'])) {
+                        $startTime = $class['start_time'];
+                    } elseif (isset($class['StartTime'])) {
+                        $startTime = $class['StartTime'];
+                    }
+
+                    if (isset($class['end_time'])) {
+                        $endTime = $class['end_time'];
+                    } elseif (isset($class['EndTime'])) {
+                        $endTime = $class['EndTime'];
+                    }
+
+                    if (isset($class['subject'])) {
+                        $subject = $class['subject'];
+                    } elseif (isset($class['Subject'])) {
+                        $subject = $class['Subject'];
+                    } elseif (isset($class['course_name'])) {
+                        $subject = $class['course_name'];
+                    }
+
+                    if (isset($class['room'])) {
+                        $room = $class['room'];
+                    } elseif (isset($class['Room'])) {
+                        $room = $class['Room'];
+                    }
+
+                    if (isset($class['instructor'])) {
+                        $instructor = $class['instructor'];
+                    } elseif (isset($class['Instructor'])) {
+                        $instructor = $class['Instructor'];
+                    } elseif (isset($class['teacher'])) {
+                        $instructor = $class['teacher'];
+                    }
+
+                    // Only process if we have essential data
+                    if ($day && $startTime && $endTime) {
+                        // Find matching time slot
+                        foreach ($timeSlots as $slot) {
+                            list($slotStart) = explode(' - ', $slot);
+                            if ($slotStart == $startTime) {
+                                // Find day index
+                                $dayIndex = array_search($day, $days);
+                                if ($dayIndex !== false) {
+                                    // Build class info string
+                                    $classInfo = "<strong>{$subject}</strong>";
+                                    if (!empty($room)) {
+                                        $classInfo .= "<br/><small>Room: {$room}</small>";
+                                    }
+                                    if (!empty($instructor)) {
+                                        $classInfo .= "<br/><small>Instructor: {$instructor}</small>";
+                                    }
+
+                                    $timetableGrid[$slot][$dayIndex] = $classInfo;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            // Handle case where data is already formatted or in different structure
+            else {
+                // Fallback to showing structured data
+                ob_start();
+                echo '<pre class="timetable-data">';
+                print_r($timetableData);
+                echo '</pre>';
+                $html = ob_get_clean();
+                return '<div class="timetable-table-responsive"><div class="alert alert-info">Timetable data received (raw format):</div>' . $html . '</div>';
+            }
+        }
+
+        // Build HTML table
         $html = '<div class="timetable-table-responsive">';
-        $html .= '<table class="timetable-table">';
+        $html .= '<table class="table table-bordered timetable-grid">';
         $html .= '<thead><tr>';
-        $html .= '<th>Time/Day</th>';
+        $html .= '<th class="time-slot-header">Time/Day</th>';
 
         // Add day headers
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         foreach ($days as $day) {
-            $html .= '<th>' . $day . '</th>';
+            $html .= '<th class="day-header">' . $day . '</th>';
         }
         $html .= '</tr></thead><tbody>';
 
-        // We'll simplify this for now - in a real implementation, you'd format the data properly
-        // For now, we'll just show a success message and raw data
-        $html .= '<tr><td colspan="8">';
-        $html .= '<pre class="timetable-raw-data">' . print_r($timetableData, true) . '</pre>';
-        $html .= '</td></tr>';
+        // Add time slots and data
+        foreach ($timeSlots as $timeSlot) {
+            $html .= '<tr>';
+            $html .= '<td class="time-slot fw-bold">' . $timeSlot . '</td>';
+
+            foreach ($days as $dayIndex => $dayName) {
+                $cellContent = $timetableGrid[$timeSlot][$dayIndex] ?? '';
+                if (!empty($cellContent)) {
+                    $html .= '<td class="timetable-cell">' . $cellContent . '</td>';
+                } else {
+                    $html .= '<td class="timetable-cell empty-cell"></td>';
+                }
+            }
+
+            $html .= '</tr>';
+        }
 
         $html .= '</tbody></table>';
         $html .= '</div>';
