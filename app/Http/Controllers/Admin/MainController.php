@@ -431,93 +431,54 @@ class MainController extends Controller
 
         // Process timetable data - handle different possible data structures
         if (is_array($timetableData)) {
-            // Check if it's a list of classes
-            if (!empty($timetableData) && is_array($timetableData[0])) {
-                foreach ($timetableData as $class) {
-                    // Handle different possible data structures
-                    $day = null;
-                    $startTime = null;
-                    $endTime = null;
-                    $subject = 'Unknown Subject';
-                    $room = '';
-                    $instructor = '';
 
-                    // Try to extract data from various possible formats
-                    if (isset($class['day'])) {
-                        $day = $class['day'];
-                    } elseif (isset($class['Day'])) {
-                        $day = $class['Day'];
-                    }
+            /*
+            |--------------------------------------------------------------------------
+            | Structure 1: Full timetable response
+            |--------------------------------------------------------------------------
+            */
+            if (
+                isset($timetableData['timetableDetails'])
+                && is_array($timetableData['timetableDetails'])
+            ) {
 
-                    if (isset($class['start_time'])) {
-                        $startTime = $class['start_time'];
-                    } elseif (isset($class['StartTime'])) {
-                        $startTime = $class['StartTime'];
-                    }
+                $classes = $timetableData['timetableDetails'];
 
-                    if (isset($class['end_time'])) {
-                        $endTime = $class['end_time'];
-                    } elseif (isset($class['EndTime'])) {
-                        $endTime = $class['EndTime'];
-                    }
+                /*
+                |--------------------------------------------------------------------------
+                | Structure 2: Flat list of classes
+                |--------------------------------------------------------------------------
+                */
+            } elseif (array_is_list($timetableData)) {
 
-                    if (isset($class['subject'])) {
-                        $subject = $class['subject'];
-                    } elseif (isset($class['Subject'])) {
-                        $subject = $class['Subject'];
-                    } elseif (isset($class['course_name'])) {
-                        $subject = $class['course_name'];
-                    }
+                $classes = $timetableData;
 
-                    if (isset($class['room'])) {
-                        $room = $class['room'];
-                    } elseif (isset($class['Room'])) {
-                        $room = $class['Room'];
-                    }
+                /*
+                |--------------------------------------------------------------------------
+                | Unknown structure
+                |--------------------------------------------------------------------------
+                */
+            } else {
 
-                    if (isset($class['instructor'])) {
-                        $instructor = $class['instructor'];
-                    } elseif (isset($class['Instructor'])) {
-                        $instructor = $class['Instructor'];
-                    } elseif (isset($class['teacher'])) {
-                        $instructor = $class['teacher'];
-                    }
-
-                    // Only process if we have essential data
-                    if ($day && $startTime && $endTime) {
-                        // Find matching time slot
-                        foreach ($timeSlots as $slot) {
-                            list($slotStart) = explode(' - ', $slot);
-                            if ($slotStart == $startTime) {
-                                // Find day index
-                                $dayIndex = array_search($day, $days);
-                                if ($dayIndex !== false) {
-                                    // Build class info string
-                                    $classInfo = "<strong>{$subject}</strong>";
-                                    if (!empty($room)) {
-                                        $classInfo .= "<br/><small>Room: {$room}</small>";
-                                    }
-                                    if (!empty($instructor)) {
-                                        $classInfo .= "<br/><small>Instructor: {$instructor}</small>";
-                                    }
-
-                                    $timetableGrid[$slot][$dayIndex] = $classInfo;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
+                $classes = [];
             }
-            // Handle case where data is already formatted or in different structure
-            else {
-                // Fallback to showing structured data
-                ob_start();
-                echo '<pre class="timetable-data">';
-                print_r($timetableData);
-                echo '</pre>';
-                $html = ob_get_clean();
-                return '<div class="timetable-table-responsive"><div class="alert alert-info">Timetable data received (raw format):</div>' . $html . '</div>';
+
+            foreach ($classes as $class) {
+
+                if (!is_array($class)) {
+                    continue;
+                }
+
+                // Process $class here
+
+                $day = null;
+                $startTime = null;
+                $endTime = null;
+                $subject = 'Unknown Subject';
+                $room = '';
+                $instructor = '';
+
+                // ...
             }
         }
 
