@@ -91,8 +91,8 @@
                                 Local Server IP Address
                             </label>
 
-                            <input type="text" name="server_ip" id="search" class="form-control"
-                                placeholder="Enter server IP (e.g., 192.168.1.100)"
+                            <input type="text" name="server_ip" id="server_ip" class="form-control"
+                                placeholder="Enter server address (e.g., 192.168.1.100 or 192.168.1.100:8080)"
                                 value="{{ old('server_ip', $serverConfig['server_ip'] ?? '') }}">
 
                             <small class="form-text text-muted">

@@ -854,13 +854,13 @@ class StudentRepository
         $user = Auth::user();
         $studentHelper = Helper::studentData();
 
-        $old_password = $studentHelper['password'];
+        $oldPassword = $studentHelper['password'];
 
-        if (!password_verify($currentPassword, $old_password)) {
+        if (empty($oldPassword) || !Hash::check($currentPassword, $oldPassword)) {
             return [
                 'success' => false,
                 'code' => 422,
-                'message' => 'Current password not correct, try again'
+                'message' => 'Current password not correct, try again',
             ];
         }
 

@@ -330,9 +330,11 @@ class MainController extends Controller
     public function saveServerConfig(Request $request)
     {
         $validated = $request->validate([
-            'server_ip' => ['required', 'ip'],
+            'server_ip' => [
+                'required',
+                'regex:/^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?::(?:\d{1,5}))?$/',
+            ],
         ]);
-
         $configData = [
             'server_ip' => $validated['server_ip'],
         ];

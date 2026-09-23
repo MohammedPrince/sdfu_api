@@ -14,6 +14,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class AdminRepository
 {
@@ -1356,7 +1357,7 @@ class AdminRepository
             'app/config/server_config.json'
         );
 
-        $serverAddress = 'unknown';
+        $serverIp = 'unknown';
 
         if (File::exists($configFile)) {
 
@@ -1369,19 +1370,27 @@ class AdminRepository
                 is_array($configData) &&
                 !empty($configData['server_ip'])
             ) {
-                $serverAddress = trim($configData['server_ip']);
+                $serverIp = trim($configData['server_ip']);
             }
         }
 
-        $serverIp = 'http://' . $serverAddress . '/ott/api/index.php?' . http_build_query([
-            'faculty_code' => $facultyCode,
-            'major_code' => $majorCode,
-            'batch' => $batch,
-            'semester' => $semester,
-            'ttid' => $ttid,
-        ]);
+        $url = 'http://' . $serverIp . '/ott/api/index.php';
 
-       // dd($serverIp);
+        $response = Http::timeout(30)
+            ->get($url, [
+                'faculty_code' => $facultyCode,
+                'major_code' => $majorCode,
+                'batch' => $batch,
+                'semester' => $semester,
+                'ttid' => $ttid,
+            ]);
+
+        dd([
+            'url' => $response->effectiveUri(),
+            'status' => $response->status(),
+            'successful' => $response->successful(),
+            'response' => $response->body(),
+        ]);
 
 
         /*
