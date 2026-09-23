@@ -832,33 +832,71 @@ class StudentRepository
 
     public function updatePassword($data)
     {
+        $currentPassword = (string) ($data['current_password'] ?? '');
+        $newPassword = (string) ($data['new_password'] ?? '');
+        $newPasswordConfirm = (string) ($data['new_password_confirm'] ?? '');
 
-        $currentPassword = trim($data['current_password'] ?? null);
-        $newPassword = trim($data['new_password'] ?? null);
-        $newPasswordConfirm = trim($data['new_password_confirm'] ?? null);
-
-        //Check application status
+        // Check application status
         $applicationStatus = Helper::checkApplicationStatus();
+
         if (!$applicationStatus['success']) {
             return $applicationStatus;
         }
 
+        // Check authentication
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
                 'code' => 401,
-                'message' => 'Student not authenticated'
+                'message' => 'Student not authenticated',
             ];
         }
 
         $user = Auth::user();
-        $studentHelper = Helper::studentData();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validate current password
+        |--------------------------------------------------------------------------
+        */
 
-        // Get password directly from the authenticated User model
-        $oldPassword = $user->password;
+        if ($currentPassword === '') {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Current password is required',
+            ];
+        }
 
-        if (empty($oldPassword) || (!password_verify($currentPassword, $oldPassword))) {
+        /*
+        |--------------------------------------------------------------------------
+        | Get Moodle student
+        |--------------------------------------------------------------------------
+        */
+
+        $moodleStudent = $this->externalDatabase->getMoodleStudent($user->stud_index);
+
+        if (!$moodleStudent) {
+            return [
+                'success' => false,
+                'code' => 404,
+                'message' => 'Student account not found in Moodle',
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify current password against Moodle password
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty($moodleStudent->password) ||
+            !password_verify(
+                $currentPassword,
+                $moodleStudent->password
+            )
+        ) {
             return [
                 'success' => false,
                 'code' => 422,
@@ -866,45 +904,78 @@ class StudentRepository
             ];
         }
 
-        if ($newPassword != $newPasswordConfirm) {
+        /*
+        |--------------------------------------------------------------------------
+        | Validate new password
+        |--------------------------------------------------------------------------
+        */
+
+        if ($newPassword === '') {
             return [
                 'success' => false,
-                'code' => 401,
-                'message' => 'Password is miss-match'
+                'code' => 422,
+                'message' => 'New password is required',
             ];
         }
 
-        //Update it on Moodle DB
-        // $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($stud_id, $newPassword);
+        if ($newPassword !== $newPasswordConfirm) {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Password is miss-match',
+            ];
+        }
+
+        if (strlen($newPassword) < 6) {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'Password must be at least 6 characters',
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Moodle password
+        |--------------------------------------------------------------------------
+        */
+
+        // $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($user->stud_index,$newPassword);
+
         // if (!$moodleUpdatedPassword) {
         //     return [
         //         'success' => false,
         //         'code' => 500,
-        //         'message' => 'Password updated locally, but Moodle password update failed',
+        //         'message' => 'Password update failed in Moodle',
         //     ];
         // }
 
-        //Update it on SDFU DB
+        /*
+        |--------------------------------------------------------------------------
+        | Update local SDFU password
+        |--------------------------------------------------------------------------
+        */
+
         $user->password = Hash::make($newPassword);
         $user->save();
 
-        //Delete current user token
-        // $currentToken = $user->currentAccessToken();
-        // if ($currentToken) {
-        //     $user->tokens()->where('id', $currentToken->id)->delete();
-        // }
+        /*
+        |--------------------------------------------------------------------------
+        | Delete current Sanctum token
+        |--------------------------------------------------------------------------
+        */
 
         $currentToken = $user->currentAccessToken();
+
         if ($currentToken instanceof PersonalAccessToken) {
-            $user->tokens()->where('id', $currentToken->id)->delete();
+            $currentToken->delete();
         }
 
         return [
             'success' => true,
             'code' => 200,
-            'message' => 'Password updated, token deleted successfully',
+            'message' => 'Password updated successfully. Please login again.',
         ];
-
     }
 
     public function logout()
