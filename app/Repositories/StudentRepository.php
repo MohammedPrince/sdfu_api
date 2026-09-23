@@ -710,6 +710,7 @@ class StudentRepository
         $status = null;
         $fees_type = null;
         $today = Carbon::today();
+        $paymentStatus = false;
 
         $getFeeDetails = $this->externalDatabase->getStudentFees($stud_id, $faculty_code, $major_code, $batch, $semester);
 
@@ -736,8 +737,10 @@ class StudentRepository
                 $status = 'Registration is closed.';
             } elseif ($total_fee_bank == 0 || $viewData == 0) {
                 $status = 'Check with faculty registrar for fee details';
-            } elseif ($viewData == 2) {
-                $status = 'Paid';
+            }
+
+            if ($viewData == 2) {
+                $paymentStatus = true;
             }
 
             $fees_type = in_array($semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
@@ -749,6 +752,7 @@ class StudentRepository
                 'days_remaining' => $daysRemaining,
                 'registration_closed' => $registration_closed,
                 'status' => $status,
+                'paid' => $paymentStatus,
             ];
 
             $studentDetails = [
