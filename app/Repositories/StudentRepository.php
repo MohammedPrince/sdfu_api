@@ -302,6 +302,7 @@ class StudentRepository
 
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
+        $paymentStatus = false;
 
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
@@ -431,8 +432,10 @@ class StudentRepository
                     $status = 'Registration is closed.';
                 } elseif ($total_fee_bank == 0 || $viewData == 0) {
                     $status = 'Check with faculty registrar for fee details';
-                } elseif ($viewData == 2) {
-                    $status = 'Paid';
+                }
+
+                if ($viewData == 2) {
+                    $paymentStatus = true;
                 }
 
                 $fees_type = in_array((int) $semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
@@ -444,6 +447,7 @@ class StudentRepository
                     'days_remaining' => $daysRemaining,
                     'registration_closed' => $registration_closed,
                     'status' => $status,
+                    'paid' => $paymentStatus,
                 ];
             }
         );
@@ -467,7 +471,6 @@ class StudentRepository
         //         $semester
         //     )
         // );
-
 
         $timetable = $this->externalDatabase->getStudentTimetable(
             $stud_id,
