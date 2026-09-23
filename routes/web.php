@@ -19,12 +19,14 @@ Route::get('/clear', function () {
 
 //Home
 Route::get('/', [MainController::class, 'index']);
+Route::get('/test_connection', [MainController::class, 'testConnection']);
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('guest')->group(function () {
         Route::get('/', [AuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+
     });
 
 

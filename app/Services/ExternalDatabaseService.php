@@ -611,14 +611,17 @@ class ExternalDatabaseService
             ->get();
     }
 
-    public function getClassrooms($faculty_code, $major_code, $batch, $semester, $ttid)
-    {
-        // Assuming tbl_classrooms is not filtered by timetable specifics, but we can still filter by faculty/major/batch if needed
+    public function getClassrooms(
+        string $facultyCode,
+        string $majorCode,
+        string $batch,
+        int $semester,
+        int $ttid
+    ): Collection {
         return DB::connection('mysql_ott')
             ->table('tbl_classrooms')
-            ->where('Faculty_Code', $faculty_code)
-            ->where('Major_Code', $major_code)
-            ->where('Batch_Year', $batch)
+            ->where('Faculty_Code', $facultyCode)
+            ->orderByDesc('Class_ID')
             ->get();
     }
 
@@ -775,10 +778,11 @@ class ExternalDatabaseService
     }
 
     //DB Opreations
-
     public function truncateTable(string $table): void
     {
-        DB::table($table)->truncate();
+        DB::connection('mysql_ott')
+            ->table($table)
+            ->truncate();
     }
 
     public function insertTable(string $table, Collection|array $data): void
@@ -791,27 +795,68 @@ class ExternalDatabaseService
             return;
         }
 
-        DB::table($table)->insert($rows);
+        DB::connection('mysql_ott')
+            ->table($table)
+            ->insert($rows);
+    }
+
+    public function upsertTable(
+        string $table,
+        Collection|array $data,
+        array $uniqueBy,
+        int $chunkSize = 1000
+    ): int {
+        $rows = $data instanceof Collection
+            ? $data->toArray()
+            : $data;
+
+        if (empty($rows)) {
+            return 0;
+        }
+
+        $connection = DB::connection('mysql_ott');
+
+        $rows = array_values($rows);
+
+        $count = 0;
+
+        foreach (array_chunk($rows, $chunkSize) as $chunk) {
+
+            $connection
+                ->table($table)
+                ->upsert(
+                    $chunk,
+                    $uniqueBy,
+                    array_keys($chunk[0])
+                );
+
+            $count += count($chunk);
+        }
+
+        return $count;
     }
 
     public function beginTransaction(): void
     {
-        DB::beginTransaction();
+        DB::connection('mysql_ott')->beginTransaction();
     }
 
     public function commit(): void
     {
-        DB::commit();
+        DB::connection('mysql_ott')->commit();
     }
 
     public function rollBack(): void
     {
-        DB::rollBack();
+        DB::connection('mysql_ott')->rollBack();
     }
 
     public function transactionLevel(): int
     {
-        return DB::transactionLevel();
+        return DB::connection('mysql_ott')->transactionLevel();
     }
+
+
+
 
 }

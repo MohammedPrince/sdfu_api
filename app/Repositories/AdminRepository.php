@@ -9,12 +9,13 @@ use App\Models\User;
 use App\Models\UserDevice;
 use App\Models\Visitor;
 use App\Services\ExternalDatabaseService;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class AdminRepository
 {
@@ -959,386 +960,7 @@ class AdminRepository
             ->paginate(10);
     }
 
-    // public function saveTimetableData($faculty_code, $major_code, $batch, $semester, $ttid)
-    // {
-    //     // Load server configuration from file
-    //     $configFile = storage_path('app/config/server_config.json');
-    //     $serverIp = 'unknown';
-    //     if (File::exists($configFile)) {
-    //         $configData = json_decode(File::get($configFile), true);
-    //         if (is_array($configData) && isset($configData['server_ip'])) {
-    //             $serverIp = $configData['server_ip'];
-    //         }
-    //     }
 
-    //     ini_set('memory_limit', '1024M');
-    //     set_time_limit(300);
-
-    //     $startTime = microtime(true);
-    //     $currentStep = 'Initialization';
-
-    //     try {
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Lab Timetable
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         if (!empty($faculty_code) && !empty($major_code) && !empty($batch) && !empty($semester) && !empty($ttid)) {
-    //             $currentStep = 'Lab Timetable';
-    //             DB::beginTransaction();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Lab Timetable Sync Started',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'faculty_code' => $faculty_code,
-    //                     'major_code' => $major_code,
-    //                     'batch' => $batch,
-    //                     'semester' => $semester,
-    //                     'ttid' => $ttid
-    //                 ]
-    //             );
-
-    //             $labTimetableData = $this->externalDatabase->getLabTimetable(
-    //                 $faculty_code,
-    //                 $major_code,
-    //                 $batch,
-    //                 $semester,
-    //                 $ttid
-    //             );
-
-    //             // Truncate local table and insert fresh data
-    //             DB::table('lab_timetable')->truncate();
-    //             if (!empty($labTimetableData)) {
-    //                 DB::table('lab_timetable')->insert($labTimetableData->toArray());
-    //             }
-
-    //             DB::commit();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Lab Timetable Sync Completed',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'count' => $labTimetableData->count()
-    //                 ]
-    //             );
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Classrooms
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         if (!empty($faculty_code) && !empty($major_code) && !empty($batch)) {
-    //             $currentStep = 'Classrooms';
-    //             DB::beginTransaction();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Classrooms Sync Started',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'faculty_code' => $faculty_code,
-    //                     'major_code' => $major_code,
-    //                     'batch' => $batch
-    //                 ]
-    //             );
-
-    //             $classroomsData = $this->externalDatabase->getClassrooms(
-    //                 $faculty_code,
-    //                 $major_code,
-    //                 $batch,
-    //                 $semester,
-    //                 $ttid
-    //             );
-
-    //             // Truncate local table and insert fresh data
-    //             DB::table('tbl_classrooms')->truncate();
-    //             if (!empty($classroomsData)) {
-    //                 DB::table('tbl_classrooms')->insert($classroomsData->toArray());
-    //             }
-
-    //             DB::commit();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Classrooms Sync Completed',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'count' => $classroomsData->count()
-    //                 ]
-    //             );
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Courses
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         if (!empty($faculty_code) && !empty($major_code) && !empty($batch)) {
-    //             $currentStep = 'Courses';
-    //             DB::beginTransaction();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Courses Sync Started',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'faculty_code' => $faculty_code,
-    //                     'major_code' => $major_code,
-    //                     'batch' => $batch
-    //                 ]
-    //             );
-
-    //             $coursesData = $this->externalDatabase->getCourses(
-    //                 $faculty_code,
-    //                 $major_code,
-    //                 $batch,
-    //                 $semester,
-    //                 $ttid
-    //             );
-
-    //             // Truncate local table and insert fresh data
-    //             DB::table('tbl_courses')->truncate();
-    //             if (!empty($coursesData)) {
-    //                 DB::table('tbl_courses')->insert($coursesData->toArray());
-    //             }
-
-    //             DB::commit();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Courses Sync Completed',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'count' => $coursesData->count()
-    //                 ]
-    //             );
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Instructors
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         if (!empty($faculty_code) && !empty($major_code) && !empty($batch)) {
-    //             $currentStep = 'Instructors';
-    //             DB::beginTransaction();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Instructors Sync Started',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'faculty_code' => $faculty_code,
-    //                     'major_code' => $major_code,
-    //                     'batch' => $batch
-    //                 ]
-    //             );
-
-    //             $instructorsData = $this->externalDatabase->getInstructors(
-    //                 $faculty_code,
-    //                 $major_code,
-    //                 $batch,
-    //                 $semester,
-    //                 $ttid
-    //             );
-
-    //             // Truncate local table and insert fresh data
-    //             DB::table('tbl_instructors')->truncate();
-    //             if (!empty($instructorsData)) {
-    //                 DB::table('tbl_instructors')->insert($instructorsData->toArray());
-    //             }
-
-    //             DB::commit();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Instructors Sync Completed',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'count' => $instructorsData->count()
-    //                 ]
-    //             );
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Setting Timetable
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         if (!empty($faculty_code) && !empty($major_code) && !empty($batch) && !empty($ttid)) {
-    //             $currentStep = 'Setting Timetable';
-    //             DB::beginTransaction();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Setting Timetable Sync Started',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'faculty_code' => $faculty_code,
-    //                     'major_code' => $major_code,
-    //                     'batch' => $batch,
-    //                     'ttid' => $ttid
-    //                 ]
-    //             );
-
-    //             $settingTimetableData = $this->externalDatabase->getSettingTimetable(
-    //                 $faculty_code,
-    //                 $major_code,
-    //                 $batch,
-    //                 $semester,
-    //                 $ttid
-    //             );
-
-    //             // Truncate local table and insert fresh data
-    //             DB::table('tbl_setting_timetable')->truncate();
-    //             if (!empty($settingTimetableData)) {
-    //                 DB::table('tbl_setting_timetable')->insert($settingTimetableData->toArray());
-    //             }
-
-    //             DB::commit();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Setting Timetable Sync Completed',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'count' => $settingTimetableData->count()
-    //                 ]
-    //             );
-    //         }
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Tim
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         $currentStep = 'Tim';
-    //         DB::beginTransaction();
-
-    //         Log::channel('ersLogs')->info(
-    //             'Tim Sync Started',
-    //             [
-    //                 'server_ip' => $serverIp
-    //             ]
-    //         );
-
-    //         $timData = $this->externalDatabase->getTim(
-    //             $faculty_code,
-    //             $major_code,
-    //             $batch,
-    //             $semester,
-    //             $ttid
-    //         );
-
-    //         // Truncate local table and insert fresh data
-    //         DB::table('tim')->truncate();
-    //         if (!empty($timData)) {
-    //             DB::table('tim')->insert($timData->toArray());
-    //         }
-
-    //         DB::commit();
-
-    //         Log::channel('ersLogs')->info(
-    //             'Tim Sync Completed',
-    //             [
-    //                 'server_ip' => $serverIp,
-    //                 'count' => $timData->count()
-    //             ]
-    //         );
-
-    //         /*
-    //         |--------------------------------------------------------------------------
-    //         | Timetables
-    //         |--------------------------------------------------------------------------
-    //         */
-    //         if (!empty($faculty_code) && !empty($major_code) && !empty($batch) && !empty($ttid)) {
-    //             $currentStep = 'Timetables';
-    //             DB::beginTransaction();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Timetables Sync Started',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'faculty_code' => $faculty_code,
-    //                     'major_code' => $major_code,
-    //                     'batch' => $batch,
-    //                     'ttid' => $ttid
-    //                 ]
-    //             );
-
-    //             $timetablesData = $this->externalDatabase->getTimetables(
-    //                 $faculty_code,
-    //                 $major_code,
-    //                 $batch,
-    //                 $semester,
-    //                 $ttid
-    //             );
-
-    //             // Truncate local table and insert fresh data
-    //             DB::table('timetables')->truncate();
-    //             if (!empty($timetablesData)) {
-    //                 DB::table('timetables')->insert($timetablesData->toArray());
-    //             }
-
-    //             DB::commit();
-
-    //             Log::channel('ersLogs')->info(
-    //                 'Timetables Sync Completed',
-    //                 [
-    //                     'server_ip' => $serverIp,
-    //                     'count' => $timetablesData->count()
-    //                 ]
-    //             );
-    //         }
-
-    //         $duration = round(
-    //             microtime(true) - $startTime,
-    //             2
-    //         );
-
-    //         Log::channel('ersLogs')->info(
-    //             'Timetable Synchronization Completed',
-    //             [
-    //                 'duration' => $duration . ' sec',
-    //                 'server_ip' => $serverIp
-    //             ]
-    //         );
-
-    //         return [
-    //             'success' => true,
-    //             'code' => 200,
-    //             'message' => 'Timetable synchronization completed successfully.',
-    //             'duration' => $duration . ' sec',
-    //             'server_ip' => $serverIp
-    //         ];
-
-    //     } catch (\Throwable $e) {
-
-    //         if (DB::transactionLevel() > 0) {
-    //             DB::rollBack();
-    //         }
-
-    //         Log::channel('ersLogs')->error(
-    //             'Timetable Synchronization Failed',
-    //             [
-    //                 'step' => $currentStep,
-    //                 'message' => $e->getMessage(),
-    //                 'file' => $e->getFile(),
-    //                 'line' => $e->getLine(),
-    //                 'server_ip' => $serverIp ?? 'unknown'
-    //             ]
-    //         );
-
-    //         return [
-    //             'success' => false,
-    //             'code' => 500,
-    //             'failed_step' => $currentStep,
-    //             'message' => $e->getMessage(),
-    //             'server_ip' => $serverIp ?? 'unknown'
-    //         ];
-    //     }
-    // }
-
-
-
-    /**
-     * Synchronize timetable data from the local timetable server
-     * into the online timetable database.
-     */
     public function syncTimetableData(
         string $facultyCode,
         string $majorCode,
@@ -1346,6 +968,20 @@ class AdminRepository
         int $semester,
         int $ttid
     ): array {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Runtime Settings
+        |--------------------------------------------------------------------------
+        */
+
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
+        $startTime = microtime(true);
+
+        $currentStep = 'Initialization';
+
 
         /*
         |--------------------------------------------------------------------------
@@ -1374,10 +1010,52 @@ class AdminRepository
             }
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Server Configuration
+        |--------------------------------------------------------------------------
+        */
+
+        if ($serverIp === 'unknown') {
+
+            return [
+                'success' => false,
+                'code' => 500,
+                'message' => 'Local timetable server is not configured.',
+                'server_ip' => $serverIp,
+            ];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Local Timetable API
+        |--------------------------------------------------------------------------
+        */
+
         $url = 'http://' . $serverIp . '/ott/api/index.php';
 
-        $response = Http::timeout(30)
-            ->get($url, [
+        try {
+
+            $response = Http::timeout(30)
+                ->get($url, [
+                    'faculty_code' => $facultyCode,
+                    'major_code' => $majorCode,
+                    'batch' => $batch,
+                    'semester' => $semester,
+                    'ttid' => $ttid,
+                ]);
+
+
+          
+
+        } catch (Throwable $e) {
+
+            Log::error('Local Timetable Server Connection Failed', [
+                'message' => $e->getMessage(),
+                'server_ip' => $serverIp,
+                'url' => $url,
                 'faculty_code' => $facultyCode,
                 'major_code' => $majorCode,
                 'batch' => $batch,
@@ -1385,41 +1063,114 @@ class AdminRepository
                 'ttid' => $ttid,
             ]);
 
-        dd([
-            'url' => $response->effectiveUri(),
-            'status' => $response->status(),
-            'successful' => $response->successful(),
-            'response' => $response->body(),
-        ]);
+            return [
+                'success' => false,
+                'code' => 500,
+                'message' => 'Unable to connect to the local timetable server.',
+                'server_ip' => $serverIp,
+            ];
+        }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Runtime Settings
+        | Validate HTTP Response
         |--------------------------------------------------------------------------
         */
 
-        ini_set('memory_limit', '1024M');
+        if (!$response->successful()) {
 
-        set_time_limit(300);
+            Log::error('Local Timetable Server Returned HTTP Error', [
+                'status' => $response->status(),
+                'server_ip' => $serverIp,
+                'url' => $url,
+                'response' => $response->body(),
+            ]);
+
+            return [
+                'success' => false,
+                'code' => 500,
+                'message' => 'Local timetable server returned HTTP status '
+                    . $response->status() . '.',
+                'server_ip' => $serverIp,
+            ];
+        }
 
 
-        $startTime = microtime(true);
+        /*
+        |--------------------------------------------------------------------------
+        | Decode JSON Response
+        |--------------------------------------------------------------------------
+        */
 
-        $currentStep = 'Initialization';
+        $apiResponse = $response->json();
 
+
+       // dd($apiResponse);
+
+        if (!is_array($apiResponse)) {
+
+            return [
+                'success' => false,
+                'code' => 500,
+                'message' => 'Invalid response received from local timetable server.',
+                'server_ip' => $serverIp,
+            ];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check API Status
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            ($apiResponse['status'] ?? null) !== 'success' ||
+            (int) ($apiResponse['code'] ?? 0) !== 200
+        ) {
+
+            Log::warning('Local Timetable API Returned Error', [
+                'server_ip' => $serverIp,
+                'response' => $apiResponse,
+            ]);
+
+            return [
+                'success' => false,
+                'code' => (int) ($apiResponse['code'] ?? 500),
+                'message' => $apiResponse['message']
+                    ?? 'Local timetable server returned an error.',
+                'server_ip' => $serverIp,
+            ];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Extract Local Server Data
+        |--------------------------------------------------------------------------
+        */
+
+        $localData = $apiResponse['LocalServerData'] ?? null;
+
+        if (!is_array($localData)) {
+
+            return [
+                'success' => false,
+                'code' => 500,
+                'message' => 'Local timetable server returned no timetable data.',
+                'server_ip' => $serverIp,
+            ];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Start mysql_ott Transaction
+        |--------------------------------------------------------------------------
+        */
 
         try {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Start One Transaction
-            |--------------------------------------------------------------------------
-            |
-            | All timetable tables are synchronized as one operation.
-            | If any step fails, everything is rolled back.
-            |
-            */
 
             $this->externalDatabase->beginTransaction();
 
@@ -1432,47 +1183,23 @@ class AdminRepository
 
             $currentStep = 'Lab Timetable';
 
-            Log::info(
-                'Lab Timetable Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $labTimetableData =
-                $this->externalDatabase->getLabTimetable(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['labTimetableDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'lab_timetable'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $labCount = $this->externalDatabase->upsertTable(
                 'lab_timetable',
-                $labTimetableData
+                $labTimetableData,
+                ['Id']
             );
 
-
-            Log::info(
-                'Lab Timetable Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $labTimetableData->count(),
-                ]
-            );
+            Log::info('Lab Timetable Sync Completed', [
+                'count' => $labCount,
+                'faculty_code' => $facultyCode,
+                'major_code' => $majorCode,
+                'batch' => $batch,
+                'semester' => $semester,
+                'ttid' => $ttid,
+            ]);
 
 
             /*
@@ -1483,47 +1210,19 @@ class AdminRepository
 
             $currentStep = 'Classrooms';
 
-            Log::info(
-                'Classrooms Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $classroomsData =
-                $this->externalDatabase->getClassrooms(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['classRoomDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'tbl_classrooms'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $classroomsCount = $this->externalDatabase->upsertTable(
                 'tbl_classrooms',
-                $classroomsData
+                $classroomsData,
+                ['Class_ID']
             );
 
-
-            Log::info(
-                'Classrooms Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $classroomsData->count(),
-                ]
-            );
+            Log::info('Classrooms Sync Completed', [
+                'count' => $classroomsCount,
+                'faculty_code' => $facultyCode,
+            ]);
 
 
             /*
@@ -1534,47 +1233,22 @@ class AdminRepository
 
             $currentStep = 'Courses';
 
-            Log::info(
-                'Courses Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $coursesData =
-                $this->externalDatabase->getCourses(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['courseDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'tbl_courses'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $coursesCount = $this->externalDatabase->upsertTable(
                 'tbl_courses',
-                $coursesData
+                $coursesData,
+                ['Id']
             );
 
-
-            Log::info(
-                'Courses Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $coursesData->count(),
-                ]
-            );
+            Log::info('Courses Sync Completed', [
+                'count' => $coursesCount,
+                'faculty_code' => $facultyCode,
+                'major_code' => $majorCode,
+                'batch' => $batch,
+                'semester' => $semester,
+            ]);
 
 
             /*
@@ -1585,47 +1259,19 @@ class AdminRepository
 
             $currentStep = 'Instructors';
 
-            Log::info(
-                'Instructors Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $instructorsData =
-                $this->externalDatabase->getInstructors(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['instructorDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'tbl_instructors'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $instructorsCount = $this->externalDatabase->upsertTable(
                 'tbl_instructors',
-                $instructorsData
+                $instructorsData,
+                ['Instructor_ID']
             );
 
-
-            Log::info(
-                'Instructors Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $instructorsData->count(),
-                ]
-            );
+            Log::info('Instructors Sync Completed', [
+                'count' => $instructorsCount,
+                'faculty_code' => $facultyCode,
+            ]);
 
 
             /*
@@ -1636,47 +1282,22 @@ class AdminRepository
 
             $currentStep = 'Setting Timetable';
 
-            Log::info(
-                'Setting Timetable Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $settingTimetableData =
-                $this->externalDatabase->getSettingTimetable(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['timetableDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'tbl_setting_timetable'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $settingCount = $this->externalDatabase->upsertTable(
                 'tbl_setting_timetable',
-                $settingTimetableData
+                $settingTimetableData,
+                ['Id']
             );
 
-
-            Log::info(
-                'Setting Timetable Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $settingTimetableData->count(),
-                ]
-            );
+            Log::info('Setting Timetable Sync Completed', [
+                'count' => $settingCount,
+                'faculty_code' => $facultyCode,
+                'major_code' => $majorCode,
+                'batch' => $batch,
+                'ttid' => $ttid,
+            ]);
 
 
             /*
@@ -1687,98 +1308,40 @@ class AdminRepository
 
             $currentStep = 'Tim';
 
-            Log::info(
-                'Tim Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $timData =
-                $this->externalDatabase->getTim(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['timeDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'tim'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $timCount = $this->externalDatabase->upsertTable(
                 'tim',
-                $timData
+                $timData,
+                ['id']
             );
 
-
-            Log::info(
-                'Tim Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $timData->count(),
-                ]
-            );
+            Log::info('Tim Sync Completed', [
+                'count' => $timCount,
+            ]);
 
 
             /*
             |--------------------------------------------------------------------------
-            | 7. Timetables
+            | 7. Timetables / Seasons
             |--------------------------------------------------------------------------
             */
 
             $currentStep = 'Timetables';
 
-            Log::info(
-                'Timetables Sync Started',
-                [
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
-
-
             $timetablesData =
-                $this->externalDatabase->getTimetables(
-                    $facultyCode,
-                    $majorCode,
-                    $batch,
-                    $semester,
-                    $ttid
-                );
+                $localData['seasonDetails'] ?? [];
 
-
-            $this->externalDatabase->truncateTable(
-                'timetables'
-            );
-
-
-            $this->externalDatabase->insertTable(
+            $timetablesCount = $this->externalDatabase->upsertTable(
                 'timetables',
-                $timetablesData
+                $timetablesData,
+                ['TTID']
             );
 
-
-            Log::info(
-                'Timetables Sync Completed',
-                [
-                    'server_ip' => $serverIp,
-                    'count' => $timetablesData->count(),
-                ]
-            );
+            Log::info('Timetables Sync Completed', [
+                'count' => $timetablesCount,
+            ]);
 
 
             /*
@@ -1801,19 +1364,15 @@ class AdminRepository
                 2
             );
 
-
-            Log::info(
-                'Timetable Synchronization Completed',
-                [
-                    'duration' => $duration . ' sec',
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
+            Log::info('Timetable Synchronization Completed', [
+                'duration' => $duration . ' sec',
+                'server_ip' => $serverIp,
+                'faculty_code' => $facultyCode,
+                'major_code' => $majorCode,
+                'batch' => $batch,
+                'semester' => $semester,
+                'ttid' => $ttid,
+            ]);
 
 
             return [
@@ -1822,8 +1381,16 @@ class AdminRepository
                 'message' => 'Timetable synchronization completed successfully.',
                 'duration' => $duration . ' sec',
                 'server_ip' => $serverIp,
+                'records' => [
+                    'lab_timetable' => $labCount,
+                    'tbl_classrooms' => $classroomsCount,
+                    'tbl_courses' => $coursesCount,
+                    'tbl_instructors' => $instructorsCount,
+                    'tbl_setting_timetable' => $settingCount,
+                    'tim' => $timCount,
+                    'timetables' => $timetablesCount,
+                ],
             ];
-
 
         } catch (Throwable $e) {
 
@@ -1833,9 +1400,7 @@ class AdminRepository
             |--------------------------------------------------------------------------
             */
 
-            if (
-                $this->externalDatabase->transactionLevel() > 0
-            ) {
+            if ($this->externalDatabase->transactionLevel() > 0) {
                 $this->externalDatabase->rollBack();
             }
 
@@ -1846,21 +1411,18 @@ class AdminRepository
             |--------------------------------------------------------------------------
             */
 
-            Log::error(
-                'Timetable Synchronization Failed',
-                [
-                    'step' => $currentStep,
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'server_ip' => $serverIp,
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'ttid' => $ttid,
-                ]
-            );
+            Log::error('Timetable Synchronization Failed', [
+                'step' => $currentStep,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'server_ip' => $serverIp,
+                'faculty_code' => $facultyCode,
+                'major_code' => $majorCode,
+                'batch' => $batch,
+                'semester' => $semester,
+                'ttid' => $ttid,
+            ]);
 
 
             return [
@@ -1872,6 +1434,10 @@ class AdminRepository
             ];
         }
     }
+
+
+
+
 
 
 }

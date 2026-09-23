@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Services\AdminService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-
+use Illuminate\Support\Facades\Http;
 
 
 class MainController extends Controller
@@ -18,6 +18,47 @@ class MainController extends Controller
     public function __construct(AdminService $adminService)
     {
         $this->adminService = $adminService;
+    }
+
+    public function testConnection()
+    {
+        $url = 'http://41.41.217.230/ott/api/index.php?faculty_code=2&major_code=2&batch=2022&semester=1&ttid=40';
+
+        try {
+
+            $response = Http::acceptJson()
+                ->connectTimeout(15)
+                ->timeout(30)
+                ->get($url, [
+                    'faculty_code' => 3,
+                    'major_code' => 3,
+                    'batch' => 2023,
+                    'semester' => 2,
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection successful',
+                'http_code' => $response->status(),
+                'data' => $response->json(),
+            ], $response->status());
+
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Connection failed',
+                'error' => $e->getMessage(),
+            ], 500);
+
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Request failed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function index()
