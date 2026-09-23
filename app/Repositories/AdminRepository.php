@@ -1048,7 +1048,7 @@ class AdminRepository
                 ]);
 
 
-          
+
 
         } catch (Throwable $e) {
 
@@ -1106,7 +1106,7 @@ class AdminRepository
         $apiResponse = $response->json();
 
 
-       // dd($apiResponse);
+        // dd($apiResponse);
 
         if (!is_array($apiResponse)) {
 
@@ -1141,6 +1141,17 @@ class AdminRepository
                 'message' => $apiResponse['message']
                     ?? 'Local timetable server returned an error.',
                 'server_ip' => $serverIp,
+
+                'timetableData' => [
+                    'timetableDetails' => $timetableData ?? [],
+                    'classRoomDetails' => $classroomsData ?? [],
+                    'courseDetails' => $coursesData ?? [],
+                    'instructorDetails' => $instructorsData ?? [],
+                    'labTimetableDetails' => $labTimetableData ?? [],
+                    'settingTimetable' => $settingTimetableData ?? [],
+                    'timeDetails' => $timData ?? [],
+                    'seasonDetails' => $timetablesData ?? [],
+                ],
             ];
         }
 

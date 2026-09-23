@@ -293,7 +293,9 @@
                 </div>
 
                 <div class="timetable-container">
-                    {{ session('timetable_data') }}
+                    @if (session('timetable_html'))
+                        {!! session('timetable_html') !!}
+                    @endif
                 </div>
 
             </div>

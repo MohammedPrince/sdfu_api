@@ -355,9 +355,15 @@ class MainController extends Controller
         );
 
         if ($result['success']) {
+
+            $timetableHtml = $this->formatTimetableForDisplay(
+                $result['timetableData'] ?? []
+            );
+
             return redirect()
                 ->back()
-                ->with('success', $result['message']);
+                ->with('success', $result['message'])
+                ->with('timetable_html', $timetableHtml);
         }
 
         return redirect()
@@ -389,7 +395,6 @@ class MainController extends Controller
 
         return redirect()->back()->with('success', 'Server configuration saved successfully!');
     }
-
     // Helper method to format timetable data for display
     private function formatTimetableForDisplay($timetableData)
     {
