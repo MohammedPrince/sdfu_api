@@ -854,7 +854,9 @@ class StudentRepository
         $user = Auth::user();
         $studentHelper = Helper::studentData();
 
-        $oldPassword = $studentHelper['password'];
+
+        // Get password directly from the authenticated User model
+        $oldPassword = $user->password;
 
         if (empty($oldPassword) || !Hash::check($currentPassword, $oldPassword)) {
             return [
