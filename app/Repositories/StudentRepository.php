@@ -858,7 +858,7 @@ class StudentRepository
         // Get password directly from the authenticated User model
         $oldPassword = $user->password;
 
-        if (empty($oldPassword) || !Hash::check($currentPassword, $oldPassword)) {
+        if (empty($oldPassword) || (!password_verify($currentPassword, $oldPassword))) {
             return [
                 'success' => false,
                 'code' => 422,
