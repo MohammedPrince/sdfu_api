@@ -777,6 +777,141 @@ class ExternalDatabaseService
             ->get();
     }
 
+    public function getTimetableData(
+        string $facultyCode,
+        string $majorCode,
+        string $batch,
+        int $semester,
+        int $ttid
+    ): array {
+        $connection = DB::connection('mysql_ott');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Timetable Settings
+        |--------------------------------------------------------------------------
+        */
+
+        $timetableDetails = $connection
+            ->table('tbl_setting_timetable')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('TTID', $ttid)
+            ->where('new_course_flag', 1)
+            ->orderByDesc('Id')
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Classrooms
+        |--------------------------------------------------------------------------
+        */
+
+        $classRoomDetails = $connection
+            ->table('tbl_classrooms')
+            ->where('Faculty_Code', $facultyCode)
+            ->orderByDesc('Class_ID')
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Courses
+        |--------------------------------------------------------------------------
+        */
+
+        $courseDetails = $connection
+            ->table('tbl_courses')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('semester', $semester)
+            ->where('new_course_flag', 1)
+            ->orderByDesc('Id')
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Instructors
+        |--------------------------------------------------------------------------
+        */
+
+        $instructorDetails = $connection
+            ->table('tbl_instructors')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Deleted', 0)
+            ->orderByDesc('Instructor_ID')
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Time
+        |--------------------------------------------------------------------------
+        */
+
+        $timeDetails = $connection
+            ->table('tim')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Seasons / TTID
+        |--------------------------------------------------------------------------
+        */
+
+        $seasonDetails = $connection
+            ->table('timetables')
+            ->where('TTID', $ttid)
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Lab Timetable
+        |--------------------------------------------------------------------------
+        */
+
+        $labTimetableDetails = $connection
+            ->table('lab_timetable')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('TTID', $ttid)
+            ->where('Deleted', 0)
+            ->orderByDesc('Id')
+            ->get()
+            ->map(fn($row) => (array) $row)
+            ->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return Complete Timetable Data
+        |--------------------------------------------------------------------------
+        */
+
+        return [
+            'timetableDetails' => $timetableDetails,
+            'classRoomDetails' => $classRoomDetails,
+            'courseDetails' => $courseDetails,
+            'instructorDetails' => $instructorDetails,
+            'labTimetableDetails' => $labTimetableDetails,
+            'timeDetails' => $timeDetails,
+            'seasonDetails' => $seasonDetails,
+        ];
+    }
+
     //DB Opreations
     public function truncateTable(string $table): void
     {

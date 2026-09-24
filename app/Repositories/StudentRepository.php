@@ -677,12 +677,6 @@ class StudentRepository
         $feeDetails = [];
         $studentDetails = [];
 
-        // $stud_id = '202257012'; // Hardcoded for testing purposes, replace with $user->stud_index in production
-        // $faculty_code = 23;
-        // $major_code = 57;
-        // $batch = '2022';
-        // $semester = 8;
-
         $auth = Helper::authenticatedStudent();
         if (!$auth['success']) {
             return $auth;

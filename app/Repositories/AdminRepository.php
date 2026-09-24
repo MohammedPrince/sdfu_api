@@ -1391,7 +1391,7 @@ class AdminRepository
                     'tim' => $timCount,
                     'timetables' => $timetablesCount,
                 ],
-                
+
                 'timetableData' => [
                     'timetableDetails' => $localData['timetableDetails'] ?? [],
                     'classRoomDetails' => $localData['classRoomDetails'] ?? [],
@@ -1446,9 +1446,8 @@ class AdminRepository
         }
     }
 
-
-
-
-
-
+    public function getTimetableData(string $facultyCode, string $majorCode, string $batch, int $semester, int $ttid): array
+    {
+        return $this->externalDatabase->getTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
+    }
 }

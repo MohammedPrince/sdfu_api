@@ -130,4 +130,9 @@ class AdminService
     {
         return $this->adminRepository->syncTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
     }
+
+    public function getTimetableData(string $facultyCode, string $majorCode, string $batch, int $semester, int $ttid): array
+    {
+        return $this->adminRepository->getTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
+    }
 }

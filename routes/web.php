@@ -57,9 +57,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/reports', [MainController::class, 'reports'])->name('reports');
 
         //Timetable Management
-        Route::get('/manage/timetable', [MainController::class, 'manageTimeTable'])->name('manage.timetable');
-        Route::post('/manage/timetable/fetch', [MainController::class, 'fetchTimetable'])->name('manage.timetable.fetch');
-        Route::post('/manage/timetable/server/config', [MainController::class, 'saveServerConfig'])->name('manage.timetable.server.config');
+        Route::get('/timetable', [MainController::class, 'manageTimeTable'])->name('timetable');
+        Route::post('/timetable/fetch', [MainController::class, 'fetchTimetable'])->name('timetable.fetch');
+        Route::post('/timetable/server/config', [MainController::class, 'saveServerConfig'])->name('timetable.server.config');
+
+        // Route::get('/timetable/show', [MainController::class, 'getTimeTable'])->name('admin.timetable.show.page');
+        // Route::post('/timetable/show', [MainController::class, 'showTimeTable'])->name('timetable.show');
 
         //Get majors based of faculty_code. JS
         Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');

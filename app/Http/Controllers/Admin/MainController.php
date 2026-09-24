@@ -60,7 +60,6 @@ class MainController extends Controller
             ], 500);
         }
     }
-
     public function index()
     {
         Helper::recordVisitor();
@@ -95,7 +94,6 @@ class MainController extends Controller
             'recentNotifications'
         ));
     }
-
     public function manageApplication(Request $request)
     {
 
@@ -123,7 +121,6 @@ class MainController extends Controller
             'editSetting'
         ));
     }
-
     public function updateApplication(Request $request)
     {
         $validated = $request->validate([
@@ -200,7 +197,6 @@ class MainController extends Controller
                 'Application settings saved successfully.'
             );
     }
-
     public function getMajors(string $faculty_code)
     {
         $majors = $this->adminService->getMajorsByFaculty($faculty_code);
@@ -272,7 +268,6 @@ class MainController extends Controller
                 : 'Student account disabled successfully.'
             );
     }
-
     public function reports(Request $request)
     {
         $validated = $request->validate([
@@ -305,7 +300,6 @@ class MainController extends Controller
             'filters' => $validated,
         ]);
     }
-
     public function manageTimeTable()
     {
 
@@ -358,8 +352,8 @@ class MainController extends Controller
 
             $timetableData = $result['timetableData'] ?? [];
 
-            $timetableHtml = $this->formatTimetableForDisplay(
-                $timetableData
+            $timetableHtml = Helper::formatTimetableForDisplay(
+                $result['timetableData'] ?? []
             );
 
             return redirect()
@@ -376,6 +370,60 @@ class MainController extends Controller
                 'error',
                 'Failed to synchronize timetable: ' . $result['message']
             );
+    }
+
+
+    public function getTimeTable()
+    {
+
+        return view('admin.show_timetable', [
+            'faculties' => $this->adminService->getFaculties(),
+            'majors' => $this->adminService->getMajors(),
+            'batches' => $this->adminService->getBatches(),
+
+        ]);
+    }
+
+    public function showTimeTable(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_code' => ['required', 'string', 'max:50'],
+            'major_code' => ['required', 'string', 'max:50'],
+            'batch' => ['required', 'string', 'max:50'],
+            'semester' => ['required', 'integer', 'min:1', 'max:12'],
+            'ttid' => ['required', 'integer'],
+        ]);
+
+        $timetableData = $this->adminService->getTimetableData(
+            $validated['faculty_code'],
+            $validated['major_code'],
+            $validated['batch'],
+            $validated['semester'],
+            $validated['ttid']
+        );
+
+        if (empty($timetableData['timetableDetails'])) {
+
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'No timetable found for the selected criteria.'
+                );
+        }
+
+        $timetableHtml = Helper::formatTimetableForDisplay(
+            $timetableData
+        );
+
+        return view('admin.show_timetable', [
+            'faculties' => $this->adminService->getFaculties(),
+            'majors' => $this->adminService->getMajors(),
+            'batches' => $this->adminService->getBatches(),
+            'timetableData' => $timetableData,
+            'timetableHtml' => $timetableHtml,
+            'timetableSelection' => $validated,
+        ]);
     }
 
     public function saveServerConfig(Request $request)
@@ -400,122 +448,7 @@ class MainController extends Controller
         return redirect()->back()->with('success', 'Server configuration saved successfully!');
     }
 
-    // Helper method to format timetable data for display
-    private function formatTimetableForDisplay($timetableData)
-    {
-        // Handle empty data
-        if (empty($timetableData)) {
-            return '<div class="alert alert-info">No timetable data available for the selected criteria.</div>';
-        }
 
-        // Define time slots (standard university timetable slots)
-        $timeSlots = [
-            '08:00 - 09:00',
-            '09:00 - 10:00',
-            '10:00 - 11:00',
-            '11:00 - 12:00',
-            '12:00 - 13:00',
-            '13:00 - 14:00',
-            '14:00 - 15:00',
-            '15:00 - 16:00',
-            '16:00 - 17:00'
-        ];
-
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-        // Initialize timetable grid
-        $timetableGrid = [];
-        foreach ($timeSlots as $slot) {
-            $timetableGrid[$slot] = array_fill(0, count($days), '');
-        }
-
-        // Process timetable data - handle different possible data structures
-        if (is_array($timetableData)) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Structure 1: Full timetable response
-            |--------------------------------------------------------------------------
-            */
-            if (
-                isset($timetableData['timetableDetails'])
-                && is_array($timetableData['timetableDetails'])
-            ) {
-
-                $classes = $timetableData['timetableDetails'];
-
-                /*
-                |--------------------------------------------------------------------------
-                | Structure 2: Flat list of classes
-                |--------------------------------------------------------------------------
-                */
-            } elseif (array_is_list($timetableData)) {
-
-                $classes = $timetableData;
-
-                /*
-                |--------------------------------------------------------------------------
-                | Unknown structure
-                |--------------------------------------------------------------------------
-                */
-            } else {
-
-                $classes = [];
-            }
-
-            foreach ($classes as $class) {
-
-                if (!is_array($class)) {
-                    continue;
-                }
-
-                // Process $class here
-
-                $day = null;
-                $startTime = null;
-                $endTime = null;
-                $subject = 'Unknown Subject';
-                $room = '';
-                $instructor = '';
-
-                // ...
-            }
-        }
-
-        // Build HTML table
-        $html = '<div class="timetable-table-responsive">';
-        $html .= '<table class="table table-bordered timetable-grid">';
-        $html .= '<thead><tr>';
-        $html .= '<th class="time-slot-header">Time/Day</th>';
-
-        // Add day headers
-        foreach ($days as $day) {
-            $html .= '<th class="day-header">' . $day . '</th>';
-        }
-        $html .= '</tr></thead><tbody>';
-
-        // Add time slots and data
-        foreach ($timeSlots as $timeSlot) {
-            $html .= '<tr>';
-            $html .= '<td class="time-slot fw-bold">' . $timeSlot . '</td>';
-
-            foreach ($days as $dayIndex => $dayName) {
-                $cellContent = $timetableGrid[$timeSlot][$dayIndex] ?? '';
-                if (!empty($cellContent)) {
-                    $html .= '<td class="timetable-cell">' . $cellContent . '</td>';
-                } else {
-                    $html .= '<td class="timetable-cell empty-cell"></td>';
-                }
-            }
-
-            $html .= '</tr>';
-        }
-
-        $html .= '</tbody></table>';
-        $html .= '</div>';
-
-        return $html;
-    }
     //Studnets End
 
 }

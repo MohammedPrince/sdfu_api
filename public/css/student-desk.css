@@ -1469,3 +1469,73 @@ footer span {
     }
 
 }
+
+.timetable-grid {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.timetable-grid th,
+.timetable-grid td {
+    border: 1px solid #d9dee5;
+    vertical-align: top;
+}
+
+.timetable-grid .time-slot-header {
+    min-width: 130px;
+    white-space: nowrap;
+}
+
+.timetable-grid .day-header {
+    min-width: 150px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.timetable-grid .time-slot {
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    background: #f8f9fa;
+}
+
+.timetable-grid .timetable-cell {
+    min-width: 150px;
+    min-height: 120px;
+    padding: 8px;
+}
+
+.timetable-class {
+    padding: 10px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    background: #f5f7fa;
+    border-left: 4px solid #6c757d;
+}
+
+.timetable-class:last-child {
+    margin-bottom: 0;
+}
+
+.timetable-course {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.timetable-course-name {
+    font-size: 13px;
+    margin-bottom: 7px;
+    line-height: 1.3;
+}
+
+.timetable-detail {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.empty-slot {
+    color: #adb5bd;
+    font-size: 18px;
+}

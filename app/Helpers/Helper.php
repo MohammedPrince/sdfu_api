@@ -103,6 +103,501 @@ class Helper
         return $token;
     }
 
+    public static function formatTimetableForDisplay(array $timetableData): string
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Extract data
+        |--------------------------------------------------------------------------
+        */
+
+        $timetableDetails = $timetableData['timetableDetails'] ?? [];
+        $timeDetails = $timetableData['timeDetails'] ?? [];
+        $courseDetails = $timetableData['courseDetails'] ?? [];
+        $instructorDetails = $timetableData['instructorDetails'] ?? [];
+        $classRoomDetails = $timetableData['classRoomDetails'] ?? [];
+
+        if (empty($timetableDetails)) {
+            return '
+            <div class="alert alert-info">
+                No timetable data available for the selected criteria.
+            </div>
+        ';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Course Lookup
+        |--------------------------------------------------------------------------
+        |
+        | Course_Code => Course_Name
+        |
+        */
+
+        $courses = [];
+
+        foreach ($courseDetails as $course) {
+
+            if (!is_array($course)) {
+                continue;
+            }
+
+            $courseCode = trim((string) ($course['Course_Code'] ?? ''));
+
+            if ($courseCode === '') {
+                continue;
+            }
+
+            $courses[$courseCode] = trim(
+                (string) ($course['Course_Name'] ?? '')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Instructor Lookup
+        |--------------------------------------------------------------------------
+        |
+        | instructor_id => instructor_name
+        |
+        */
+
+        $instructors = [];
+
+        foreach ($instructorDetails as $instructor) {
+
+            if (!is_array($instructor)) {
+                continue;
+            }
+
+            $instructorId = (string) ($instructor['instructor_id'] ?? '');
+
+            if ($instructorId === '') {
+                continue;
+            }
+
+            $instructors[$instructorId] = trim(
+                (string) ($instructor['instructor_name'] ?? '')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Classroom Lookup
+        |--------------------------------------------------------------------------
+        |
+        | class_id => class_name
+        |
+        */
+
+        $classrooms = [];
+
+        foreach ($classRoomDetails as $room) {
+
+            if (!is_array($room)) {
+                continue;
+            }
+
+            $classId = (string) ($room['class_id'] ?? '');
+
+            if ($classId === '') {
+                continue;
+            }
+
+            $classrooms[$classId] = trim(
+                (string) ($room['class_name'] ?? '')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Time Lookup
+        |--------------------------------------------------------------------------
+        |
+        | tim.id => day + time
+        |
+        */
+
+        $timeLookup = [];
+
+        foreach ($timeDetails as $time) {
+
+            if (!is_array($time)) {
+                continue;
+            }
+
+            $timeId = (string) ($time['id'] ?? '');
+
+            if ($timeId === '') {
+                continue;
+            }
+
+            $dayName = trim((string) ($time['day_name'] ?? ''));
+            $timeName = trim((string) ($time['time'] ?? ''));
+
+            if (
+                $dayName === '' ||
+                $dayName === 'None' ||
+                $timeName === '' ||
+                $timeName === 'None'
+            ) {
+                continue;
+            }
+
+            $timeLookup[$timeId] = [
+                'day' => $dayName,
+                'time' => $timeName,
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Day Order
+        |--------------------------------------------------------------------------
+        */
+
+        $dayOrder = [
+            'Saturday',
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build Grid
+        |--------------------------------------------------------------------------
+        */
+
+        $grid = [];
+
+        foreach ($dayOrder as $day) {
+            $grid[$day] = [];
+
+            foreach ($timeLookup as $slot) {
+
+                if ($slot['day'] !== $day) {
+                    continue;
+                }
+
+                $grid[$day][$slot['time']] = [];
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Process Timetable Records
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($timetableDetails as $class) {
+
+            if (!is_array($class)) {
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Period = tim.id
+            |--------------------------------------------------------------------------
+            */
+
+            $period = (string) ($class['Period'] ?? '');
+
+            if (
+                $period === '' ||
+                !isset($timeLookup[$period])
+            ) {
+                continue;
+            }
+
+            $timeInfo = $timeLookup[$period];
+
+            $day = $timeInfo['day'];
+            $time = $timeInfo['time'];
+
+            /*
+            |--------------------------------------------------------------------------
+            | Course
+            |--------------------------------------------------------------------------
+            */
+
+            $courseCode = trim(
+                (string) ($class['Course_Code'] ?? '')
+            );
+
+            $courseName = $courses[$courseCode] ?? '';
+
+            /*
+            |--------------------------------------------------------------------------
+            | Instructor
+            |--------------------------------------------------------------------------
+            */
+
+            $instructorId = (string) (
+                $class['Instructor_ID'] ?? ''
+            );
+
+            $instructorName = $instructors[$instructorId] ?? '';
+
+            /*
+            |--------------------------------------------------------------------------
+            | Classroom
+            |--------------------------------------------------------------------------
+            */
+
+            $classId = (string) (
+                $class['ClassID'] ?? ''
+            );
+
+            $className = $classrooms[$classId] ?? '';
+
+            /*
+            |--------------------------------------------------------------------------
+            | Student Group
+            |--------------------------------------------------------------------------
+            */
+
+            $group = match ((int) ($class['Stud_Group'] ?? 0)) {
+                1 => 'A',
+                2 => 'B',
+                3 => 'C',
+                default => '',
+            };
+
+            /*
+            |--------------------------------------------------------------------------
+            | Class Information
+            |--------------------------------------------------------------------------
+            */
+
+            $classInfo = [
+                'course_code' => $courseCode,
+                'course_name' => $courseName,
+
+                'instructor' => $instructorName,
+                'instructor_id' => $instructorId,
+
+                'room' => $className,
+                'room_id' => $classId,
+
+                'group' => $group,
+
+                'theory_hrs' => $class['TheoryHrs'] ?? null,
+                'tutorial_hrs' => $class['TutorialHrs'] ?? null,
+                'practical_hrs' => $class['PracticalHrs'] ?? null,
+            ];
+
+            /*
+            |--------------------------------------------------------------------------
+            | Add Main Period
+            |--------------------------------------------------------------------------
+            */
+
+            if (!isset($grid[$day][$time])) {
+                $grid[$day][$time] = [];
+            }
+
+            $grid[$day][$time][] = $classInfo;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Second Period
+            |--------------------------------------------------------------------------
+            */
+
+            $period2 = (string) ($class['Period2'] ?? '');
+
+            if (
+                $period2 !== '' &&
+                isset($timeLookup[$period2])
+            ) {
+
+                $timeInfo2 = $timeLookup[$period2];
+
+                $day2 = $timeInfo2['day'];
+                $time2 = $timeInfo2['time'];
+
+                if (!isset($grid[$day2][$time2])) {
+                    $grid[$day2][$time2] = [];
+                }
+
+                $grid[$day2][$time2][] = $classInfo;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate HTML
+        |--------------------------------------------------------------------------
+        */
+
+        $html = '<div class="timetable-table-responsive">';
+
+        $html .= '<table class="table table-bordered timetable-grid">';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Header
+        |--------------------------------------------------------------------------
+        */
+
+        $html .= '<thead>';
+        $html .= '<tr>';
+
+        $html .= '
+        <th class="time-slot-header">
+            Time / Day
+        </th>
+    ';
+
+        foreach ($dayOrder as $day) {
+
+            $html .= '<th class="day-header">'
+                . e($day)
+                . '</th>';
+        }
+
+        $html .= '</tr>';
+        $html .= '</thead>';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Body
+        |--------------------------------------------------------------------------
+        */
+
+        $html .= '<tbody>';
+
+        /*
+        | Get unique time slots in database order
+        */
+
+        $displayTimes = [];
+
+        foreach ($timeDetails as $time) {
+
+            if (!is_array($time)) {
+                continue;
+            }
+
+            $dayName = trim((string) ($time['day_name'] ?? ''));
+            $timeName = trim((string) ($time['time'] ?? ''));
+
+            if (
+                $dayName === '' ||
+                $dayName === 'None' ||
+                $timeName === '' ||
+                $timeName === 'None'
+            ) {
+                continue;
+            }
+
+            if (!in_array($timeName, $displayTimes, true)) {
+                $displayTimes[] = $timeName;
+            }
+        }
+
+        foreach ($displayTimes as $timeSlot) {
+
+            $html .= '<tr>';
+
+            $html .= '
+            <td class="time-slot fw-bold">
+                ' . e($timeSlot) . '
+            </td>
+        ';
+
+            foreach ($dayOrder as $day) {
+
+                $classes = $grid[$day][$timeSlot] ?? [];
+
+                $html .= '<td class="timetable-cell">';
+
+                if (!empty($classes)) {
+
+                    foreach ($classes as $class) {
+
+                        $html .= '<div class="timetable-class">';
+
+                        /*
+                        | Course Code
+                        */
+
+                        $html .= '<div class="timetable-course">';
+                        $html .= e($class['course_code']);
+                        $html .= '</div>';
+
+                        /*
+                        | Course Name
+                        */
+
+                        if ($class['course_name'] !== '') {
+
+                            $html .= '<div class="timetable-course-name">';
+                            $html .= e($class['course_name']);
+                            $html .= '</div>';
+                        }
+
+                        /*
+                        | Group
+                        */
+
+                        if ($class['group'] !== '') {
+
+                            $html .= '<div class="timetable-detail">';
+                            $html .= '<strong>Group:</strong> '
+                                . e($class['group']);
+                            $html .= '</div>';
+                        }
+
+                        /*
+                        | Instructor
+                        */
+
+                        if ($class['instructor'] !== '') {
+
+                            $html .= '<div class="timetable-detail">';
+                            $html .= '<strong>Instructor:</strong> '
+                                . e($class['instructor']);
+                            $html .= '</div>';
+                        }
+
+                        /*
+                        | Classroom
+                        */
+
+                        if ($class['room'] !== '') {
+
+                            $html .= '<div class="timetable-detail">';
+                            $html .= '<strong>Classroom:</strong> '
+                                . e($class['room']);
+                            $html .= '</div>';
+                        }
+
+                        $html .= '</div>';
+                    }
+
+                } else {
+
+                    $html .= '<span class="empty-slot">—</span>';
+                }
+
+                $html .= '</td>';
+            }
+
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody>';
+        $html .= '</table>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
     //API Helpers
     public static function authenticatedStudent(): array
     {
@@ -147,6 +642,7 @@ class Helper
             'gender' => $user->gender ?? null,
         ];
     }
+
     public static function authenticatedUser()
     {
         return Auth::check() ? Auth::user() : null;
@@ -313,4 +809,5 @@ class Helper
             'message' => ucfirst($tab) . ' is active',
         ];
     }
+
 }
