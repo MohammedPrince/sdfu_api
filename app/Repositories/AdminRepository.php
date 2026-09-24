@@ -421,14 +421,7 @@ class AdminRepository
     {
         abort_unless($student->role_id === 2, 404);
 
-        $student->load([
-            'devices' => function ($query) {
-                $query->latest('last_seen_at');
-            },
-        ]);
-
-        $student->loadCount('devices');
-
+        
         $student->faculty_name =
             $this->externalDatabase->getFacultyName(
                 $student->faculty_code

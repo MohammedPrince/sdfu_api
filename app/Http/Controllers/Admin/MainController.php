@@ -241,7 +241,9 @@ class MainController extends Controller
 
         $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
         $student = $this->adminService->getStudentDetails($student);
-        return view('admin.student-details', compact('student'));
+        $devices = $student->devices()->latest('last_seen_at')->paginate(5);
+
+        return view('admin.student-details', compact('student', 'devices'));
     }
 
     public function updateStudentStatus(Request $request, string $studentId)
