@@ -180,12 +180,21 @@
                 </div>
             </div>
 
+            @php
+                $repo = new App\Repositories\AdminRepository();
+                $overview = $repo->getApplicationOverview();
+            @endphp
+
             <div class="application-status-list">
 
                 <div class="application-status-row">
                     <span>Student Desk</span>
-
-                    @if ($applicationStatus['success'])
+                    @php
+                        $active = $overview['active'];
+                        $inactive = $overview['inactive'];
+                        $isAvailable = $active > $inactive;
+                    @endphp
+                    @if ($isAvailable)
                         <strong class="status-active">● Active</strong>
                     @else
                         <strong class="status-inactive">● Unavailable</strong>
@@ -194,8 +203,12 @@
 
                 <div class="application-status-row">
                     <span>Semester Results</span>
-
-                    @if (data_get($applicationStatus, 'settings.result_active', false))
+                    @php
+                        $resultActive = $overview['result_active'];
+                        $resultInactive = $overview['total'] - $resultActive;
+                        $isAvailable = $resultActive > $resultInactive;
+                    @endphp
+                    @if ($isAvailable)
                         <strong class="status-active">● Active</strong>
                     @else
                         <strong class="status-inactive">● Unavailable</strong>
@@ -204,8 +217,12 @@
 
                 <div class="application-status-row">
                     <span>Timetable</span>
-
-                    @if (data_get($applicationStatus, 'settings.timetable_active', false))
+                    @php
+                        $timetableActive = $overview['timetable_active'];
+                        $timetableInactive = $overview['total'] - $timetableActive;
+                        $isAvailable = $timetableActive > $timetableInactive;
+                    @endphp
+                    @if ($isAvailable)
                         <strong class="status-active">● Active</strong>
                     @else
                         <strong class="status-inactive">● Unavailable</strong>
@@ -214,8 +231,12 @@
 
                 <div class="application-status-row">
                     <span>Registration Fees</span>
-
-                    @if (data_get($applicationStatus, 'settings.fee_active', false))
+                    @php
+                        $feeActive = $overview['fee_active'];
+                        $feeInactive = $overview['total'] - $feeActive;
+                        $isAvailable = $feeActive > $feeInactive;
+                    @endphp
+                    @if ($isAvailable)
                         <strong class="status-active">● Active</strong>
                     @else
                         <strong class="status-inactive">● Unavailable</strong>
@@ -270,6 +291,10 @@
                         </div>
                     @endforeach
 
+                </div>
+
+                <div class="notification-pagination">
+                    {{ $recentNotifications->links() }}
                 </div>
             @else
                 <div class="dashboard-empty-state">

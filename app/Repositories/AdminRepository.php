@@ -152,8 +152,7 @@ class AdminRepository
     public function getRecentNotifications()
     {
         return Notification::latest()
-            ->take(5)
-            ->get();
+            ->paginate(5);
     }
 
     public function getApplicationStatus(): array
