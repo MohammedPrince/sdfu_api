@@ -49,7 +49,7 @@ class AdminService
         return $this->adminRepository->getMajors();
     }
 
-    public function getBatches()
+    public function getBatches(): Collection
     {
         return $this->adminRepository->getBatches();
     }

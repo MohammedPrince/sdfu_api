@@ -804,16 +804,24 @@ class StudentRepository
 
         $timetableCacheKey = "student:timetable:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
 
-        $timetable = Cache::remember(
-            $timetableCacheKey,
-            now()->addHour(),
-            fn() => $this->externalDatabase->getStudentTimetable(
-                $stud_id,
-                $faculty_code,
-                $major_code,
-                $batch,
-                $semester
-            )
+        // $timetable = Cache::remember(
+        //     $timetableCacheKey,
+        //     now()->addHour(),
+        //     fn() => $this->externalDatabase->getStudentTimetable(
+        //         $stud_id,
+        //         $faculty_code,
+        //         $major_code,
+        //         $batch,
+        //         $semester
+        //     )
+        // );
+
+        $timetable = $this->externalDatabase->getStudentTimetable(
+            $stud_id,
+            $faculty_code,
+            $major_code,
+            $batch,
+            $semester
         );
 
         if (!empty($timetable['days'])) {
