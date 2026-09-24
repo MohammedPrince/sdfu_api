@@ -331,7 +331,7 @@ class AdminRepository
         $students = $query
             ->orderBy('name')
             ->paginate(20)
-            ->withQueryString();
+            ->appends(request()->query());
 
         $settings = SystemSetting::query()
             ->get()
@@ -347,8 +347,7 @@ class AdminRepository
         $faculties = $this->externalDatabase->faculties()->keyBy('faculty_code');
         $majors = $this->externalDatabase->majors()->keyBy('major_code');
 
-        $students->getCollection()->transform(function ($student) use ($faculties, $majors, $settings) {
-
+        foreach ($students->items() as $student) {
             /*
             |--------------------------------------------------------------------------
             | Faculty
@@ -401,10 +400,7 @@ class AdminRepository
                     ? 'Active'
                     : 'Disabled';
             }
-
-
-            return $student;
-        });
+        }
 
         return $students;
     }

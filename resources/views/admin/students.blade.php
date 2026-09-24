@@ -445,10 +445,47 @@
 
                 {{-- Pagination --}}
                 @if ($students->hasPages())
-                    <div class="students-pagination">
+                    @php
+                        $activityPaginator = $students;
+                        $startPage = max(1, $activityPaginator->currentPage() - 1);
+                        $endPage = min($activityPaginator->lastPage(), $activityPaginator->currentPage() + 1);
+                    @endphp
 
-                        {{ $students->links() }}
+                    <div class="pagination-wrapper report-pagination">
+                        <p class="report-pagination-summary">
+                            Showing {{ $activityPaginator->firstItem() }} to {{ $activityPaginator->lastItem() }} of
+                            {{ $activityPaginator->total() }} results
+                        </p>
 
+                        <nav aria-label="Recent student activity pagination">
+                            <ul class="report-pagination-list">
+                                <li>
+                                    @if ($activityPaginator->onFirstPage())
+                                        <span class="is-disabled" aria-disabled="true">Previous</span>
+                                    @else
+                                        <a href="{{ $activityPaginator->previousPageUrl() }}" rel="prev">Previous</a>
+                                    @endif
+                                </li>
+
+                                @foreach ($activityPaginator->getUrlRange($startPage, $endPage) as $page => $url)
+                                    <li>
+                                        @if ($page === $activityPaginator->currentPage())
+                                            <span class="is-active" aria-current="page">{{ $page }}</span>
+                                        @else
+                                            <a href="{{ $url }}">{{ $page }}</a>
+                                        @endif
+                                    </li>
+                                @endforeach
+
+                                <li>
+                                    @if ($activityPaginator->hasMorePages())
+                                        <a href="{{ $activityPaginator->nextPageUrl() }}" rel="next">Next</a>
+                                    @else
+                                        <span class="is-disabled" aria-disabled="true">Next</span>
+                                    @endif
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                 @endif
 

@@ -302,7 +302,7 @@ class StudentRepository
 
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
-        $paymentStatus = false;
+
 
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
@@ -412,6 +412,7 @@ class StudentRepository
                     ];
                 }
 
+                $paymentStatus = false;
                 $end_date = $raw->end_date;
                 $viewData = $raw->viewData;
                 $total_fee_bank = $raw->total_fee_bank;
@@ -1033,7 +1034,7 @@ class StudentRepository
         $unreadCount = Notification::query()->where('user_id', $user_id)->whereNull('read_at')->count();
 
         // Format notification details
-        $notificationsDetails = $notifications->getCollection()
+        $notificationsDetails = collect($notifications->items())
             ->map(function ($notification) {
 
                 return [
