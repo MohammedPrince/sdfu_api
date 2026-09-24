@@ -9,11 +9,11 @@
         <div>
 
             <div class="brand-title">
-                Student Desk Panel
+                The Future University 
             </div>
 
             <div class="brand-subtitle">
-                Student Academic Portal
+                Student Desk Application
             </div>
 
         </div>
