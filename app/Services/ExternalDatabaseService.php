@@ -1001,8 +1001,8 @@ class ExternalDatabaseService
         return DB::connection('mysql_ott')
             ->table('tbl_setting_timetable as st')
 
-            ->leftJoin('Faculty as f', 'f.faculty_code', '=', 'st.Faculty_Code')
-            ->leftJoin('Major as m', 'm.major_code', '=', 'st.Major_Code')
+            ->leftJoin('faculty as f', 'f.faculty_code', '=', 'st.Faculty_Code')
+            ->leftJoin('major as m', 'm.major_code', '=', 'st.Major_Code')
 
             ->select([
                 'st.TTID',
