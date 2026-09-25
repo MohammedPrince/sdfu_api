@@ -294,48 +294,87 @@
                 </div>
 
                 @if ($recentNotifications->hasPages())
+
                     @php
                         $notificationPaginator = $recentNotifications;
+
                         $startPage = max(1, $notificationPaginator->currentPage() - 1);
+
                         $endPage = min($notificationPaginator->lastPage(), $notificationPaginator->currentPage() + 1);
                     @endphp
 
-                    <div class="pagination-wrapper notification-pagination">
-                        <p class="notification-pagination-summary">
-                            Showing {{ $notificationPaginator->firstItem() }} to {{ $notificationPaginator->lastItem() }} of
-                            {{ $notificationPaginator->total() }} results
+                    <div class="pagination-wrapper report-pagination">
+
+                        <p class="report-pagination-summary">
+                            Showing
+                            {{ $notificationPaginator->firstItem() }}
+                            to
+                            {{ $notificationPaginator->lastItem() }}
+                            of
+                            {{ $notificationPaginator->total() }}
+                            results
                         </p>
 
                         <nav aria-label="Recent notifications pagination">
-                            <ul class="notification-pagination-list">
+
+                            <ul class="report-pagination-list">
+
+                                {{-- Previous --}}
+
                                 <li>
                                     @if ($notificationPaginator->onFirstPage())
-                                        <span class="is-disabled" aria-disabled="true">Previous</span>
+                                        <span class="is-disabled" aria-disabled="true">
+                                            Previous
+                                        </span>
                                     @else
-                                        <a href="{{ $notificationPaginator->previousPageUrl() }}" rel="prev">Previous</a>
+                                        <a href="{{ $notificationPaginator->previousPageUrl() }}" rel="prev">
+                                            Previous
+                                        </a>
                                     @endif
                                 </li>
+
+
+                                {{-- Pages --}}
 
                                 @foreach ($notificationPaginator->getUrlRange($startPage, $endPage) as $page => $url)
                                     <li>
+
                                         @if ($page === $notificationPaginator->currentPage())
-                                            <span class="is-active" aria-current="page">{{ $page }}</span>
+                                            <span class="is-active" aria-current="page">
+                                                {{ $page }}
+                                            </span>
                                         @else
-                                            <a href="{{ $url }}">{{ $page }}</a>
+                                            <a href="{{ $url }}">
+                                                {{ $page }}
+                                            </a>
                                         @endif
+
                                     </li>
                                 @endforeach
 
+
+                                {{-- Next --}}
+
                                 <li>
+
                                     @if ($notificationPaginator->hasMorePages())
-                                        <a href="{{ $notificationPaginator->nextPageUrl() }}" rel="next">Next</a>
+                                        <a href="{{ $notificationPaginator->nextPageUrl() }}" rel="next">
+                                            Next
+                                        </a>
                                     @else
-                                        <span class="is-disabled" aria-disabled="true">Next</span>
+                                        <span class="is-disabled" aria-disabled="true">
+                                            Next
+                                        </span>
                                     @endif
+
                                 </li>
+
                             </ul>
+
                         </nav>
+
                     </div>
+
                 @endif
             @else
                 <div class="dashboard-empty-state">

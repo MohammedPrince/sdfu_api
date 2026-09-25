@@ -150,8 +150,8 @@ class AdminRepository
 
     public function getRecentNotifications()
     {
-        return Notification::latest()
-            ->paginate(5);
+        $recentNotifications = Notification::latest()
+            ->paginate(5, ['*'], 'notifications_page');
     }
 
     public function getApplicationStatus(): array
