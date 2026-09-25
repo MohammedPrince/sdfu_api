@@ -61,8 +61,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/timetable/fetch', [MainController::class, 'fetchTimetable'])->name('timetable.fetch');
         Route::post('/timetable/server/config', [MainController::class, 'saveServerConfig'])->name('timetable.server.config');
 
-        // Route::get('/timetable/show', [MainController::class, 'getTimeTable'])->name('admin.timetable.show.page');
-        // Route::post('/timetable/show', [MainController::class, 'showTimeTable'])->name('timetable.show');
+        Route::get('/timetable/create', [MainController::class, 'createTimeTable'])->name('timetable.create');
+
+        Route::post('/timetable/create', [MainController::class, 'storeTimeTable'])->name('timetable.store');
+
+       // Route::get('/timetable/edit/{id}', [MainController::class, 'editTimeTable'])->name('timetable.edit');
+
+      //  Route::put('/timetable/edit/{id}', [MainController::class, 'updateTimeTable'])->name('timetable.update');
+
+        Route::delete('/timetable/{id}', [MainController::class, 'deleteTimeTable'])->name('timetable.delete');
+
+        Route::get('/timetable/courses', [MainController::class, 'getTimetableCourses'])->name('timetable.courses');
+
+
+
+        Route::get('/timetable/display',[MainController::class, 'displayTimeTable'])->name('timetable.display');
+
+        Route::get('/timetable/edit/{faculty_code}/{major_code}/{batch}/{ttid}', [MainController::class, 'editTimeTable'])->name('timetable.edit');
+
+        Route::put('/timetable/edit/{faculty_code}/{major_code}/{batch}/{ttid}', [MainController::class, 'updateTimeTable'])->name('timetable.update');
+
+        Route::delete('/timetable/{faculty_code}/{major_code}/{batch}/{ttid}', [MainController::class, 'deleteTimeTable'])->name('timetable.delete');
 
         //Get majors based of faculty_code. JS
         Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');

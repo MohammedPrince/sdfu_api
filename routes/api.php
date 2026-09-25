@@ -40,6 +40,5 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
 
     //Test
     Route::get('/test', [MainController::class, 'test']);
-    Route::post('/checkIndex', [MainController::class, 'checkIndex']);
 
 });

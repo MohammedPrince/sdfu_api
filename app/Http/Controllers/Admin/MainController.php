@@ -60,6 +60,7 @@ class MainController extends Controller
             ], 500);
         }
     }
+
     public function index()
     {
         Helper::recordVisitor();
@@ -302,6 +303,374 @@ class MainController extends Controller
             'filters' => $validated,
         ]);
     }
+
+    //Studnets End
+
+    //Timetable Start
+
+    public function getTimetableCourses(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_code' => ['required', 'integer'],
+            'major_code' => ['required', 'integer'],
+            'batch' => ['required', 'string', 'max:50'],
+            'semester' => ['required', 'integer', 'min:1', 'max:10'],
+        ]);
+
+        $courses = $this->adminService->getTimetableCourses(
+            (int) $validated['faculty_code'],
+            (int) $validated['major_code'],
+            $validated['batch'],
+            (int) $validated['semester']
+        );
+
+        return response()->json([
+            'courses' => $courses,
+        ]);
+    }
+
+    public function createTimeTable()
+    {
+        return view('admin.create_timetable', [
+            'faculties' => $this->adminService->getFaculties(),
+            'majors' => $this->adminService->getMajors(),
+            'batches' => $this->adminService->getBatches(),
+            //'courses' => $this->adminService->getTimetableCourses(),
+            'instructors' => $this->adminService->getTimetableInstructors(),
+            'classrooms' => $this->adminService->getTimetableClassrooms(),
+            'times' => $this->adminService->getTimetableTimes(),
+        ]);
+    }
+
+    public function storeTimeTable(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_code' => ['required', 'integer'],
+            'major_code' => ['required', 'integer'],
+            'batch' => ['required', 'string', 'max:4'],
+            'semester' => ['required', 'integer', 'min:1', 'max:12'],
+            'ttid' => ['required', 'integer'],
+
+            'timetable' => ['required', 'array'],
+        ]);
+
+        $result = $this->adminService->createTimeTable($validated);
+
+        if (!$result['success']) {
+            return back()
+                ->withInput()
+                ->with('error', $result['message']);
+        }
+
+        return redirect()
+            ->route('admin.timetable.create')
+            ->with('success', $result['message']);
+    }
+
+    public function displayTimeTable()
+    {
+        $timetables = $this->adminService
+            ->getSavedTimetableConfigurations();
+
+        return view('admin.display_timetable', [
+            'timetables' => $timetables,
+        ]);
+    }
+
+    public function editTimeTable(int $faculty_code, int $major_code, string $batch, int $ttid)
+    {
+
+        $rows = $this->adminService->getSavedTimetableRows($faculty_code, $major_code, $batch, $ttid);
+
+        if ($rows->isEmpty()) {
+            return redirect()
+                ->route('admin.timetable.manage')
+                ->with('error', 'Timetable not found.');
+        }
+
+        $semester = $this->adminService->getTimetableSemester($faculty_code, $major_code, $batch, $ttid);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Convert database rows to editor entries
+        |--------------------------------------------------------------------------
+        */
+
+        $existingEntries = [];
+
+        foreach ($rows as $row) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Period is the global tim.id
+            |--------------------------------------------------------------------------
+            |
+            | 1-4   Saturday
+            | 5-8   Sunday
+            | 9-12  Monday
+            | 13-16 Tuesday
+            | 17-20 Wednesday
+            | 21-24 Thursday
+            |
+            */
+
+            $period = (int) $row->Period;
+
+            if ($period < 1 || $period > 24) {
+                continue;
+            }
+
+            $day = intdiv($period - 1, 4);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Determine entry type
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                !empty($row->LabPeriod) ||
+                !empty($row->LabID) ||
+                !empty($row->Instructor_ID_Lab)
+            ) {
+
+                $entryType = 'lab';
+
+            } elseif (
+                !empty($row->Period2) ||
+                !empty($row->ClassID2) ||
+                !empty($row->Instructor_ID_Tut)
+            ) {
+
+                $entryType = 'tutorial';
+
+            } else {
+
+                $entryType = 'theory';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Determine instructor/classroom
+            |--------------------------------------------------------------------------
+            */
+
+            $instructorId = $row->Instructor_ID;
+            $classId = $row->ClassID;
+
+            if ($entryType === 'tutorial') {
+
+                $instructorId =
+                    $row->Instructor_ID_Tut ?: $row->Instructor_ID;
+
+                $classId =
+                    $row->ClassID2 ?: $row->ClassID;
+            }
+
+            if ($entryType === 'lab') {
+
+                $instructorId =
+                    $row->Instructor_ID_Lab ?: $row->Instructor_ID;
+
+                $classId =
+                    $row->LabID ?: $row->ClassID;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Hours
+            |--------------------------------------------------------------------------
+            */
+
+            $hours = 2;
+
+            if ($entryType === 'lab') {
+                $hours = (int) ($row->PracticalHrs ?? 0);
+            } elseif ($entryType === 'tutorial') {
+                $hours = (int) ($row->TutorialHrs ?? 0);
+            } else {
+                $hours = (int) ($row->TheoryHrs ?? 0);
+            }
+
+
+            $existingEntries[$day][$period][] = [
+
+                'course_code' => $row->Course_Code,
+
+                'stud_group' => (string) $row->Stud_Group,
+
+                'instructor_id' => $instructorId,
+
+                'class_id' => $classId,
+
+                'entry_type' => $entryType,
+
+                'theory_hrs' => $entryType === 'theory'
+                    ? $hours
+                    : 0,
+
+                'practical_hrs' => $entryType === 'lab'
+                    ? $hours
+                    : 0,
+            ];
+        }
+
+
+        return view('admin.edit_timetable', [
+
+            'faculties' => $this->adminService->getFaculties(),
+
+            'majors' => $this->adminService->getMajors(),
+
+            'batches' => $this->adminService->getBatches(),
+
+            'instructors' =>
+                $this->adminService->getTimetableInstructors(),
+
+            'classrooms' =>
+                $this->adminService->getTimetableClassrooms(),
+
+            'semester' => $semester,
+
+            'ttid' => $ttid,
+
+            'facultyCode' => $faculty_code,
+
+            'majorCode' => $major_code,
+
+            'batchValue' => $batch,
+
+            'existingEntries' => $existingEntries,
+        ]);
+    }
+
+    public function updateTimeTable(
+        Request $request,
+        int $faculty_code,
+        int $major_code,
+        string $batch,
+        int $ttid
+    ) {
+        $validated = $request->validate([
+            'faculty_code' => [
+                'required',
+                'integer',
+            ],
+
+            'major_code' => [
+                'required',
+                'integer',
+            ],
+
+            'batch' => [
+                'required',
+                'string',
+                'max:4',
+            ],
+
+            'semester' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:10',
+            ],
+
+            'ttid' => [
+                'required',
+                'integer',
+            ],
+
+            'timetable' => [
+                'nullable',
+                'array',
+            ],
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Security / route consistency
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $validated['faculty_code'] !== $faculty_code ||
+            (int) $validated['major_code'] !== $major_code ||
+            (string) $validated['batch'] !== $batch ||
+            (int) $validated['ttid'] !== $ttid
+        ) {
+
+            return redirect()
+                ->back()
+                ->with('error', 'Invalid timetable configuration.');
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Build database rows
+        |--------------------------------------------------------------------------
+        */
+
+        $rows = $this->buildTimetableRows(
+            $validated['timetable'] ?? [],
+            $faculty_code,
+            $major_code,
+            $batch,
+            $ttid
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Replace timetable
+        |--------------------------------------------------------------------------
+        */
+
+        $this->adminService->replaceTimetable(
+            $faculty_code,
+            $major_code,
+            $batch,
+            $ttid,
+            $rows
+        );
+
+
+        return redirect()
+            ->route('admin.timetable.display')
+            ->with(
+                'success',
+                'Timetable updated successfully.'
+            );
+    }
+
+    public function deleteTimeTable(int $faculty_code, int $major_code, string $batch, int $ttid)
+    {
+
+        $deleted = $this->adminService->deleteTimetable($faculty_code, $major_code, $batch, $ttid);
+
+        if ($deleted === 0) {
+
+            return redirect()
+                ->route('admin.timetable.display')
+                ->with(
+                    'error',
+                    'Timetable not found.'
+                );
+        }
+
+
+        return redirect()
+            ->route('admin.timetable.display')
+            ->with(
+                'success',
+                'Timetable deleted successfully.'
+            );
+    }
+
     public function manageTimeTable()
     {
 
@@ -373,7 +742,6 @@ class MainController extends Controller
                 'Failed to synchronize timetable: ' . $result['message']
             );
     }
-
 
     public function getTimeTable()
     {
@@ -450,7 +818,182 @@ class MainController extends Controller
         return redirect()->back()->with('success', 'Server configuration saved successfully!');
     }
 
+    private function buildTimetableRows(array $timetable, int $facultyCode, int $majorCode, string $batch, int $ttid): array
+    {
 
-    //Studnets End
+        $rows = [];
+
+        foreach ($timetable as $day => $periods) {
+
+            foreach ($periods as $period => $entries) {
+
+                foreach ($entries as $entry) {
+
+                    $courseCode = trim(
+                        $entry['course_code'] ?? ''
+                    );
+
+                    if ($courseCode === '') {
+                        continue;
+                    }
+
+
+                    $group = (int) (
+                        $entry['stud_group'] ?? 1
+                    );
+
+
+                    $entryType = $entry['entry_type'] ?? 'theory';
+
+
+                    $instructorId = !empty($entry['instructor_id'])
+                        ? (int) $entry['instructor_id']
+                        : null;
+
+                    $classId = !empty($entry['class_id'])
+                        ? (int) $entry['class_id']
+                        : null;
+
+
+                    $theoryHours = (int) (
+                        $entry['theory_hrs'] ?? 0
+                    );
+
+                    $practicalHours = (int) (
+                        $entry['practical_hrs'] ?? 0
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Base row
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $row = [
+
+                        'TTID' => $ttid,
+
+                        'Dept_Name' => '0',
+
+                        'Batch_Year' => $batch,
+
+                        'Course_Code' => $courseCode,
+
+                        'Stud_Group' => (string) $group,
+
+                        'Instructor_ID' => null,
+
+                        'Instructor_ID_Tut' => null,
+
+                        'Instructor_ID_Lab' => null,
+
+                        'TheoryHrs' => 0,
+
+                        'TutorialHrs' => 0,
+
+                        'Period' => (int) $period,
+
+                        'Period2' => null,
+
+                        'LabPeriod' => null,
+
+                        'ClassID' => null,
+
+                        'ClassID2' => null,
+
+                        'LabID' => null,
+
+                        'PracticalHrs' => null,
+
+                        'Faculty_Code' => $facultyCode,
+
+                        'Major_Code' => $majorCode,
+
+                        'Major_Minor' => null,
+
+                        'User_Name' => auth()->user()->email ?? null,
+
+                        'FZ_Flag' => 0,
+
+                        'Dissolved' => 0,
+
+                        'FZ_Semester' => 0,
+
+                        'c_c' => 0,
+
+                        'new_course_flag' => 1,
+                    ];
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Theory
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if ($entryType === 'theory') {
+
+                        $row['Instructor_ID'] =
+                            $instructorId;
+
+                        $row['ClassID'] =
+                            $classId;
+
+                        $row['TheoryHrs'] =
+                            $theoryHours;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Tutorial
+                    |--------------------------------------------------------------------------
+                    */ elseif ($entryType === 'tutorial') {
+
+                        $row['Instructor_ID_Tut'] =
+                            $instructorId;
+
+                        $row['ClassID2'] =
+                            $classId;
+
+                        $row['Period2'] =
+                            (int) $period;
+
+                        $row['TutorialHrs'] =
+                            $theoryHours;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | LAB
+                    |--------------------------------------------------------------------------
+                    */ elseif ($entryType === 'lab') {
+
+                        $row['Instructor_ID_Lab'] =
+                            $instructorId;
+
+                        $row['LabID'] =
+                            $classId;
+
+                        $row['LabPeriod'] =
+                            (int) $period;
+
+                        $row['PracticalHrs'] =
+                            $practicalHours;
+                    }
+
+
+                    $rows[] = $row;
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    //Timetable End
+
 
 }

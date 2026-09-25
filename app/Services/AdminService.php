@@ -126,6 +126,42 @@ class AdminService
     }
     //Studnets End
 
+    //Timetable Start
+
+    public function getTimetableCourses(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $semester
+    ) {
+        return $this->adminRepository->getTimetableCourses(
+            $facultyCode,
+            $majorCode,
+            $batch,
+            $semester
+        );
+    }
+
+    public function getTimetableTimes()
+    {
+        return $this->adminRepository->getTimetableTimes();
+    }
+
+    public function createTimeTable(array $data): array
+    {
+        return $this->adminRepository->createTimeTable($data);
+    }
+
+    public function getTimetableInstructors()
+    {
+        return $this->adminRepository->getTimetableInstructors();
+    }
+
+    public function getTimetableClassrooms()
+    {
+        return $this->adminRepository->getTimetableClassrooms();
+    }
+
     public function syncTimetableData(string $facultyCode, string $majorCode, string $batch, int $semester, int $ttid)
     {
         return $this->adminRepository->syncTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
@@ -135,4 +171,30 @@ class AdminService
     {
         return $this->adminRepository->getTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
     }
+
+    public function getSavedTimetableConfigurations()
+    {
+        return $this->adminRepository->getSavedTimetableConfigurations();
+    }
+
+    public function getSavedTimetableRows(int $facultyCode, int $majorCode, string $batch, int $ttid)
+    {
+        return $this->adminRepository->getSavedTimetableRows($facultyCode, $majorCode, $batch, $ttid);
+    }
+
+    public function getTimetableSemester(int $facultyCode, int $majorCode, string $batch, int $ttid): ?int
+    {
+        return $this->adminRepository->getTimetableSemester($facultyCode, $majorCode, $batch, $ttid);
+    }
+
+    public function replaceTimetable(int $facultyCode, int $majorCode, string $batch, int $ttid, array $rows): int
+    {
+        return $this->adminRepository->replaceTimetable($facultyCode, $majorCode, $batch, $ttid, $rows);
+    }
+    public function deleteTimetable(int $facultyCode, int $majorCode, string $batch, int $ttid): int
+    {
+        return $this->adminRepository->deleteTimetable($facultyCode, $majorCode, $batch, $ttid);
+    }
+
+    //Timetable End
 }

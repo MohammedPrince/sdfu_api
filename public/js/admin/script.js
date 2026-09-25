@@ -1,4 +1,5 @@
 console.log('admin script.js loaded successfully');
+//Lod Faculty, Major and batch
 document.addEventListener('DOMContentLoaded', function () {
 
     const facultySelect = document.getElementById('faculty_code');

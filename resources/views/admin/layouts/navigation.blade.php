@@ -100,6 +100,10 @@
             </span>
         </a>
 
+        <div class="admin-menu-label admin-menu-label-spaced">
+            TIMETABLE
+        </div>
+
         <a href="{{ url('/admin/timetable') }}"
             class="admin-nav-item
             {{ request()->is('admin/timetable') ? 'active' : '' }}">
@@ -131,9 +135,10 @@
             </span>
         </a>
 
-        {{-- <a href="{{ url('/admin/timetable/show') }}"
+        <a href="{{ url('/admin/timetable/display') }}"
             class="admin-nav-item
-            {{ request()->is('admin/timetable/show') ? 'active' : '' }}">
+    {{ request()->is('admin/timetable/display*') || request()->is('admin/timetable/create*') ? 'active' : '' }}">
+
             <span class="admin-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none">
                     <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor"
@@ -145,22 +150,17 @@
 
                     <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
 
-                    <path d="M7 14H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <!-- Plus -->
+                    <path d="M12 13V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
 
-                    <path d="M12 14H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M17 14H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M7 18H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M12 18H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <path d="M9 16H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                 </svg>
             </span>
 
             <span class="admin-nav-text">
-                Show Timetable
+                Create Timetable
             </span>
-        </a> --}}
+        </a>
 
 
         <div class="admin-menu-label admin-menu-label-spaced">

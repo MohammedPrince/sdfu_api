@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -464,8 +465,8 @@ class ExternalDatabaseService
                   and Faculty_Code = :faculty_code
                   and Major_Code = :major_code
                   and Batch_Year = :batch
-                  and Stud_Group = :group
-            ";
+                  and Stud_Group = :group";
+
             $timetableRows = $connection->select($fallbackQuery, $bindings);
         }
 
@@ -691,7 +692,8 @@ class ExternalDatabaseService
         | Moodle Password Hash
         |--------------------------------------------------------------------------
         |
-        | IMPORTANT:
+
+        IMPORTANT:
         | Moodle does NOT use Laravel's bcrypt password hash directly.
         |
         | For modern Moodle versions, passwords are normally stored using
@@ -717,7 +719,7 @@ class ExternalDatabaseService
 
         $time = trim($time);
 
-        // Time range: 12:30 - 2:30
+        // Time range: 10:00 - 12:00
         if (str_contains($time, '-')) {
 
             [$start, $end] = array_map(
@@ -725,23 +727,29 @@ class ExternalDatabaseService
                 explode('-', $time, 2)
             );
 
-            try {
-                $startFormatted = Carbon::parse($start)->format('g:i A');
-                $endFormatted = Carbon::parse($end)->format('g:i A');
-
-                return $startFormatted . ' - ' . $endFormatted;
-            } catch (\Throwable $e) {
-                // Return original value if it cannot be parsed
-                return $time;
-            }
+            return $this->formatTimetableTime($start)
+                . ' - ' .
+                $this->formatTimetableTime($end);
         }
 
-        // Single time
-        try {
-            return Carbon::parse($time)->format('g:i A');
-        } catch (\Throwable $e) {
-            return $time;
-        }
+        return $this->formatTimetableTime($time);
+    }
+
+    private function formatTimetableTime($time): string
+    {
+        $time = trim($time);
+
+        return match ($time) {
+            '7:00', '07:00' => '07:00 AM',
+            '9:00', '09:00' => '09:00 AM',
+            '10:00' => '10:00 AM',
+            '12:00' => '12:00 PM',
+            '12:30' => '12:30 PM',
+            '2:30', '02:30' => '02:30 PM',
+            '3:00', '03:00' => '03:00 PM',
+            '5:00', '05:00' => '05:00 PM',
+            default => $time,
+        };
     }
 
     public function faculties(): Collection
@@ -774,6 +782,81 @@ class ExternalDatabaseService
         return DB::connection('mysql_sis')
             ->table('major')
             ->where('faculty_code', $facultyCode)
+            ->get();
+    }
+
+    //Timetable Start
+
+    public function getTimetableCoursesOLD(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $semester
+    ) {
+        return DB::connection('mysql_ott')
+            ->table('tbl_courses')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('semester', $semester)
+            ->where('del', 0)
+            ->where('new_course_flag', 2)
+            ->orderBy('Course_Code')
+            ->get();
+    }
+
+    public function getTimetableCourses(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $semester
+    ) {
+        return DB::connection('mysql_ott')
+            ->table('tbl_courses')
+            ->select([
+                'Course_Code',
+                'Course_Name',
+            ])
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('semester', $semester)
+
+            ->where('del', 0)
+            ->groupBy(
+                'Course_Code',
+                'Course_Name'
+            )
+            ->orderBy('Course_Code')
+            ->get();
+    }
+
+    public function getTimetableInstructors()
+    {
+        return DB::connection('mysql_ott')
+            ->table('tbl_instructors')
+            ->where(function ($query) {
+                $query->whereNull('Deleted')
+                    ->orWhere('Deleted', 0);
+            })
+            ->orderBy('Instructor_Name')
+            ->get();
+    }
+
+    public function getTimetableClassrooms()
+    {
+        return DB::connection('mysql_ott')
+            ->table('tbl_classrooms')
+            ->orderBy('Class_Name')
+            ->get();
+    }
+
+    public function getTimetableTimes()
+    {
+        return DB::connection('mysql_ott')
+            ->table('tim')
+            ->whereIn('id', [1, 2, 3, 4])
+            ->orderBy('id')
             ->get();
     }
 
@@ -912,6 +995,170 @@ class ExternalDatabaseService
         ];
     }
 
+
+    public function getSavedTimetableConfigurations($perPage = 10)
+    {
+        return DB::connection('mysql_ott')
+            ->table('tbl_setting_timetable as st')
+
+            ->leftJoin('Faculty as f', 'f.faculty_code', '=', 'st.Faculty_Code')
+            ->leftJoin('Major as m', 'm.major_code', '=', 'st.Major_Code')
+
+            ->select([
+                'st.TTID',
+                'st.Faculty_Code',
+                'st.Major_Code',
+                'st.Batch_Year',
+
+                'f.faculty_desc_e',
+                'm.major_desc_e',
+
+                DB::raw('COUNT(st.Id) as entry_count'),
+                DB::raw('MAX(st.Id) as last_id'),
+            ])
+
+            ->whereNotNull('st.Batch_Year')
+            ->where('st.Batch_Year', '!=', '')
+
+            ->groupBy(
+                'st.TTID',
+                'st.Faculty_Code',
+                'st.Major_Code',
+                'st.Batch_Year',
+                'f.faculty_desc_e',
+                'm.major_desc_e'
+            )
+
+            ->orderByDesc('last_id')
+
+            ->paginate($perPage)
+
+            ->appends(Request::query());
+    }
+
+    public function getSavedTimetableRows(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $ttid
+    ) {
+        return DB::connection('mysql_ott')
+            ->table('tbl_setting_timetable')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('TTID', $ttid)
+            ->orderBy('Period')
+            ->orderBy('Course_Code')
+            ->get();
+    }
+
+
+    public function getTimetableSemester(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $ttid
+    ): ?int {
+        $courseCodes = DB::connection('mysql_ott')
+            ->table('tbl_setting_timetable')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('TTID', $ttid)
+            ->whereNotNull('Course_Code')
+            ->pluck('Course_Code')
+            ->unique()
+            ->values();
+
+        if ($courseCodes->isEmpty()) {
+            return null;
+        }
+
+        $semesters = DB::connection('mysql_ott')
+            ->table('tbl_courses')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->whereIn('Course_Code', $courseCodes)
+            ->where('del', 0)
+            ->whereNotNull('semester')
+            ->pluck('semester')
+            ->unique()
+            ->values();
+
+        return $semesters->count() === 1
+            ? (int) $semesters->first()
+            : null;
+    }
+
+    public function deleteTimetable(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $ttid
+    ): int {
+        return DB::connection('mysql_ott')
+            ->table('tbl_setting_timetable')
+            ->where('Faculty_Code', $facultyCode)
+            ->where('Major_Code', $majorCode)
+            ->where('Batch_Year', $batch)
+            ->where('TTID', $ttid)
+            ->delete();
+    }
+
+    public function replaceTimetable(
+        int $facultyCode,
+        int $majorCode,
+        string $batch,
+        int $ttid,
+        array $rows
+    ): int {
+
+        $connection = DB::connection('mysql_ott');
+
+        return $connection->transaction(function () use ($connection, $facultyCode, $majorCode, $batch, $ttid, $rows) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete existing timetable
+            |--------------------------------------------------------------------------
+            */
+
+            $connection
+                ->table('tbl_setting_timetable')
+                ->where('Faculty_Code', $facultyCode)
+                ->where('Major_Code', $majorCode)
+                ->where('Batch_Year', $batch)
+                ->where('TTID', $ttid)
+                ->delete();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Insert updated timetable
+            |--------------------------------------------------------------------------
+            */
+
+            if (empty($rows)) {
+                return 0;
+            }
+
+
+            foreach (array_chunk($rows, 500) as $chunk) {
+
+                $connection
+                    ->table('tbl_setting_timetable')
+                    ->insert($chunk);
+            }
+
+
+            return count($rows);
+        });
+    }
+
+    //Timetable End
+
     //DB Opreations
     public function truncateTable(string $table): void
     {
@@ -991,7 +1238,215 @@ class ExternalDatabaseService
         return DB::connection('mysql_ott')->transactionLevel();
     }
 
+    public function createTimeTable(array $data): array
+    {
+        $connection = DB::connection('mysql_ott');
+
+        try {
+
+            return $connection->transaction(function () use ($connection, $data) {
+
+                $facultyCode = (int) $data['faculty_code'];
+                $majorCode = (int) $data['major_code'];
+                $batch = (string) $data['batch'];
+                $semester = (int) $data['semester'];
+                $ttid = (int) $data['ttid'];
+
+                /*
+                |--------------------------------------------------------------------------
+                | Check existing timetable
+                |--------------------------------------------------------------------------
+                */
+
+                $exists = $connection
+                    ->table('tbl_setting_timetable')
+                    ->where('TTID', $ttid)
+                    ->where('Faculty_Code', $facultyCode)
+                    ->where('Major_Code', $majorCode)
+                    ->where('Batch_Year', $batch)
+                    ->exists();
+
+                if ($exists) {
+
+                    return [
+                        'success' => false,
+                        'message' => 'A timetable already exists for the selected Faculty, Major, Batch, TTID and configuration.',
+                    ];
+                }
 
 
+                /*
+                |--------------------------------------------------------------------------
+                | Insert timetable entries
+                |--------------------------------------------------------------------------
+                */
 
+                $rows = [];
+
+                foreach ($data['timetable'] as $day => $periods) {
+
+                    foreach ($periods as $period => $entries) {
+
+                        if (empty($entries)) {
+                            continue;
+                        }
+
+                        foreach ($entries as $entry) {
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | Ignore completely empty entries
+                            |--------------------------------------------------------------------------
+                            */
+
+                            if (
+                                empty($entry['course_code']) &&
+                                empty($entry['instructor_id']) &&
+                                empty($entry['class_id'])
+                            ) {
+                                continue;
+                            }
+
+
+                            $rows[] = [
+
+                                'TTID' => $ttid,
+
+                                'Dept_Name' => '0',
+
+                                'Batch_Year' => $batch,
+
+                                'Course_Code' => $entry['course_code'] ?? '',
+
+                                'Stud_Group' => $entry['stud_group'] ?? '1',
+
+                                'Instructor_ID' =>
+                                    !empty($entry['instructor_id'])
+                                    ? (int) $entry['instructor_id']
+                                    : null,
+
+                                'Instructor_ID_Tut' =>
+                                    !empty($entry['instructor_id_tut'])
+                                    ? (int) $entry['instructor_id_tut']
+                                    : null,
+
+                                'Instructor_ID_Lab' =>
+                                    !empty($entry['instructor_id_lab'])
+                                    ? (int) $entry['instructor_id_lab']
+                                    : null,
+
+                                'TheoryHrs' =>
+                                    isset($entry['theory_hrs'])
+                                    ? (int) $entry['theory_hrs']
+                                    : 2,
+
+                                'TutorialHrs' =>
+                                    isset($entry['tutorial_hrs'])
+                                    ? (int) $entry['tutorial_hrs']
+                                    : 0,
+
+                                'Period' =>
+                                    !empty($entry['period'])
+                                    ? (int) $entry['period']
+                                    : (int) $period,
+
+                                'Period2' =>
+                                    !empty($entry['period2'])
+                                    ? (int) $entry['period2']
+                                    : null,
+
+                                'LabPeriod' =>
+                                    !empty($entry['lab_period'])
+                                    ? (int) $entry['lab_period']
+                                    : null,
+
+                                'ClassID' =>
+                                    !empty($entry['class_id'])
+                                    ? (int) $entry['class_id']
+                                    : null,
+
+                                'ClassID2' =>
+                                    !empty($entry['class_id2'])
+                                    ? (int) $entry['class_id2']
+                                    : null,
+
+                                'LabID' =>
+                                    !empty($entry['lab_id'])
+                                    ? (int) $entry['lab_id']
+                                    : null,
+
+                                'PracticalHrs' =>
+                                    isset($entry['practical_hrs'])
+                                    ? (int) $entry['practical_hrs']
+                                    : 0,
+
+                                'Faculty_Code' => $facultyCode,
+
+                                'Major_Code' => $majorCode,
+
+                                'Major_Minor' =>
+                                    isset($entry['major_minor'])
+                                    ? (int) $entry['major_minor']
+                                    : null,
+
+                                'User_Name' =>
+                                    auth()->user()->name ?? null,
+
+                                'FZ_Flag' => 0,
+
+                                'Dissolved' => 0,
+
+                                'FZ_Semester' => 0,
+
+                                'c_c' => 0,
+
+                                'new_course_flag' => 1,
+                            ];
+                        }
+                    }
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Nothing to insert
+                |--------------------------------------------------------------------------
+                */
+
+                if (empty($rows)) {
+
+                    return [
+                        'success' => false,
+                        'message' => 'No timetable entries were provided.',
+                    ];
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Insert
+                |--------------------------------------------------------------------------
+                */
+
+                $connection
+                    ->table('tbl_setting_timetable')
+                    ->insert($rows);
+
+
+                return [
+                    'success' => true,
+                    'message' => count($rows) . ' timetable entries created successfully.',
+                ];
+            });
+
+        } catch (\Throwable $e) {
+
+            report($e);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to create timetable: ' . $e->getMessage(),
+            ];
+        }
+    }
 }

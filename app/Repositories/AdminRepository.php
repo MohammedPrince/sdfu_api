@@ -420,7 +420,7 @@ class AdminRepository
     {
         abort_unless($student->role_id === 2, 404);
 
-        
+
         $student->faculty_name =
             $this->externalDatabase->getFacultyName(
                 $student->faculty_code
@@ -948,14 +948,35 @@ class AdminRepository
             ->paginate(10);
     }
 
+    //Timetable Start
 
-    public function syncTimetableData(
-        string $facultyCode,
-        string $majorCode,
-        string $batch,
-        int $semester,
-        int $ttid
-    ): array {
+    public function getTimetableCourses(int $facultyCode, int $majorCode, string $batch, int $semester)
+    {
+        return $this->externalDatabase->getTimetableCourses($facultyCode, $majorCode, $batch, $semester);
+    }
+
+    public function getTimetableInstructors()
+    {
+        return $this->externalDatabase->getTimetableInstructors();
+    }
+
+    public function getTimetableClassrooms()
+    {
+        return $this->externalDatabase->getTimetableClassrooms();
+    }
+
+    public function getTimetableTimes()
+    {
+        return $this->externalDatabase->getTimetableTimes();
+    }
+
+    public function createTimeTable(array $data): array
+    {
+        return $this->externalDatabase->createTimeTable($data);
+    }
+
+    public function syncTimetableData(string $facultyCode, string $majorCode, string $batch, int $semester, int $ttid): array
+    {
 
         /*
         |--------------------------------------------------------------------------
@@ -1438,4 +1459,31 @@ class AdminRepository
     {
         return $this->externalDatabase->getTimetableData($facultyCode, $majorCode, $batch, $semester, $ttid);
     }
+
+    public function getSavedTimetableConfigurations()
+    {
+        return $this->externalDatabase->getSavedTimetableConfigurations();
+    }
+
+    public function getSavedTimetableRows(int $facultyCode, int $majorCode, string $batch, int $ttid)
+    {
+        return $this->externalDatabase->getSavedTimetableRows($facultyCode, $majorCode, $batch, $ttid);
+    }
+
+    public function getTimetableSemester(int $facultyCode, int $majorCode, string $batch, int $ttid): ?int
+    {
+        return $this->externalDatabase->getTimetableSemester($facultyCode, $majorCode, $batch, $ttid);
+    }
+
+    public function replaceTimetable(int $facultyCode, int $majorCode, string $batch, int $ttid, array $rows): int
+    {
+        return $this->externalDatabase->replaceTimetable($facultyCode, $majorCode, $batch, $ttid, $rows);
+    }
+
+    public function deleteTimetable(int $facultyCode, int $majorCode, string $batch, int $ttid): int
+    {
+        return $this->externalDatabase->deleteTimetable($facultyCode, $majorCode, $batch, $ttid);
+    }
+
+    //Timetable End
 }
