@@ -127,8 +127,7 @@ class AdminRepository
 
     public function countCourses(): int
     {
-        // Update this later when your course source/table is finalized.
-        return 0;
+        return $this->externalDatabase->countCourses();
     }
 
     public function countNotifications(): int

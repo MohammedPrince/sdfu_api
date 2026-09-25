@@ -1238,6 +1238,19 @@ class ExternalDatabaseService
         return DB::connection('mysql_ott')->transactionLevel();
     }
 
+    public function countCourses(): int
+    {
+        // Count distinct courses from tbl_setting_timetable by faculty_code, major_code, batch, and course_code
+        return \DB::connection('mysql_ott')
+            ->table('tbl_setting_timetable')
+            ->selectRaw('COUNT(DISTINCT CONCAT(faculty_code, "-", major_code, "-", Batch_Year, "-", course_code)) as count')
+            ->whereNotNull('course_code')
+            ->where('TTID', '>=', 40)
+            ->where('course_code', '!=', '')
+            ->where('new_course_flag', 1)
+            ->value('count') ?? 0;
+    }
+
     public function createTimeTable(array $data): array
     {
         $connection = DB::connection('mysql_ott');

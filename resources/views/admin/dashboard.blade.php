@@ -293,9 +293,50 @@
 
                 </div>
 
-                <div class="notification-pagination">
-                    {{ $recentNotifications->links() }}
-                </div>
+                @if ($recentNotifications->hasPages())
+                    @php
+                        $notificationPaginator = $recentNotifications;
+                        $startPage = max(1, $notificationPaginator->currentPage() - 1);
+                        $endPage = min($notificationPaginator->lastPage(), $notificationPaginator->currentPage() + 1);
+                    @endphp
+
+                    <div class="pagination-wrapper notification-pagination">
+                        <p class="notification-pagination-summary">
+                            Showing {{ $notificationPaginator->firstItem() }} to {{ $notificationPaginator->lastItem() }} of
+                            {{ $notificationPaginator->total() }} results
+                        </p>
+
+                        <nav aria-label="Recent notifications pagination">
+                            <ul class="notification-pagination-list">
+                                <li>
+                                    @if ($notificationPaginator->onFirstPage())
+                                        <span class="is-disabled" aria-disabled="true">Previous</span>
+                                    @else
+                                        <a href="{{ $notificationPaginator->previousPageUrl() }}" rel="prev">Previous</a>
+                                    @endif
+                                </li>
+
+                                @foreach ($notificationPaginator->getUrlRange($startPage, $endPage) as $page => $url)
+                                    <li>
+                                        @if ($page === $notificationPaginator->currentPage())
+                                            <span class="is-active" aria-current="page">{{ $page }}</span>
+                                        @else
+                                            <a href="{{ $url }}">{{ $page }}</a>
+                                        @endif
+                                    </li>
+                                @endforeach
+
+                                <li>
+                                    @if ($notificationPaginator->hasMorePages())
+                                        <a href="{{ $notificationPaginator->nextPageUrl() }}" rel="next">Next</a>
+                                    @else
+                                        <span class="is-disabled" aria-disabled="true">Next</span>
+                                    @endif
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                @endif
             @else
                 <div class="dashboard-empty-state">
                     <span>No notifications have been sent yet.</span>
