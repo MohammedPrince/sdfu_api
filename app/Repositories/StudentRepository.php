@@ -489,7 +489,11 @@ class StudentRepository
 
         if (empty($timetable) || !isset($timetable['days'])) {
             $timetable = ['days' => []];
-            $appStatus['timetable'] = false;
+            $timetableActive = false;
+
+        } else {
+
+            $timetableActive = true;
         }
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
@@ -513,8 +517,8 @@ class StudentRepository
                 ) && !$resultMaintenanceMode,
 
                 'timetable' => $settings
-                    ? (bool) $settings->timetable_active
-                    : true,
+                    ? (bool) $settings->timetable_active && $timetableActive
+                    : $timetableActive,
             ],
 
             'notificationToggled' => $notificationToggled,
