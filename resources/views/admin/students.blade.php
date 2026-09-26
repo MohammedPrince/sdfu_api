@@ -12,6 +12,18 @@
 
     <div class="manage-page">
 
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="manage-settings-grid">
 
             {{-- =====================================================
@@ -280,6 +292,8 @@
 
                                 <th>Account</th>
 
+                                <th>Reset PWD</th>
+
                                 <th>Devices</th>
 
                                 <th>Last Activity</th>
@@ -333,7 +347,6 @@
 
                                     </td>
 
-
                                     {{-- Major --}}
                                     <td>
 
@@ -371,6 +384,16 @@
 
                                     </td>
 
+                                    {{-- Rest Password --}}
+                                    <td>
+                                        <form
+                                            action="{{ route('admin.students.reset-password', base64_encode($student->id)) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Are you sure you want to reset the password for this student?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger">Reset</button>
+                                        </form>
+                                    </td>
 
                                     {{-- Devices --}}
                                     <td>

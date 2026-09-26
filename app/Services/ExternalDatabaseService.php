@@ -33,7 +33,6 @@ class ExternalDatabaseService
             ->first();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Student Details

@@ -196,5 +196,20 @@ class AdminService
         return $this->adminRepository->deleteTimetable($facultyCode, $majorCode, $batch, $ttid);
     }
 
+    public function resetStudentPassword(string $studIndex): bool
+    {
+        // Get the Moodle password for the given studIndex (username)
+        $moodlePassword = $this->adminRepository->getMoodlePasswordByUsername($studIndex);
+
+        if (!$moodlePassword) {
+            return false;
+        }
+        // Update the user's password in the main application
+        $result = $this->adminRepository->updateUserPasswordByStudIndex($studIndex, $moodlePassword);
+
+        return $result > 0;
+    }
+
+
     //Timetable End
 }

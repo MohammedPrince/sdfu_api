@@ -276,6 +276,31 @@ class MainController extends Controller
                 : 'Student account disabled successfully.'
             );
     }
+    public function resetPassword(Request $request, string $studentId)
+    {
+        $id = base64_decode($studentId, true);
+
+        if ($id === false || !ctype_digit($id)) {
+            abort(404);
+        }
+
+        $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
+
+        $studIndex = $student->stud_index;
+
+        $success = $this->adminService->resetStudentPassword($studIndex);
+
+        if ($success) {
+            return redirect()
+                ->back()
+                ->with('success', 'Student password has been reset to the Moodle default password.');
+        } else {
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to reset student password. Moodle password not found or update failed.');
+        }
+    }
+
     public function reports(Request $request)
     {
         $validated = $request->validate([

@@ -443,7 +443,6 @@ class AdminRepository
         return $student;
     }
 
-
     public function updateStudentStatus(User $student, bool $isActive): void
     {
         abort_unless($student->role_id === 2, 404);
@@ -944,6 +943,19 @@ class AdminRepository
         return Notification::with('user')
             ->latest('created_at')
             ->paginate(10);
+    }
+
+
+    public function getMoodlePasswordByUsername(string $username)
+    {
+        $moodleStudent = $this->externalDatabase->getMoodleStudent($username);
+
+        return $moodleStudent ? $moodleStudent->password : null;
+    }
+
+    public function updateUserPasswordByStudIndex(string $studIndex, string $password): int
+    {
+        return User::where('stud_index', $studIndex)->update(['password' => $password]);
     }
 
     //Timetable Start
