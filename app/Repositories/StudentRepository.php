@@ -338,11 +338,11 @@ class StudentRepository
             return $auth;
         }
 
-        // $studentData = [];
-        // $semesterResult = [];
-        // $feeDetails = [];
-        // $timetable = [];
-        // $appStatus = [];
+        $studentData = [];
+        $semesterResult = [];
+        $feeDetails = [];
+        $timetable = [];
+        $appStatus = [];
 
         $studentHelper = Helper::studentData();
 
@@ -550,9 +550,9 @@ class StudentRepository
 
         if (empty($timetable['days'])) {
             $timetable = null;
-            //$timetableActive = false;
+            $timetableActive = false;
         } else {
-            // $timetableActive = true;
+            $timetableActive = true;
         }
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
@@ -575,8 +575,8 @@ class StudentRepository
                     : true
                 ) && !$resultMaintenanceMode,
 
-                'timetable' => $settings ? (bool) $settings->timetable_active : true,
-                //'timetable' => $settings ? (bool) $settings->timetable_active && $timetableActive : $timetableActive,
+                'timetable' => $settings
+                    ? (bool) $settings->timetable_active && $timetableActive : $timetableActive,
             ],
 
             'notificationToggled' => $notificationToggled,
@@ -881,12 +881,11 @@ class StudentRepository
             ];
         } else {
 
-            $timetable = null;
-            // return [
-            //     'success' => false,
-            //     'code' => 403,
-            //     'message' => 'timetable is currently unavailable',
-            // ];
+            return [
+                'success' => false,
+                'code' => 403,
+                'message' => 'timetable is currently unavailable',
+            ];
         }
     }
 

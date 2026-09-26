@@ -420,9 +420,9 @@ class ExternalDatabaseService
         $group = 1;
         $newCourseFlag = 1;
 
-        $faculty_code = 21;
-        $major_code = 21;
-        $batch = '20122';
+        $faculty_code = 2;
+        $major_code = 2;
+        $batch = '2022';
 
         // Lecture/tutorial bindings — only keys that appear in $lectureQuery /
         // $fallbackQuery below. PDO throws "Invalid parameter number:
