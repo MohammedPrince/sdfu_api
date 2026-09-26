@@ -81,7 +81,7 @@ class AdminRepository
 
     public function countStudents()
     {
-        return User::where('role_id', 2)->count();
+        return User::where('role_id', Helper::STUDENT_ROLE)->count();
     }
 
     public function getSavedSettings()
@@ -251,7 +251,7 @@ class AdminRepository
     {
 
         $query = User::query()
-            ->where('role_id', 2)
+            ->where('role_id', Helper::STUDENT_ROLE)
             ->withCount('devices')
             ->withMax('devices', 'last_seen_at');
 
@@ -405,7 +405,7 @@ class AdminRepository
     public function getStudentBatches(): Collection
     {
         return User::query()
-            ->where('role_id', 2)
+            ->where('role_id', Helper::STUDENT_ROLE)
             ->whereNotNull('batch')
             ->where('batch', '!=', '')
             ->select('batch')
@@ -416,7 +416,7 @@ class AdminRepository
 
     public function getStudentDetails(User $student): User
     {
-        abort_unless($student->role_id === 2, 404);
+        abort_unless($student->role_id === Helper::STUDENT_ROLE, 404);
 
 
         $student->faculty_name =
@@ -445,7 +445,7 @@ class AdminRepository
 
     public function updateStudentStatus(User $student, bool $isActive): void
     {
-        abort_unless($student->role_id === 2, 404);
+        abort_unless($student->role_id === Helper::STUDENT_ROLE, 404);
 
         SystemSetting::updateOrCreate(
             [
@@ -487,7 +487,7 @@ class AdminRepository
         */
 
         $studentQuery = User::query()
-            ->where('role_id', 2);
+            ->where('role_id', Helper::STUDENT_ROLE);
 
 
         if (!empty($filters['faculty_code'])) {
@@ -692,7 +692,7 @@ class AdminRepository
         $deviceQuery = UserDevice::query()
             ->whereHas('user', function ($query) use ($filters) {
 
-                $query->where('role_id', 2);
+                $query->where('role_id', Helper::STUDENT_ROLE);
 
                 if (!empty($filters['faculty_code'])) {
                     $query->where(
@@ -843,7 +843,7 @@ class AdminRepository
             ->whereNotNull('last_seen_at')
             ->whereHas('user', function ($query) use ($filters) {
 
-                $query->where('role_id', 2);
+                $query->where('role_id', Helper::STUDENT_ROLE);
 
                 if (!empty($filters['faculty_code'])) {
                     $query->where(

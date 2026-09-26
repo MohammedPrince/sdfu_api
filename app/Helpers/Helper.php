@@ -12,6 +12,9 @@ use Illuminate\Support\Str;
 
 class Helper
 {
+    //Roles
+    public const ADMIN_ROLE = 1;
+    public const STUDENT_ROLE = 2;
 
     //Application Helpers
     public static function recordVisitor(): void

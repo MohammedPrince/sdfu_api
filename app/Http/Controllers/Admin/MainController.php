@@ -245,7 +245,7 @@ class MainController extends Controller
             abort(404);
         }
 
-        $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
+        $student = User::where('id', (int) $id)->where('role_id', Helper::STUDENT_ROLE)->firstOrFail();
         $student = $this->adminService->getStudentDetails($student);
         $devices = $student->devices()->latest('last_seen_at')->paginate(5);
 
@@ -260,7 +260,7 @@ class MainController extends Controller
             abort(404);
         }
 
-        $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
+        $student = User::where('id', (int) $id)->where('role_id', Helper::STUDENT_ROLE)->firstOrFail();
         $isActive = $request->boolean('is_active');
 
         $this->adminService->updateStudentStatus($student, $isActive);
@@ -284,7 +284,7 @@ class MainController extends Controller
             abort(404);
         }
 
-        $student = User::where('id', (int) $id)->where('role_id', 2)->firstOrFail();
+        $student = User::where('id', (int) $id)->where('role_id', Helper::STUDENT_ROLE)->firstOrFail();
 
         $studIndex = $student->stud_index;
 

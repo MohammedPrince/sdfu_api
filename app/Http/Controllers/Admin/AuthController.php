@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             //role_id:1 = Admin
-            if (!in_array((int) $user->role_id, [1], true)) {
+            if (!in_array((int) $user->role_id, [Helper::ADMIN_ROLE], true)) {
 
                 Auth::logout();
 

@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\Helper;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
@@ -34,7 +35,7 @@ class AdminMiddleware
         |
         */
 
-        if (!in_array((int) $user->role_id, [1], true)) {
+        if (!in_array((int) $user->role_id, [Helper::ADMIN_ROLE], true)) {
 
             Auth::logout();
 

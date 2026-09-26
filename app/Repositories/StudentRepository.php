@@ -64,7 +64,7 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        $user = User::where('stud_index', $studIndex)->where('role_id', 2)->first();
+        $user = User::where('stud_index', $studIndex)->where('role_id', Helper::STUDENT_ROLE)->first();
 
         if ($user) {
 
@@ -202,7 +202,7 @@ class StudentRepository
 
                 'gender' => $gender,
 
-                'role_id' => 2,
+                'role_id' => Helper::STUDENT_ROLE,
             ]);
 
             Auth::login($user);
@@ -932,7 +932,7 @@ class StudentRepository
         if (
             !$user->id ||
             !$user->stud_index ||
-            (int) $user->role_id !== 2
+            (int) $user->role_id !== Helper::STUDENT_ROLE
         ) {
             return [
                 'success' => false,
