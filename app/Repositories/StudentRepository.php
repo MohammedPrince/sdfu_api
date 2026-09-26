@@ -487,8 +487,7 @@ class StudentRepository
         );
 
 
-        if (empty($timetable) || !isset($timetable['days'])) {
-            //$timetable = ['days' => []];
+        if (empty($timetable['days'])) {
             $timetable = [];
         }
 
