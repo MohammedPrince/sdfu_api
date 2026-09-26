@@ -69,7 +69,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/timetable/edit/{faculty_code}/{major_code}/{batch}/{ttid}', [MainController::class, 'updateTimeTable'])->name('timetable.update');
         Route::delete('/timetable/{faculty_code}/{major_code}/{batch}/{ttid}', [MainController::class, 'deleteTimeTable'])->name('timetable.delete');
 
-        //Get majors based of faculty_code. JS
+        //JS: Get majors & courses based on faculty, major and batch
+        Route::get('/timetable/courses', [MainController::class, 'getTimetableCourses'])->name('timetable.courses');
         Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
