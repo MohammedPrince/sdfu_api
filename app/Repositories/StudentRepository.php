@@ -487,12 +487,10 @@ class StudentRepository
         );
 
 
-        if (empty($timetable) || !isset($timetable['days'])) {
-            $timetable = ['days' => []];
+        if (empty($timetable['days'])) {
+            $timetable = [];
             $timetableActive = false;
-
         } else {
-
             $timetableActive = true;
         }
 
@@ -517,8 +515,7 @@ class StudentRepository
                 ) && !$resultMaintenanceMode,
 
                 'timetable' => $settings
-                    ? (bool) $settings->timetable_active && $timetableActive
-                    : $timetableActive,
+                    ? (bool) $settings->timetable_active && $timetableActive: $timetableActive,
             ],
 
             'notificationToggled' => $notificationToggled,
