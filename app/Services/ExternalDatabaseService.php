@@ -422,7 +422,7 @@ class ExternalDatabaseService
 
         $faculty_code = 21;
         $major_code = 21;
-        $batch = '2022';
+        $batch = '20122';
 
         // Lecture/tutorial bindings — only keys that appear in $lectureQuery /
         // $fallbackQuery below. PDO throws "Invalid parameter number:
