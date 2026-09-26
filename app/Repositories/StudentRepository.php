@@ -64,7 +64,7 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        $user = User::where('stud_index', $studIndex)->where('role_id', Helper::STUDENT_ROLE)->first();
+        $user = User::where('stud_index', $studIndex)->where('role_id', Helper::STUDENT_ROLE)->where('is_active', true)->first();
 
         if ($user) {
 
@@ -646,6 +646,7 @@ class StudentRepository
             'studentDetails' => $studentDetails,
         ];
     }
+
     public function getResult()
     {
 
@@ -735,6 +736,7 @@ class StudentRepository
             'semesterResult' => $payload['semesterResult'],
         ];
     }
+
     public function getFees()
     {
 
@@ -932,7 +934,7 @@ class StudentRepository
         if (
             !$user->id ||
             !$user->stud_index ||
-            (int) $user->role_id !== Helper::STUDENT_ROLE
+            (int) $user->role_id !== Helper::STUDENT_ROLE || $user->role_id = false
         ) {
             return [
                 'success' => false,
@@ -1048,29 +1050,6 @@ class StudentRepository
             'code' => 200,
             'message' => 'Password updated successfully. Please login again.',
         ];
-    }
-
-    public function logout()
-    {
-        //Check application status
-        $applicationStatus = Helper::checkApplicationStatus();
-        if (!$applicationStatus['success']) {
-            return $applicationStatus;
-        }
-
-        if (Auth::check()) {
-            if (Auth::user()->tokens()->delete()) {
-                return ['success' => true, 'code' => 200, 'message' => 'logout success'];
-            } else {
-                return [
-                    'success' => false,
-                    'code' => 500,
-                    'message' => 'logout failed'
-                ];
-            }
-        } else {
-            return ['success' => false, 'code' => 401, 'message' => 'Student not found'];
-        }
     }
 
     //Notifications
@@ -1283,6 +1262,7 @@ class StudentRepository
         if (!$applicationStatus['success']) {
             return $applicationStatus;
         }
+
         $user = $request->user();
 
         if (!$user) {
@@ -1313,4 +1293,79 @@ class StudentRepository
             'message' => 'FCM token removed successfully',
         ];
     }
+
+    public function logout()
+    {
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        if (Auth::check()) {
+            if (Auth::user()->tokens()->delete()) {
+                return ['success' => true, 'code' => 200, 'message' => 'logout success'];
+            } else {
+                return [
+                    'success' => false,
+                    'code' => 500,
+                    'message' => 'logout failed'
+                ];
+            }
+        } else {
+            return ['success' => false, 'code' => 401, 'message' => 'Student not found'];
+        }
+    }
+
+    //DELETE ACCOUNT
+    public function deleteAccount()
+    {
+
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
+        }
+
+        //Check application status
+        $applicationStatus = Helper::checkApplicationStatus();
+        if (!$applicationStatus['success']) {
+            return $applicationStatus;
+        }
+
+        $studentHelper = Helper::studentData();
+
+        $stud_id = $studentHelper['stud_id'];
+        $role_id = $studentHelper['role_id'];
+        $is_active = $studentHelper['is_active'];
+
+        if ((int) $role_id !== Helper::STUDENT_ROLE) {
+            return [
+                'success' => false,
+                'code' => 403,
+                'message' => 'Student account required',
+            ];
+        }
+
+        if (!$is_active) {
+            return [
+                'success' => false,
+                'code' => 400,
+                'message' => 'Account is already inactive/deleted',
+            ];
+        }
+
+        $user = Auth::user();
+        $user->is_active = false;
+        $user->save();
+
+        $user->tokens()->delete();
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Account deleted successfully',
+        ];
+    }
+
 }

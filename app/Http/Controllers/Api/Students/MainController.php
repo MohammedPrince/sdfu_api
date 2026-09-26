@@ -118,7 +118,6 @@ class MainController extends Controller
             ], $result['code']);
         }
     }
-
     public function getFees()
     {
         $result = $this->studentService->getFees();
@@ -141,7 +140,6 @@ class MainController extends Controller
             ], $result['code']);
         }
     }
-
     public function getTimetable()
     {
 
@@ -199,6 +197,25 @@ class MainController extends Controller
     {
 
         $result = $this->studentService->logout();
+
+        if ($result['success']) {
+            return response()->json([
+                'status' => 'success',
+                'code' => $result['code'],
+                'message' => $result['message'],
+            ], $result['code']);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'code' => $result['code'],
+                'error' => $result['message']
+            ], $result['code']);
+        }
+    }
+
+    public function deleteAccount()
+    {
+        $result = $this->studentService->deleteAccount();
 
         if ($result['success']) {
             return response()->json([

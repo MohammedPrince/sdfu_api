@@ -37,7 +37,7 @@ class StudentService
     {
         return $this->studentRepository->getFees();
     }
-    
+
     public function getTimetable()
     {
         return $this->studentRepository->getTimetable();
@@ -59,11 +59,11 @@ class StudentService
         return $this->studentRepository->markNotificationAsRead($notificationId);
     }
 
-     public function markAllNotificationsAsRead()
+    public function markAllNotificationsAsRead()
     {
         return $this->studentRepository->markAllNotificationsAsRead();
     }
-    
+
     public function registerToken($data)
     {
         return $this->studentRepository->registerToken($data);
@@ -77,6 +77,11 @@ class StudentService
     public function logout()
     {
         return $this->studentRepository->logout();
+    }
+
+    public function deleteAccount()
+    {
+        return $this->studentRepository->deleteAccount();
     }
 
 }

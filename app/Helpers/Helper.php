@@ -643,6 +643,9 @@ class Helper
             'phone' => $user->phone ?? null,
             'email' => $user->email ?? null,
             'gender' => $user->gender ?? null,
+            //Role
+            'role_id' => $user->role_id ?? null,
+            'is_active' => $user->is_active ?? null,
         ];
     }
 

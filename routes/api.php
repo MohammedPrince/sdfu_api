@@ -26,6 +26,7 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
         Route::post('/fees', [MainController::class, 'getFees']);
         Route::post('/timetable', [MainController::class, 'getTimetable']);
         Route::post('/password', [MainController::class, 'updatePassword']);
+        Route::post('/delete', [MainController::class, 'deleteAccount']);
 
         //Notification
         Route::get('/notifications', [NotificationController::class, 'getNotifications']);

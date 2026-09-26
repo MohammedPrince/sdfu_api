@@ -30,7 +30,8 @@ class User extends Authenticatable
         'batch',
         'semester',
         'gender',
-        'role_id'
+        'role_id',
+        'is_active'
     ];
 
     /**
