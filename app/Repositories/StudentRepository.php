@@ -881,11 +881,12 @@ class StudentRepository
             ];
         } else {
 
-            return [
-                'success' => false,
-                'code' => 403,
-                'message' => 'timetable is currently unavailable',
-            ];
+            $timetable = null;
+            // return [
+            //     'success' => false,
+            //     'code' => 403,
+            //     'message' => 'timetable is currently unavailable',
+            // ];
         }
     }
 
