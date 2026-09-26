@@ -858,7 +858,7 @@ class StudentRepository
             ];
         }
     }
-    public function getTimetable()
+    public function getTimetable(): array
     {
 
         $auth = Helper::authenticatedStudent();
