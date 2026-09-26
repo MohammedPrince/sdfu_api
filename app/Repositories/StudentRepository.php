@@ -64,9 +64,24 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        $user = User::where('stud_index', $studIndex)->where('role_id', Helper::STUDENT_ROLE)->where('is_active', true)->first();
+        $user = User::where('stud_index', $studIndex)->where('role_id', Helper::STUDENT_ROLE)->first();
 
         if ($user) {
+
+            /*
+       |--------------------------------------------------------------------------
+       | Student exists locally
+       |--------------------------------------------------------------------------
+       */
+
+            if (!$user->is_active) {
+
+                return [
+                    'success' => false,
+                    'code' => 403,
+                    'message' => 'Account has been deleted',
+                ];
+            }
 
             /*
             |--------------------------------------------------------------------------
