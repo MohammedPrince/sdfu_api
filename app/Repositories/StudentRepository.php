@@ -894,14 +894,24 @@ class StudentRepository
         $newPassword = (string) ($data['new_password'] ?? '');
         $newPasswordConfirm = (string) ($data['new_password_confirm'] ?? '');
 
-        // Check application status
+        /*
+        |--------------------------------------------------------------------------
+        | Check application status
+        |--------------------------------------------------------------------------
+        */
+
         $applicationStatus = Helper::checkApplicationStatus();
 
         if (!$applicationStatus['success']) {
             return $applicationStatus;
         }
 
-        // Check authentication
+        /*
+        |--------------------------------------------------------------------------
+        | Check authentication
+        |--------------------------------------------------------------------------
+        */
+
         if (!Auth::check() || !Auth::user()) {
             return [
                 'success' => false,
@@ -911,6 +921,24 @@ class StudentRepository
         }
 
         $user = Auth::user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Make sure local student account exists
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$user->id ||
+            !$user->stud_index ||
+            (int) $user->role_id !== 2
+        ) {
+            return [
+                'success' => false,
+                'code' => 404,
+                'message' => 'Student account not found',
+            ];
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -928,32 +956,13 @@ class StudentRepository
 
         /*
         |--------------------------------------------------------------------------
-        | Get Moodle student
-        |--------------------------------------------------------------------------
-        */
-
-        $moodleStudent = $this->externalDatabase->getMoodleStudent($user->stud_index);
-
-        if (!$moodleStudent) {
-            return [
-                'success' => false,
-                'code' => 404,
-                'message' => 'Student account not found in Moodle',
-            ];
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Verify current password against Moodle password
+        | Verify current password against LOCAL User password
         |--------------------------------------------------------------------------
         */
 
         if (
-            empty($moodleStudent->password) ||
-            !password_verify(
-                $currentPassword,
-                $moodleStudent->password
-            )
+            empty($user->password) ||
+            !Hash::check($currentPassword, $user->password)
         ) {
             return [
                 'success' => false,
@@ -980,7 +989,7 @@ class StudentRepository
             return [
                 'success' => false,
                 'code' => 422,
-                'message' => 'Password is miss-match',
+                'message' => 'Password does not match',
             ];
         }
 
@@ -994,23 +1003,21 @@ class StudentRepository
 
         /*
         |--------------------------------------------------------------------------
-        | Update Moodle password
+        | Prevent using the same password
         |--------------------------------------------------------------------------
         */
 
-        // $moodleUpdatedPassword = $this->externalDatabase->updateMoodlePassword($user->stud_index,$newPassword);
-
-        // if (!$moodleUpdatedPassword) {
-        //     return [
-        //         'success' => false,
-        //         'code' => 500,
-        //         'message' => 'Password update failed in Moodle',
-        //     ];
-        // }
+        if (Hash::check($newPassword, $user->password)) {
+            return [
+                'success' => false,
+                'code' => 422,
+                'message' => 'New password must be different from your current password',
+            ];
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | Update local SDFU password
+        | Update LOCAL SDFU password
         |--------------------------------------------------------------------------
         */
 
@@ -1019,7 +1026,7 @@ class StudentRepository
 
         /*
         |--------------------------------------------------------------------------
-        | Delete current Sanctum token
+        | Revoke current Sanctum token
         |--------------------------------------------------------------------------
         */
 
@@ -1028,6 +1035,12 @@ class StudentRepository
         if ($currentToken instanceof PersonalAccessToken) {
             $currentToken->delete();
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Success
+        |--------------------------------------------------------------------------
+        */
 
         return [
             'success' => true,
