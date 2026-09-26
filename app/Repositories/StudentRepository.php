@@ -487,8 +487,9 @@ class StudentRepository
         );
 
 
-        if (empty($timetable['days'])) {
-            $timetable = [];
+        if (empty($timetable) || !isset($timetable['days'])) {
+            $timetable = ['days' => []];
+            $appStatus['timetable'] = false;
         }
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
