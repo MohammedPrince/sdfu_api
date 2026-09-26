@@ -29,7 +29,6 @@ class StudentRepository
 
     public function login($data)
     {
-
         $studIndex = trim($data['stud_index'] ?? '');
         $studPassword = $data['stud_password'] ?? '';
 
@@ -59,18 +58,49 @@ class StudentRepository
             ];
         }
 
-        if (
-            Auth::attempt([
-                'stud_index' => $studIndex,
-                'password' => $studPassword,
-                'role_id' => 2,
-            ])
-        ) {
+        /*
+        |--------------------------------------------------------------------------
+        | 1. Check local User table first
+        |--------------------------------------------------------------------------
+        */
 
-            $user = Auth::user();
+        $user = User::where('stud_index', $studIndex)->where('role_id', 2)->first();
+
+        if ($user) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Student exists locally.
+            | Authenticate ONLY against local password.
+            |--------------------------------------------------------------------------
+            */
+
+            if (!Hash::check($studPassword, $user->password)) {
+
+                RateLimiter::hit($rateLimitKey, 300);
+
+                $attempts = RateLimiter::attempts($rateLimitKey);
+                $remaining = max(0, 3 - $attempts);
+
+                return [
+                    'success' => false,
+                    'code' => 401,
+                    'message' => 'Invalid Student Index or Password',
+                    'attempts_remaining' => $remaining,
+                ];
+            }
+
+            // Local authentication successful.
+            Auth::login($user);
+
             RateLimiter::clear($rateLimitKey);
+        }
 
-        } else {
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Student does not exist locally -> check Moodle
+        |--------------------------------------------------------------------------
+        */ else {
 
             $student = $this->externalDatabase->getMoodleStudent($studIndex);
 
@@ -84,6 +114,12 @@ class StudentRepository
                     'message' => 'Student Index Not Exists',
                 ];
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Verify Moodle password
+            |--------------------------------------------------------------------------
+            */
 
             if (!password_verify($studPassword, $student->password)) {
 
@@ -102,6 +138,12 @@ class StudentRepository
 
             RateLimiter::clear($rateLimitKey);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Get student profile from SIS
+            |--------------------------------------------------------------------------
+            */
+
             $studentDetails = $this->externalDatabase->getStudentDetails($studIndex);
 
             if (!$studentDetails) {
@@ -113,21 +155,17 @@ class StudentRepository
                 ];
             }
 
-            $stud_full_name =
-                trim(
-                    $studentDetails->stud_name . ' ' .
-                    $studentDetails->stud_surname . ' ' .
-                    $studentDetails->familyname . ' ' .
-                    $studentDetails->lastName
-                );
+            $stud_full_name = trim(
+                $studentDetails->stud_name . ' ' .
+                $studentDetails->stud_surname . ' ' .
+                $studentDetails->familyname . ' ' .
+                $studentDetails->lastName
+            );
 
             $faculty_code = $studentDetails->faculty_code ?? null;
             $major_code = $studentDetails->major_code ?? null;
             $batch = $studentDetails->batch ?? null;
             $semester = (int) ($studentDetails->curr_sem ?? 0);
-
-            $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-            $major_desc_e = $this->externalDatabase->getMajorName($major_code);
 
             $phone = $studentDetails->stud_tel_mobile ?? null;
 
@@ -138,44 +176,43 @@ class StudentRepository
                 default => null,
             };
 
-            $user = User::where('stud_index', $studIndex)->where('role_id', 2)->first();
+            /*
+            |--------------------------------------------------------------------------
+            | Create local User
+            |--------------------------------------------------------------------------
+            */
 
-            if (!$user) {
+            $user = User::create([
+                'stud_index' => $studIndex,
+                'name' => $stud_full_name,
 
-                $user = User::create([
-                    'stud_index' => $studIndex,
-                    'name' => $stud_full_name,
-                    'email' => !empty($student->email)
-                        ? $student->email
-                        : null,
-                    'phone' => $phone,
-                    'faculty_code' => $faculty_code,
-                    'major_code' => $major_code,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'password' => $student->password,
-                    'gender' => $gender,
-                    'role_id' => 2,
-                ]);
+                'email' => !empty($student->email)
+                    ? $student->email
+                    : null,
 
-            } else {
+                'phone' => $phone,
 
-                $user->update([
-                    'name' => $stud_full_name,
-                    'phone' => $phone,
-                    'email' => !empty($student->email)
-                        ? $student->email
-                        : $user->email,
-                    'faculty_code' => $faculty_code,
-                    'major_code' => $major_code,
-                    'batch' => $batch,
-                    'semester' => $semester,
-                    'gender' => $gender,
-                ]);
-            }
+                'faculty_code' => $faculty_code,
+                'major_code' => $major_code,
+                'batch' => $batch,
+                'semester' => $semester,
+
+                // Store Moodle's already-hashed password.
+                'password' => $student->password,
+
+                'gender' => $gender,
+
+                'role_id' => 2,
+            ]);
 
             Auth::login($user);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Application status
+        |--------------------------------------------------------------------------
+        */
 
         $applicationStatus = Helper::checkApplicationStatus();
 
@@ -185,8 +222,13 @@ class StudentRepository
 
         $settings = $applicationStatus['settings'];
 
-
         $user = Auth::user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Student information
+        |--------------------------------------------------------------------------
+        */
 
         $stud_full_name = $user->name;
         $faculty_code = $user->faculty_code;
@@ -200,6 +242,12 @@ class StudentRepository
         $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
         $major_desc_e = $this->externalDatabase->getMajorName($major_code);
 
+        /*
+        |--------------------------------------------------------------------------
+        | 5. Create API token
+        |--------------------------------------------------------------------------
+        */
+
         $user->tokens()->delete();
 
         $expiresAt = Carbon::now()->addYear();
@@ -210,15 +258,27 @@ class StudentRepository
             $expiresAt
         );
 
-        $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
-        $notificationToggled = UserDevice::where('user_id', $user->id)->where('is_active', true)->exists();
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Application status
+        |--------------------------------------------------------------------------
+        */
+
+        $resultMaintenanceMode =
+            $this->externalDatabase->resultMaintenanceMode();
+
+        $notificationToggled = UserDevice::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->exists();
 
         $appStatus = [
+
             'active' => $settings
                 ? (bool) $settings->api_active
                 : true,
 
             'tabs_status' => [
+
                 'fee' => $settings
                     ? (bool) $settings->fee_active
                     : true,
@@ -237,27 +297,27 @@ class StudentRepository
             'notificationToggled' => $notificationToggled,
         ];
 
+        /*
+        |--------------------------------------------------------------------------
+        | 7. Login response
+        |--------------------------------------------------------------------------
+        */
+
         $LoginDetails = [
 
             'stud_index' => $user->stud_index,
             'stud_full_name' => $stud_full_name,
             'stud_email' => $email,
             'stud_phone' => $phone,
-
             'faculty_code' => $faculty_code,
             'major_code' => $major_code,
-
             'faculty' => $faculty_desc_e,
             'major' => $major_desc_e,
-
             'batch' => $batch,
             'sem' => (int) $semester,
-
             'gender' => $gender,
-
             'token' => $token->plainTextToken,
             'token_expires_at' => $expiresAt->toISOString(),
-
             'app_status' => $appStatus,
         ];
 
