@@ -515,7 +515,7 @@ class StudentRepository
                 ) && !$resultMaintenanceMode,
 
                 'timetable' => $settings
-                    ? (bool) $settings->timetable_active && $timetableActive: $timetableActive,
+                    ? (bool) $settings->timetable_active && $timetableActive : $timetableActive,
             ],
 
             'notificationToggled' => $notificationToggled,
@@ -585,7 +585,6 @@ class StudentRepository
             'studentDetails' => $studentDetails,
         ];
     }
-
     public function getResult()
     {
 
@@ -804,20 +803,6 @@ class StudentRepository
         $batch = $studentHelper['batch'];
         $semester = $studentHelper['semester'];
 
-        $timetableCacheKey = "student:timetable:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-
-        // $timetable = Cache::remember(
-        //     $timetableCacheKey,
-        //     now()->addHour(),
-        //     fn() => $this->externalDatabase->getStudentTimetable(
-        //         $stud_id,
-        //         $faculty_code,
-        //         $major_code,
-        //         $batch,
-        //         $semester
-        //     )
-        // );
-
         $timetable = $this->externalDatabase->getStudentTimetable(
             $stud_id,
             $faculty_code,
@@ -833,13 +818,20 @@ class StudentRepository
                 'message' => 'Timetable Retrieved Successfully',
                 'timetableDetails' => $timetable,
             ];
+        } else {
+
+            return [
+                'success' => false,
+                'code' => 403,
+                'message' => 'timetable is currently unavailable',
+            ];
         }
 
-        return [
-            'success' => false,
-            'code' => 404,
-            'message' => 'Timetable Not Found',
-        ];
+        // return [
+        //     'success' => false,
+        //     'code' => 404,
+        //     'message' => 'Timetable Not Found',
+        // ];
     }
 
     public function updatePassword($data)
