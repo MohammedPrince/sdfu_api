@@ -338,11 +338,11 @@ class StudentRepository
             return $auth;
         }
 
-        $studentData = [];
-        $semesterResult = [];
-        $feeDetails = [];
-        $timetable = [];
-        $appStatus = [];
+        // $studentData = [];
+        // $semesterResult = [];
+        // $feeDetails = [];
+        // $timetable = [];
+        // $appStatus = [];
 
         $studentHelper = Helper::studentData();
 
@@ -474,6 +474,7 @@ class StudentRepository
                         'days_remaining' => 0,
                         'registration_closed' => false,
                         'status' => null,
+                        'paid' => null,
                     ];
                 }
 
@@ -548,10 +549,10 @@ class StudentRepository
 
 
         if (empty($timetable['days'])) {
-            $timetable = [];
-            $timetableActive = false;
+            $timetable = null;
+            //$timetableActive = false;
         } else {
-            $timetableActive = true;
+            // $timetableActive = true;
         }
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
@@ -574,8 +575,8 @@ class StudentRepository
                     : true
                 ) && !$resultMaintenanceMode,
 
-                'timetable' => $settings
-                    ? (bool) $settings->timetable_active && $timetableActive : $timetableActive,
+                'timetable' => $settings ? (bool) $settings->timetable_active : true,
+                //'timetable' => $settings ? (bool) $settings->timetable_active && $timetableActive : $timetableActive,
             ],
 
             'notificationToggled' => $notificationToggled,
