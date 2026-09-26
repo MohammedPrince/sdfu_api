@@ -612,13 +612,9 @@ class ExternalDatabaseService
             ->get();
     }
 
-    public function getClassrooms(
-        string $facultyCode,
-        string $majorCode,
-        string $batch,
-        int $semester,
-        int $ttid
-    ): Collection {
+    public function getClassrooms(string $facultyCode, string $majorCode, string $batch, int $semester, int $ttid): Collection
+    {
+
         return DB::connection('mysql_ott')
             ->table('tbl_classrooms')
             ->where('Faculty_Code', $facultyCode)
@@ -708,81 +704,6 @@ class ExternalDatabaseService
                 'password' => $hash,
                 'timemodified' => now()->timestamp,
             ]) > 0;
-    }
-
-    //Helpers Functions
-    private function formatTime($time): ?string
-    {
-        if (empty($time)) {
-            return null;
-        }
-
-        $time = trim($time);
-
-        // Time range: 10:00 - 12:00
-        if (str_contains($time, '-')) {
-
-            [$start, $end] = array_map(
-                'trim',
-                explode('-', $time, 2)
-            );
-
-            return $this->formatTimetableTime($start)
-                . ' - ' .
-                $this->formatTimetableTime($end);
-        }
-
-        return $this->formatTimetableTime($time);
-    }
-
-    private function formatTimetableTime($time): string
-    {
-        $time = trim($time);
-
-        return match ($time) {
-            '7:00', '07:00' => '07:00 AM',
-            '9:00', '09:00' => '09:00 AM',
-            '10:00' => '10:00 AM',
-            '12:00' => '12:00 PM',
-            '12:30' => '12:30 PM',
-            '2:30', '02:30' => '02:30 PM',
-            '3:00', '03:00' => '03:00 PM',
-            '5:00', '05:00' => '05:00 PM',
-            default => $time,
-        };
-    }
-
-    public function faculties(): Collection
-    {
-        return DB::connection('mysql_sis')
-            ->table('faculty')
-            ->where('deleted', 0)
-            ->get();
-    }
-
-    public function majors(): Collection
-    {
-        return DB::connection('mysql_sis')
-            ->table('major')
-            ->where('deleted', 0)
-            ->get();
-    }
-
-    public function batches(): Collection
-    {
-        return DB::connection('mysql_sis')
-            ->table('batch_control')
-            ->select('batch')
-            ->distinct()
-            ->orderBy('batch')
-            ->get();
-    }
-    public function majorsByFaculty(string $facultyCode): Collection
-    {
-        return DB::connection('mysql_sis')
-            ->table('major')
-            ->where('faculty_code', $facultyCode)
-            ->get();
     }
 
     //Timetable Start
@@ -1461,5 +1382,79 @@ class ExternalDatabaseService
                 'message' => 'Failed to create timetable: ' . $e->getMessage(),
             ];
         }
+    }
+
+    //Helpers Functions
+    private function formatTime($time): ?string
+    {
+        if (empty($time)) {
+            return null;
+        }
+
+        $time = trim($time);
+
+        // Time range: 10:00 - 12:00
+        if (str_contains($time, '-')) {
+
+            [$start, $end] = array_map(
+                'trim',
+                explode('-', $time, 2)
+            );
+
+            return $this->formatTimetableTime($start)
+                . ' - ' .
+                $this->formatTimetableTime($end);
+        }
+
+        return $this->formatTimetableTime($time);
+    }
+    private function formatTimetableTime($time): string
+    {
+        $time = trim($time);
+
+        return match ($time) {
+            '7:00', '07:00' => '07:00 AM',
+            '9:00', '09:00' => '09:00 AM',
+            '10:00' => '10:00 AM',
+            '12:00' => '12:00 PM',
+            '12:30' => '12:30 PM',
+            '2:30', '02:30' => '02:30 PM',
+            '3:00', '03:00' => '03:00 PM',
+            '5:00', '05:00' => '05:00 PM',
+            default => $time,
+        };
+    }
+
+    public function faculties(): Collection
+    {
+        return DB::connection('mysql_sis')
+            ->table('faculty')
+            ->where('deleted', 0)
+            ->get();
+    }
+
+    public function majors(): Collection
+    {
+        return DB::connection('mysql_sis')
+            ->table('major')
+            ->where('deleted', 0)
+            ->get();
+    }
+
+    public function batches(): Collection
+    {
+        return DB::connection('mysql_sis')
+            ->table('batch_control')
+            ->select('batch')
+            ->distinct()
+            ->orderBy('batch')
+            ->get();
+    }
+    public function majorsByFaculty(string $facultyCode): Collection
+    {
+        return DB::connection('mysql_sis')
+            ->table('major')
+            ->where('faculty_code', $facultyCode)
+            ->get();
     }
 }

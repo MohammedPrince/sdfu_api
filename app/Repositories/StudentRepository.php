@@ -278,6 +278,12 @@ class StudentRepository
             return $auth;
         }
 
+        $studentData = [];
+        $semesterResult = [];
+        $feeDetails = [];
+        $timetable = [];
+        $appStatus = [];
+
         $studentHelper = Helper::studentData();
 
         $user_id = $studentHelper['id'];
@@ -302,7 +308,6 @@ class StudentRepository
 
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
-
 
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
@@ -387,12 +392,12 @@ class StudentRepository
         | Keyed with $current_date so days_remaining / registration_closed
         | naturally roll over at midnight without needing manual invalidation.
         */
+        // 10 minutes — fee status can change (e.g. after a payment)
 
         $feeDetails = Cache::remember(
             "{$cacheKey}:fees:{$current_date}",
-            600, // 10 minutes — fee status can change (e.g. after a payment)
+            600,
             function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $current_date, $today) {
-
                 $raw = $this->externalDatabase->getStudentFees(
                     $stud_id,
                     $faculty_code,
@@ -483,14 +488,12 @@ class StudentRepository
 
 
         if (empty($timetable) || !isset($timetable['days'])) {
-            $timetable = ['days' => []];
+            //$timetable = ['days' => []];
+            $timetable = [];
         }
 
         $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
         $notificationToggled = UserDevice::where('user_id', $user_id)->where('is_active', true)->exists();
-        // if(!$notificationToggled){
-        //     $notificationToggled = true;
-        // }
 
         //App status
         $appStatus = [
@@ -671,7 +674,6 @@ class StudentRepository
             'semesterResult' => $payload['semesterResult'],
         ];
     }
-
     public function getFees()
     {
 
@@ -778,7 +780,6 @@ class StudentRepository
             ];
         }
     }
-
     public function getTimetable()
     {
 

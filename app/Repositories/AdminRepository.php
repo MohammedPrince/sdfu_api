@@ -156,9 +156,8 @@ class AdminRepository
 
     public function getApplicationStatus(): array
     {
-        $settings = SystemSetting::query()
-            ->orderBy('id')
-            ->get();
+
+        $settings = SystemSetting::query()->orderBy('id')->get();
 
         return [
             'active' => $settings->contains(
