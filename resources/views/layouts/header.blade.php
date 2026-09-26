@@ -9,7 +9,7 @@
         <div>
 
             <div class="brand-title">
-                The Future University 
+                The Future University
             </div>
 
             <div class="brand-subtitle">
@@ -22,8 +22,19 @@
 
     <nav class="header-nav">
 
-        <a href="#services" class="nav-link">
-            Application Services
+        @if (request()->is('privacy-policy*'))
+            <a href="{{ url('/') }}" class="nav-link">
+                Home
+            </a>
+        @else
+            <a href="#services" class="nav-link active">
+                Application Services
+            </a>
+        @endif
+
+
+        <a href="{{ url('/privacy-policy') }}" class="nav-link {{ request()->is('privacy-policy*') ? 'active' : '' }}">
+            Privacy & Policy
         </a>
 
     </nav>

@@ -37,7 +37,7 @@ class StudentService
     {
         return $this->studentRepository->getFees();
     }
-
+    
     public function getTimetable()
     {
         return $this->studentRepository->getTimetable();

@@ -214,14 +214,4 @@ class MainController extends Controller
             ], $result['code']);
         }
     }
-
-    //Test functions
-    public function test()
-    {
-        return response()->json([
-            'status' => 'success',
-            'code' => 200,
-            'message' => 'Welcome to the SDFU application',
-        ], 200);
-    }
 }

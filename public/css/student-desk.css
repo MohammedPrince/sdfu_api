@@ -1539,3 +1539,22 @@ footer span {
     color: #adb5bd;
     font-size: 18px;
 }
+
+.nav-link.active {
+    color: var(--fu-red);
+    background: rgba(217, 41, 30, .06);
+    font-weight: 600;
+    position: relative;
+}
+
+.nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -8px;
+    height: 2px;
+    color: var(--fu-red);
+    background: rgba(217, 41, 30, .06);
+    border-radius: 2px;
+}

@@ -826,12 +826,6 @@ class StudentRepository
                 'message' => 'timetable is currently unavailable',
             ];
         }
-
-        // return [
-        //     'success' => false,
-        //     'code' => 404,
-        //     'message' => 'Timetable Not Found',
-        // ];
     }
 
     public function updatePassword($data)

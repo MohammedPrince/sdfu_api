@@ -127,7 +127,6 @@ class NotificationController extends Controller
             ],
         ]);
 
-
         $result = $this->studentService->unregisterToken($request);
 
         if ($result['success']) {

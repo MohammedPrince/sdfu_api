@@ -19,6 +19,7 @@ Route::get('/clear', function () {
 
 //Home
 Route::get('/', [MainController::class, 'index']);
+Route::get('/privacy-policy', [MainController::class, 'privacyPolicy'])->name('privacy-policy');
 Route::get('/test_connection', [MainController::class, 'testConnection']);
 
 Route::prefix('admin')->name('admin.')->group(function () {

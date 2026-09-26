@@ -71,6 +71,11 @@ class MainController extends Controller
         return view('home', compact('visitorCount', 'applicationStatus'));
     }
 
+    public function privacyPolicy()
+    {
+        return view('privacy-policy');
+    }
+
     public function dashboard()
     {
 

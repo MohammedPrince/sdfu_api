@@ -38,7 +38,4 @@ Route::prefix('student')->middleware('JsonRes')->group(function () {
         Route::post('/logout', [MainController::class, 'logout']);
     });
 
-    //Test
-    Route::get('/test', [MainController::class, 'test']);
-
 });
