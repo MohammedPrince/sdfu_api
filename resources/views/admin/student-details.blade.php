@@ -41,7 +41,7 @@
 
 
             <div>
-                @if ($student->account_active)
+                @if ((bool) $student->is_active)
                     <span class="status-badge status-active large">
                         Active Account
                     </span>
@@ -95,7 +95,7 @@
                 <span>Account</span>
 
                 <strong>
-                    {{ $student->account_active ? 'Active' : 'Inactive' }}
+                    {!! $student->is_active ? '<b style="color:#34734b">Active</b>' : '<b style="color:#dc3545">Inactive</b>' !!}
                 </strong>
             </div>
 
@@ -187,7 +187,7 @@
                 <div class="detail-card-header">
 
                     <div>
-                        <h2>Account Management</h2>
+                        <h2>API Status Management</h2>
                         <p>Control student access to Student Desk.</p>
                     </div>
 
@@ -205,7 +205,7 @@
                     <div class="account-status-control">
 
                         <div>
-                            <strong>Account Status</strong>
+                            <strong>API Status</strong>
 
                             <span>
                                 {{ $student->account_active ? 'Student can access the application.' : 'Student account is currently disabled.' }}
@@ -215,6 +215,52 @@
                         <label class="switch">
 
                             <input type="checkbox" name="is_active" value="1" @checked($student->account_active)
+                                onchange="this.form.submit()">
+
+                            <span class="slider"></span>
+
+                        </label>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            {{-- Account Management --}}
+            <div class="admin-card">
+
+                <div class="detail-card-header">
+
+                    <div>
+                        <h2>Account Management</h2>
+                        <p>Set student account status to Enable/Disable.</p>
+                    </div>
+
+                </div>
+
+                <form method="POST"
+                    action="{{ route('admin.students.status', [
+                        'studentId' => base64_encode($student->id),
+                    ]) }}">
+
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="account-status-control">
+
+                        <div>
+                            <strong>Account Status</strong>
+
+                            <span>
+                                {{ $student->is_active ? 'Student can access the application.' : 'Student account is currently disabled.' }}
+                            </span>
+                        </div>
+
+                        <label class="switch">
+
+                            <input type="checkbox" name="is_active" value="1" @checked($student->is_active)
                                 onchange="this.form.submit()">
 
                             <span class="slider"></span>

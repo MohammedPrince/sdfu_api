@@ -334,6 +334,30 @@ class MainController extends Controller
         ]);
     }
 
+    //Disable Account
+    public function updateStudentAccountStatus($studentId)
+    {
+        $studentId = base64_decode($studentId, true);
+
+        if (!$studentId || !is_numeric($studentId)) {
+            return redirect()
+                ->back()
+                ->with('error', 'Invalid student account.');
+        }
+
+        $result = $this->adminService->toggleStudentAccountStatus((int) $studentId);
+
+        if (!$result['success']) {
+            return redirect()
+                ->back()
+                ->with('error', $result['message']);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', $result['message']);
+    }
+
     //Studnets End
 
     //Timetable Start
@@ -576,7 +600,6 @@ class MainController extends Controller
             'existingEntries' => $existingEntries,
         ]);
     }
-
     public function updateTimeTable(
         Request $request,
         int $faculty_code,
@@ -1024,6 +1047,5 @@ class MainController extends Controller
     }
 
     //Timetable End
-
 
 }

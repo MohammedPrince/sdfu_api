@@ -124,6 +124,11 @@ class AdminService
     {
         return $this->adminRepository->getReports($filters);
     }
+
+    public function toggleStudentAccountStatus(int $studentId): array
+    {
+        return $this->adminRepository->toggleStudentAccountStatus($studentId);
+    }
     //Studnets End
 
     //Timetable Start

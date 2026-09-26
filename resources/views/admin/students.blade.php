@@ -290,13 +290,15 @@
 
                                 <th>Semester</th>
 
-                                <th>Account</th>
+                                <th>API</th>
 
                                 <th>Reset PWD</th>
 
                                 <th>Devices</th>
 
                                 <th>Last Activity</th>
+
+                                <th>Status</th>
 
                                 <th>View</th>
 
@@ -369,7 +371,7 @@
                                     </td>
 
 
-                                    {{-- Account --}}
+                                    {{-- API Status --}}
                                     <td>
 
                                         @if ($student->account_active)
@@ -432,6 +434,31 @@
                                             </span>
                                         @endif
 
+                                    </td>
+
+                                    {{-- DEL Account --}}
+                                    <td>
+                                        <form method="POST"
+                                            action="{{ route('admin.students.status', base64_encode($student->id)) }}"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('{{ $student->is_active
+                                                ? 'Are you sure you want to DISABLE this student account?'
+                                                : 'Are you sure you want to ENABLE this student account?' }}');">
+
+                                            @csrf
+                                            @method('PATCH')
+
+                                            @if ($student->is_active)
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    Disable
+                                                </button>
+                                            @else
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    Enable
+                                                </button>
+                                            @endif
+
+                                        </form>
                                     </td>
 
 

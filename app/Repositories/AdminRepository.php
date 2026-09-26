@@ -440,6 +440,7 @@ class AdminRepository
         // Student Desk account status
         $student->account_active = Helper::getStudentAccountStatus($student);
 
+
         return $student;
     }
 
@@ -461,6 +462,32 @@ class AdminRepository
                 'timetable_active' => $isActive,
             ]
         );
+    }
+
+    public function toggleStudentAccountStatus(int $studentId): array
+    {
+
+        $user = User::where('id', $studentId)->where('role_id', Helper::STUDENT_ROLE)->first();
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'message' => 'Student account not found.',
+            ];
+        }
+
+        $newStatus = !$user->is_active;
+
+        $user->is_active = $newStatus;
+        $user->save();
+
+        return [
+            'success' => true,
+            'is_active' => $newStatus,
+            'message' => $newStatus
+                ? 'Student account enabled successfully.'
+                : 'Student account disabled successfully.',
+        ];
     }
 
     public function getReports(array $filters = []): array
@@ -937,14 +964,12 @@ class AdminRepository
             'recent_activity' => $recentActivity,
         ];
     }
-
     public function getPushedNotifications()
     {
         return Notification::with('user')
             ->latest('created_at')
             ->paginate(10);
     }
-
 
     public function getMoodlePasswordByUsername(string $username)
     {

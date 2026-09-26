@@ -54,6 +54,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/students/{studentId}', [MainController::class, 'showStudents'])->name('students.show');
         Route::patch('/students/{studentId}/status', [MainController::class, 'updateStudentStatus'])->name('students.status');
         Route::post('/students/{studentId}/reset-password', [MainController::class, 'resetPassword'])->name('students.reset-password');
+        Route::patch('/students/{studentId}/status', [MainController::class, 'updateStudentAccountStatus'])->name('students.status');
 
         //Reports
         Route::get('/reports', [MainController::class, 'reports'])->name('reports');

@@ -1306,6 +1306,31 @@ body {
     color: #fff;
 }
 
+.btn-success {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #198754;
+    color: #fff;
+    border: 1px solid #198754;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+    color: #fff;
+}
+
+.btn-success:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.25);
+}
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
