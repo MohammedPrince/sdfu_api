@@ -20,17 +20,16 @@
             </div>
         @endif
 
-
         <div class="admin-card saved-settings-card">
 
             <div class="admin-card-header">
 
                 <div class="settings-section">
 
-                    <h4>View Timetable</h4>
+                    <h4>Create/View Timetable</h4>
 
                     <p>
-                        View current timetables for each faculty, major and batch.
+                        Create/View current timetables for each faculty, major and batch.
                     </p>
                     <br>
 
@@ -45,6 +44,15 @@
             </div>
 
 
+            {{-- <div class="admin-card-header">
+
+                <div class="settings-section">
+                    <h4>Timetable</h4>
+
+                    //Timetable here
+                </div>
+
+            </div> --}}
 
 
             <div class="settings-section">
@@ -83,7 +91,6 @@
                             </tr>
 
                         </thead>
-
 
                         <tbody>
 
@@ -139,6 +146,9 @@
                                             </button>
 
                                         </form>
+                                        {{-- <button type="button" class="btn-primary btn-view-timetable" data-url="#">
+                                            View
+                                        </button> --}}
                                     </td>
 
                                 </tr>

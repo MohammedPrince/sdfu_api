@@ -397,6 +397,7 @@ class MainController extends Controller
 
     public function storeTimeTable(Request $request)
     {
+
         $validated = $request->validate([
             'faculty_code' => ['required', 'integer'],
             'major_code' => ['required', 'integer'],
@@ -415,15 +416,13 @@ class MainController extends Controller
                 ->with('error', $result['message']);
         }
 
-        return redirect()
-            ->route('admin.timetable.create')
-            ->with('success', $result['message']);
+        return redirect()->route('admin.timetable.create')->with('success', $result['message']);
     }
 
     public function displayTimeTable()
     {
-        $timetables = $this->adminService
-            ->getSavedTimetableConfigurations();
+
+        $timetables = $this->adminService->getSavedTimetableConfigurations();
 
         return view('admin.display_timetable', [
             'timetables' => $timetables,
@@ -599,6 +598,7 @@ class MainController extends Controller
             'existingEntries' => $existingEntries,
         ]);
     }
+
     public function updateTimeTable(
         Request $request,
         int $faculty_code,

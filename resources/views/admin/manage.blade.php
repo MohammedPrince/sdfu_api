@@ -435,7 +435,7 @@
 
                                             <a href="{{ route('admin.manage', ['edit' => $setting['id']]) }}"
                                                 class="btn-edit btn-sm">
-                                                Edit
+                                               <button class="btn-primary btn-view-timetable">Edit</button> 
                                             </a>
 
                                         </td>

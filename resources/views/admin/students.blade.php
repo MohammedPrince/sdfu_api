@@ -466,8 +466,8 @@
                                     <td>
 
                                         <a href="{{ route('admin.students.show', base64_encode($student->id)) }}"
-                                            class="btn-edit btn-sm">
-                                            View
+                                            >
+                                           <button class="btn-primary btn-view-timetable">View</button> 
                                         </a>
 
                                     </td>
