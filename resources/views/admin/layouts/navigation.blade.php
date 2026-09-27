@@ -137,7 +137,7 @@
 
         <a href="{{ url('/admin/timetable/display') }}"
             class="admin-nav-item
-    {{ request()->is('admin/timetable/display*') || request()->is('admin/timetable/create*') ? 'active' : '' }}">
+    {{ request()->is('admin/timetable/display*') || request()->is('admin/timetable/create*') || request()->is('admin/timetable/edit*') ? 'active' : '' }}">
 
             <span class="admin-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none">
