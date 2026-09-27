@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -348,11 +347,23 @@ class StudentRepository
     public function mainData()
     {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Authentication
+        |--------------------------------------------------------------------------
+        */
+
         $auth = Helper::authenticatedStudent();
 
         if (!$auth['success']) {
             return $auth;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Initialize data
+        |--------------------------------------------------------------------------
+        */
 
         $studentData = [];
         $semesterResult = [];
@@ -360,13 +371,21 @@ class StudentRepository
         $timetable = [];
         $appStatus = [];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Student information
+        |--------------------------------------------------------------------------
+        */
+
         $studentHelper = Helper::studentData();
 
         $user_id = $studentHelper['id'];
         $stud_id = $studentHelper['stud_id'];
         $stud_full_name = $studentHelper['stud_full_name'];
+
         $faculty_code = $studentHelper['faculty_code'];
         $major_code = $studentHelper['major_code'];
+
         $batch = $studentHelper['batch'];
         $semester = $studentHelper['semester'];
 
@@ -374,213 +393,371 @@ class StudentRepository
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
 
-        //Check application status Active/Disable
+        /*
+        |--------------------------------------------------------------------------
+        | Check application status
+        |--------------------------------------------------------------------------
+        */
+
+        // Check application status in real-time as settings need to be checked for active/inactive status
         $applicationStatus = Helper::checkApplicationStatus();
+
         if (!$applicationStatus['success']) {
             return $applicationStatus;
         }
 
         $settings = $applicationStatus['settings'];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Date information
+        |--------------------------------------------------------------------------
+        */
+
         $current_date = now()->format('Y-m-d');
         $today = Carbon::today();
 
-        // Cache key base — unique per student per academic context
-        // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
-        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addSeconds(2), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_full_name, $phone, $email, $gender, $cacheKey) {
-            Log::debug('Cache miss for student profile and result', ['cache_key' => "{$cacheKey}:profile_result", 'student_id' => $stud_id]);
+        /*
+        |--------------------------------------------------------------------------
+        | Student Profile
+        |--------------------------------------------------------------------------
+        |
+        | Cache faculty and major information for 24 hours as they rarely change.
+        |--------------------------------------------------------------------------
+        */
 
-            // Fetch faculty and major names
-            Log::debug('Fetching faculty name', ['faculty_code' => $faculty_code]);
-            $faculty = $this->externalDatabase->getFacultyName($faculty_code);
-            Log::debug('Faculty name fetched', ['faculty' => $faculty]);
-
-            Log::debug('Fetching major name', ['major_code' => $major_code]);
-            $major = $this->externalDatabase->getMajorName($major_code);
-            Log::debug('Major name fetched', ['major' => $major]);
-
-            $studentData = [
-                'stud_id' => $stud_id,
-                'student_name' => $stud_full_name,
-                'email' => $email ?? null,
-                'phone' => $phone ?? null,
-                'faculty_code' => $faculty_code,
-                'major_code' => $major_code,
-                'faculty' => $faculty,
-                'major' => $major,
-                'batch' => $batch,
-                'semester' => (int) $semester,
-                'gender' => $gender ?? null,
-            ];
-
-            Log::debug('Fetching student result', ['stud_id' => $stud_id, 'faculty_code' => $faculty_code, 'major_code' => $major_code, 'batch' => $batch, 'semester' => $semester]);
-            $results = $this->externalDatabase->getStudentResult(
-                $stud_id,
-                $faculty_code,
-                $major_code,
-                $batch,
-                $semester
-            );
-            Log::debug('Student result fetched', ['count' => \count($results ?? [])]);
-
-            $semesterResult = null;
-
-            if (!empty($results)) {
-                $first = $results[0];
-                $courses = [];
-
-                foreach ($results as $result) {
-                    $courses[] = [
-                        'course_code' => $result['course_code'],
-                        'course_name' => $result['course_name'],
-                        'course_units' => $result['course_units'],
-                        'grade' => $result['grade'],
-                        'points' => $result['points'],
-                        'remark' => $result['remark'],
-                        'result_status' => $result['result_status'],
-                    ];
-                }
-
-                $semesterResult = [
-                    'semester' => $first['semester'],
-                    'gpa' => $first['gpa'],
-                    'cgpa' => $first['cgpa'],
-                    'status' => $first['status'],
-                    'courses' => $courses,
-                ];
+        // Cache faculty name
+        $faculty = Cache::remember(
+            'faculty_name_' . $faculty_code,
+            1440, // 24 hours
+            function () use ($faculty_code) {
+                return $this->externalDatabase->getFacultyName($faculty_code);
             }
+        );
 
-            return [
-                'studentData' => $studentData,
-                'semesterResult' => $semesterResult,
-            ];
-        });
+        // Cache major name
+        $major = Cache::remember(
+            'major_name_' . $major_code,
+            1440, // 24 hours
+            function () use ($major_code) {
+                return $this->externalDatabase->getMajorName($major_code);
+            }
+        );
 
+        $studentData = [
+            'stud_id' => $stud_id,
 
-        $studentData = $studentAndResult['studentData'];
-        $semesterResult = $studentAndResult['semesterResult'];
+            'student_name' => $stud_full_name,
+
+            'email' => $email ?? null,
+
+            'phone' => $phone ?? null,
+
+            'faculty_code' => $faculty_code,
+
+            'major_code' => $major_code,
+
+            'faculty' => $faculty,
+
+            'major' => $major,
+
+            'batch' => $batch,
+
+            'semester' => (int) $semester,
+
+            'gender' => $gender ?? null,
+        ];
 
         /*
         |--------------------------------------------------------------------------
-        | Fee Details (time-sensitive — short TTL, keyed by today's date)
+        | Student Result
         |--------------------------------------------------------------------------
-        | Keyed with $current_date so days_remaining / registration_closed
-        | naturally roll over at midnight without needing manual invalidation.
+        |
+        | Cache student results for 1 hour as they update per semester.
+        |--------------------------------------------------------------------------
         */
-        // 10 minutes — fee status can change (e.g. after a payment)
 
-        $feeDetails = Cache::remember(
-            "{$cacheKey}:fees:{$current_date}",
-            600,
-            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $current_date, $today) {
-                $raw = $this->externalDatabase->getStudentFees(
+        // Cache student results
+        $results = Cache::remember(
+            'student_results_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
+            360, // 1 hour
+            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+                return $this->externalDatabase->getStudentResult(
                     $stud_id,
                     $faculty_code,
                     $major_code,
                     $batch,
                     $semester
                 );
-
-                if (!$raw) {
-                    return [
-                        'total_fees' => 0,
-                        'fees_type' => null,
-                        'end_date' => null,
-                        'days_remaining' => 0,
-                        'registration_closed' => false,
-                        'status' => null,
-                        'paid' => null,
-                    ];
-                }
-
-                $paymentStatus = false;
-                $end_date = $raw->end_date;
-                $viewData = $raw->viewData;
-                $total_fee_bank = $raw->total_fee_bank;
-
-                $registration_closed = $current_date > $end_date;
-                $endDate = Carbon::parse($end_date)->startOfDay();
-
-                if ($endDate->isSameDay($today)) {
-                    $daysRemaining = 1;
-                } elseif ($endDate->isFuture()) {
-                    $daysRemaining = $today->diffInDays($endDate);
-                } else {
-                    $daysRemaining = 0;
-                }
-
-                $status = null;
-                if ($registration_closed) {
-                    $status = 'Registration is closed.';
-                } elseif ($total_fee_bank == 0 || $viewData == 0) {
-                    $status = 'Check with faculty registrar for fee details';
-                }
-
-                if ($viewData == 2) {
-                    $paymentStatus = true;
-                }
-
-                $fees_type = in_array((int) $semester, [1, 3, 5, 7]) ? 'Year, Registration Fees' : 'Registration Fee';
-
-                return [
-                    'total_fees' => $total_fee_bank,
-                    'fees_type' => $fees_type,
-                    'end_date' => $end_date,
-                    'days_remaining' => $daysRemaining,
-                    'registration_closed' => $registration_closed,
-                    'status' => $status,
-                    'paid' => $paymentStatus,
-                ];
             }
         );
+
+        $semesterResult = null;
+
+        if (!empty($results)) {
+
+            $first = $results[0];
+
+            $courses = [];
+
+            foreach ($results as $result) {
+
+                $courses[] = [
+                    'course_code' => $result['course_code'],
+                    'course_name' => $result['course_name'],
+                    'course_units' => $result['course_units'],
+                    'grade' => $result['grade'],
+                    'points' => $result['points'],
+                    'remark' => $result['remark'],
+                    'result_status' => $result['result_status'],
+                ];
+            }
+
+            $semesterResult = [
+                'semester' => $first['semester'],
+
+                'gpa' => $first['gpa'],
+
+                'cgpa' => $first['cgpa'],
+
+                'status' => $first['status'],
+
+                'courses' => $courses,
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fee Details
+        |--------------------------------------------------------------------------
+        |
+        | Cache fee details for 30 minutes as they update with payments.
+        |--------------------------------------------------------------------------
+        */
+
+        // Cache fee details
+        $raw = Cache::remember(
+            'student_fees_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
+            30, // 30 minutes
+            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+                return $this->externalDatabase->getStudentFees(
+                    $stud_id,
+                    $faculty_code,
+                    $major_code,
+                    $batch,
+                    $semester
+                );
+            }
+        );
+
+        if (!$raw) {
+
+            $feeDetails = [
+                'total_fees' => 0,
+
+                'fees_type' => null,
+
+                'end_date' => null,
+
+                'days_remaining' => 0,
+
+                'registration_closed' => false,
+
+                'status' => null,
+
+                'paid' => null,
+            ];
+
+        } else {
+
+            $paymentStatus = false;
+
+            $end_date = $raw->end_date;
+
+            $viewData = $raw->viewData;
+
+            $total_fee_bank = $raw->total_fee_bank;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Registration status
+            |--------------------------------------------------------------------------
+            */
+
+            $registration_closed = $current_date > $end_date;
+
+            $endDate = Carbon::parse($end_date)->startOfDay();
+
+            if ($endDate->isSameDay($today)) {
+
+                $daysRemaining = 1;
+
+            } elseif ($endDate->isFuture()) {
+
+                $daysRemaining = $today->diffInDays($endDate);
+
+            } else {
+
+                $daysRemaining = 0;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Fee status
+            |--------------------------------------------------------------------------
+            */
+
+            $status = null;
+
+            if ($registration_closed) {
+
+                $status = 'Registration is closed.';
+
+            } elseif ($total_fee_bank == 0 || $viewData == 0) {
+
+                $status = 'Check with faculty registrar for fee details';
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Payment status
+            |--------------------------------------------------------------------------
+            */
+
+            if ($viewData == 2) {
+                $paymentStatus = true;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Fee type
+            |--------------------------------------------------------------------------
+            */
+
+            $fees_type = in_array(
+                (int) $semester,
+                [1, 3, 5, 7]
+            )
+                ? 'Year, Registration Fees'
+                : 'Registration Fee';
+
+            /*
+            |--------------------------------------------------------------------------
+            | Build fee details
+            |--------------------------------------------------------------------------
+            */
+
+            $feeDetails = [
+
+                'total_fees' => $total_fee_bank,
+
+                'fees_type' => $fees_type,
+
+                'end_date' => $end_date,
+
+                'days_remaining' => $daysRemaining,
+
+                'registration_closed' => $registration_closed,
+
+                'status' => $status,
+
+                'paid' => $paymentStatus,
+            ];
+        }
 
         /*
         |--------------------------------------------------------------------------
         | Timetable
         |--------------------------------------------------------------------------
+        |
+        | Cache timetable for 6 hours as it updates infrequently during semester.
+        |--------------------------------------------------------------------------
         */
 
-        // $timetableCacheKey = "student:timetable:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-
-        // $timetable = Cache::remember(
-        //     $timetableCacheKey,
-        //     200,
-        //     fn() => $this->externalDatabase->getStudentTimetable(
-        //         $stud_id,
-        //         $faculty_code,
-        //         $major_code,
-        //         $batch,
-        //         $semester
-        //     )
-        // );
-
-        $timetable = $this->externalDatabase->getStudentTimetable(
-            $stud_id,
-            $faculty_code,
-            $major_code,
-            $batch,
-            $semester
+        // Cache timetable  360, // 6 hours
+        $timetable = Cache::remember(
+            'student_timetable_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
+            1, // 1 SEC
+            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+                return $this->externalDatabase->getStudentTimetable(
+                    $stud_id,
+                    $faculty_code,
+                    $major_code,
+                    $batch,
+                    $semester
+                );
+            }
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | Timetable status
+        |--------------------------------------------------------------------------
+        */
 
         if (empty($timetable['days'])) {
+
             $timetable = null;
+
             $timetableActive = false;
+
         } else {
+
             $timetableActive = true;
         }
 
-        $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
-        $notificationToggled = UserDevice::where('user_id', $user_id)->where('is_active', true)->exists();
+        /*
+        |--------------------------------------------------------------------------
+        | Result maintenance mode
+        |--------------------------------------------------------------------------
+        |
+        | Cache maintenance mode for 15 minutes as it changes during maintenance windows.
+        |--------------------------------------------------------------------------
+        */
 
-        //App status
+        // Cache result maintenance mode
+        $resultMaintenanceMode = Cache::remember(
+            'result_maintenance_mode',
+            15, // 15 minutes
+            function () {
+                return $this->externalDatabase->resultMaintenanceMode();
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification status
+        |--------------------------------------------------------------------------
+        |
+        | Cache notification status for 10 minutes as it changes when user toggles settings.
+        |--------------------------------------------------------------------------
+        */
+
+        // Cache notification status
+        $notificationToggled = Cache::remember(
+            'user_notification_toggled_' . $user_id,
+            10, // 10 minutes
+            function () use ($user_id) {
+                return UserDevice::where('user_id', $user_id)
+                    ->where('is_active', true)
+                    ->exists();
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application Status
+        |--------------------------------------------------------------------------
+        */
+
         $appStatus = [
+
             'active' => $settings
                 ? (bool) $settings->api_active
                 : true,
 
             'tabs_status' => [
+
                 'fee' => $settings
                     ? (bool) $settings->fee_active
                     : true,
@@ -592,20 +769,38 @@ class StudentRepository
                 ) && !$resultMaintenanceMode,
 
                 'timetable' => $settings
-                    ? (bool) $settings->timetable_active && $timetableActive : $timetableActive,
+                    ? (
+                        (bool) $settings->timetable_active
+                        && $timetableActive
+                    )
+                    : $timetableActive,
             ],
 
             'notificationToggled' => $notificationToggled,
         ];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Final Response
+        |--------------------------------------------------------------------------
+        */
+
         return [
+
             'success' => true,
+
             'code' => 200,
+
             'message' => 'Main Data Retrieved Successfully',
+
             'studentDetails' => $studentData,
+
             'semesterResult' => $semesterResult,
+
             'feeDetails' => $feeDetails,
+
             'timetable' => $timetable,
+
             'appStatus' => $appStatus,
         ];
     }

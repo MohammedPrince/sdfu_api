@@ -145,7 +145,7 @@ class ExternalDatabaseService
 
         $semester = $semester - 1;
 
-       // dd($semester);
+        // dd($semester);
 
         $db = DB::connection('mysql_sis');
 
@@ -434,9 +434,9 @@ class ExternalDatabaseService
         $group = 1;
         $newCourseFlag = 1;
 
-        $faculty_code = 2;
-        $major_code = 2;
-        $batch = '2022';
+        // $faculty_code = 2;
+        // $major_code = 2;
+        // $batch = '2022';
 
         // Lecture/tutorial bindings — only keys that appear in $lectureQuery /
         // $fallbackQuery below. PDO throws "Invalid parameter number:
