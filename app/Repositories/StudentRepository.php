@@ -670,23 +670,17 @@ class StudentRepository
         | Timetable
         |--------------------------------------------------------------------------
         |
-        | Cache timetable for 6 hours as it updates infrequently during semester.
+        | Cache removed from timetable.
         |--------------------------------------------------------------------------
         */
 
-        // Cache timetable  360, // 6 hours
-        $timetable = Cache::remember(
-            'student_timetable_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
-            1, // 1 SEC
-            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
-                return $this->externalDatabase->getStudentTimetable(
-                    $stud_id,
-                    $faculty_code,
-                    $major_code,
-                    $batch,
-                    $semester
-                );
-            }
+        // Cache removed from timetable
+        $timetable = $this->externalDatabase->getStudentTimetable(
+            $stud_id,
+            $faculty_code,
+            $major_code,
+            $batch,
+            $semester
         );
 
         /*
