@@ -424,15 +424,18 @@ class ExternalDatabaseService
             ->first();
     }
 
-    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester, $ttid = 40)
+    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester)
     {
         // NOTE: swap 'mysql_ott' for whatever this connection is actually
         // named in config/database.php — the original code's "mysql_fib"
         // comment was just a placeholder, not a confirmed name.
         $connection = DB::connection('mysql_ott');
 
+        $ttid = 41;
         $group = 1;
         $newCourseFlag = 1;
+
+        // dd($semester);
 
         // $faculty_code = 2;
         // $major_code = 2;
@@ -504,8 +507,8 @@ class ExternalDatabaseService
 
             $course = $connection->selectOne(
                 'select Course_Name from tbl_courses
-                 where Course_Code = ? and Batch_Year = ? and Faculty_Code = ? and Major_Code = ? and new_course_flag != 0',
-                [$row->Course_Code, $batch, $faculty_code, $major_code]
+                 where Course_Code = ? and Batch_Year = ? and Faculty_Code = ? and Major_Code = ? and semester = ? and new_course_flag != 0',
+                [$row->Course_Code, $batch, $faculty_code, $major_code, $semester]
             );
 
             $lecInstructor = $row->Instructor_ID
