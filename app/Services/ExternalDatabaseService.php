@@ -142,6 +142,11 @@ class ExternalDatabaseService
         $batch,
         $semester
     ): array {
+
+        $semester = $semester - 1;
+
+       // dd($semester);
+
         $db = DB::connection('mysql_sis');
 
         $ministryNo = $this->getMinistryNo($stud_id);
@@ -163,17 +168,26 @@ class ExternalDatabaseService
 
             /*
             |--------------------------------------------------------------------------
-            | Transcript
+            | Transcript - Get Last Semester
             |--------------------------------------------------------------------------
             */
 
             ->join('stud_transcript_table as res', function ($join) {
                 $join->on('scm.stud_id', '=', 'res.stud_id')
-                    ->on('scm.semester', '=', 'res.semester')
                     ->on('scm.batch', '=', 'res.batch')
-                    ->on('scm.major_code', '=', 'res.major_code');
+                    ->on('scm.faculty_code', '=', 'res.faculty_code')
+                    ->on('scm.major_code', '=', 'res.major_code')
+                    ->whereRaw('
+            res.semester = (
+                SELECT MAX(res2.semester)
+                FROM stud_transcript_table as res2
+                WHERE res2.stud_id = res.stud_id
+                  AND res2.batch = res.batch
+                  AND res2.faculty_code = res.faculty_code
+                  AND res2.major_code = res.major_code
+            )
+        ');
             })
-
             /*
             |--------------------------------------------------------------------------
             | CGPA Status

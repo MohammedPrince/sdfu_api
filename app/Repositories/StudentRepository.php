@@ -29,6 +29,7 @@ class StudentRepository
 
     public function login($data)
     {
+
         $studIndex = trim($data['stud_index'] ?? '');
         $studPassword = $data['stud_password'] ?? '';
 
@@ -387,7 +388,7 @@ class StudentRepository
         // Cache key base — unique per student per academic context
         // $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:{$faculty}:{$major}:{$stud_full_name}:{$phone}:{$email}:{$gender}";
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}";
-        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addHours(1), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_full_name, $phone, $email, $gender, $cacheKey) {
+        $studentAndResult = Cache::remember("{$cacheKey}:profile_result", now()->addSeconds(2), function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_full_name, $phone, $email, $gender, $cacheKey) {
             Log::debug('Cache miss for student profile and result', ['cache_key' => "{$cacheKey}:profile_result", 'student_id' => $stud_id]);
 
             // Fetch faculty and major names
@@ -664,17 +665,35 @@ class StudentRepository
 
     public function getResult()
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Authentication
+        |--------------------------------------------------------------------------
+        */
 
         $auth = Helper::authenticatedStudent();
+
         if (!$auth['success']) {
             return $auth;
         }
 
-        //Check tab status
+        /*
+        |--------------------------------------------------------------------------
+        | Check result tab status
+        |--------------------------------------------------------------------------
+        */
+
         $status = Helper::checkTabStatus('result');
+
         if (!$status['success']) {
             return $status;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student information
+        |--------------------------------------------------------------------------
+        */
 
         $studentHelper = Helper::studentData();
 
@@ -684,71 +703,128 @@ class StudentRepository
         $batch = $studentHelper['batch'];
         $semester = $studentHelper['semester'];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Result cache - temporarily disabled
+        |--------------------------------------------------------------------------
+        */
+
+        /*
         $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:result";
 
-        $payload = Cache::remember($cacheKey, 3600, function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
-            $results = $this->externalDatabase->getStudentResult(
+        $payload = Cache::remember(
+            $cacheKey,
+            3600,
+            function () use (
                 $stud_id,
                 $faculty_code,
                 $major_code,
                 $batch,
                 $semester
-            );
+            ) {
+                $results = $this->externalDatabase->getStudentResult(
+                    $stud_id,
+                    $faculty_code,
+                    $major_code,
+                    $batch,
+                    $semester
+                );
 
-            if (empty($results)) {
-                return null; // sentinel — no result yet
+                // ...
             }
+        );
+        */
 
-            $first = $results[0];
+        /*
+        |--------------------------------------------------------------------------
+        | Get result directly from external database
+        |--------------------------------------------------------------------------
+        */
 
-            $studentDetails = [
-                'stud_id' => $first['stud_id'],
-                'student_name' => $first['student_name'],
-                'ministry_no' => $first['ministry_no'],
-                'faculty' => $first['faculty'],
-                'major' => $first['major'],
-            ];
+        $results = $this->externalDatabase->getStudentResult(
+            $stud_id,
+            $faculty_code,
+            $major_code,
+            $batch,
+            $semester
+        );
 
-            $courses = [];
+        /*
+        |--------------------------------------------------------------------------
+        | Result not found
+        |--------------------------------------------------------------------------
+        */
 
-            foreach ($results as $result) {
-                $courses[] = [
-                    'course_code' => $result['course_code'],
-                    'course_name' => $result['course_name'],
-                    'course_units' => $result['course_units'],
-                    'grade' => $result['grade'],
-                    'points' => $result['points'],
-                    'remark' => $result['remark'],
-                    'result_status' => $result['result_status'],
-                ];
-            }
-
-            return [
-                'studentDetails' => $studentDetails,
-                'semesterResult' => [
-                    'semester' => $first['semester'],
-                    'gpa' => number_format((float) $first['gpa'], 2, '.', ''),
-                    'cgpa' => number_format((float) $first['cgpa'], 2, '.', ''),
-                    'status' => $first['status'],
-                    'courses' => $courses,
-                ],
-            ];
-        });
-
-        if ($payload === null) {
+        if (empty($results)) {
             return [
                 'success' => false,
                 'code' => 404,
-                'message' => 'Student Result Not Found'
+                'message' => 'Student Result Not Found',
             ];
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student details
+        |--------------------------------------------------------------------------
+        */
+
+        $first = $results[0];
+
+        $studentDetails = [
+            'stud_id' => $first['stud_id'],
+            'student_name' => $first['student_name'],
+            'ministry_no' => $first['ministry_no'],
+            'faculty' => $first['faculty'],
+            'major' => $first['major'],
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Courses
+        |--------------------------------------------------------------------------
+        */
+
+        $courses = [];
+
+        foreach ($results as $result) {
+            $courses[] = [
+                'course_code' => $result['course_code'],
+                'course_name' => $result['course_name'],
+                'course_units' => $result['course_units'],
+                'grade' => $result['grade'],
+                'points' => $result['points'],
+                'remark' => $result['remark'],
+                'result_status' => $result['result_status'],
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Semester result
+        |--------------------------------------------------------------------------
+        */
+
+        $semesterResult = [
+            'semester' => $first['semester'],
+            'gpa' => number_format((float) $first['gpa'], 2, '.', ''),
+            'cgpa' => number_format((float) $first['cgpa'], 2, '.', ''),
+            'status' => $first['status'],
+            'courses' => $courses,
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
 
         return [
             'success' => true,
             'code' => 200,
             'message' => 'Student Result Retrieved Successfully',
-            'studentDetails' => $payload['studentDetails'],
-            'semesterResult' => $payload['semesterResult'],
+            'studentDetails' => $studentDetails,
+            'semesterResult' => $semesterResult,
         ];
     }
 
