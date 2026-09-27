@@ -389,7 +389,6 @@ class MainController extends Controller
             'faculties' => $this->adminService->getFaculties(),
             'majors' => $this->adminService->getMajors(),
             'batches' => $this->adminService->getBatches(),
-            //'courses' => $this->adminService->getTimetableCourses(),
             'instructors' => $this->adminService->getTimetableInstructors(),
             'classrooms' => $this->adminService->getTimetableClassrooms(),
             'times' => $this->adminService->getTimetableTimes(),

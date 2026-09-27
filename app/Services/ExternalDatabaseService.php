@@ -437,7 +437,7 @@ class ExternalDatabaseService
 
         // dd($semester);
 
-        // $faculty_code = 2;
+        // $faculty_code = 21;
         // $major_code = 2;
         // $batch = '2022';
 
@@ -780,10 +780,31 @@ class ExternalDatabaseService
             ->get();
     }
 
+    // public function getTimetableClassrooms()
+    // {
+    //     return DB::connection('mysql_ott')
+    //         ->table('tbl_classrooms')
+    //         ->orderBy('Class_Name')
+    //         ->get();
+    // }
+
     public function getTimetableClassrooms()
     {
         return DB::connection('mysql_ott')
             ->table('tbl_classrooms')
+            ->select([
+                'Class_ID as id',
+                'Class_Name as Class_Name',
+            ])
+            ->union(
+                DB::connection('mysql_ott')
+                    ->table('tbl_labs')
+                    ->where('Deleted', 0)
+                    ->select([
+                        'LabID as id',
+                        'LabName as Class_Name',
+                    ])
+            )
             ->orderBy('Class_Name')
             ->get();
     }

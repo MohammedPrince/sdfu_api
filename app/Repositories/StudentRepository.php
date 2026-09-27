@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\PersonalAccessToken;
+use function CuyZ\Valinor\Compiler\return_;
 
 class StudentRepository
 {
@@ -693,12 +694,13 @@ class StudentRepository
 
             $timetable = null;
 
-            $timetableActive = false;
+            //$timetableActive = false;
 
-        } else {
-
-            $timetableActive = true;
         }
+        // else {
+
+        //     $timetableActive = true;
+        // }
 
         /*
         |--------------------------------------------------------------------------
@@ -763,11 +765,8 @@ class StudentRepository
                 ) && !$resultMaintenanceMode,
 
                 'timetable' => $settings
-                    ? (
-                        (bool) $settings->timetable_active
-                        && $timetableActive
-                    )
-                    : $timetableActive,
+                    ? (bool) $settings->timetable_active
+                    : true,
             ],
 
             'notificationToggled' => $notificationToggled,
@@ -1123,6 +1122,7 @@ class StudentRepository
             ];
         }
     }
+
     public function getTimetable(): array
     {
 
@@ -1162,11 +1162,12 @@ class StudentRepository
                 'timetableDetails' => $timetable,
             ];
         } else {
+            //return [$timetable = null]
 
             return [
                 'success' => false,
-                'code' => 403,
-                'message' => 'timetable is currently unavailable',
+                'code' => 404,
+                'message' => 'Timetable Not Found'
             ];
         }
     }

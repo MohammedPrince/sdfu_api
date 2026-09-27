@@ -242,7 +242,7 @@ class AdminRepository
             $majorCode,
             $batch,
             $semester,
-            $ttid
+          
         );
     }
 
