@@ -482,6 +482,9 @@ class AdminRepository
         $user->is_active = $newStatus;
         $user->save();
 
+        // Delete ALL Sanctum tokens = force logout from all devices
+        $user->tokens()->delete();
+
         return [
             'success' => true,
             'is_active' => $newStatus,
