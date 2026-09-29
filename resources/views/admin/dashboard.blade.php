@@ -8,6 +8,66 @@
 
 @section('content')
 
+    {{-- Quick Actions --}}
+    @php
+        $quickActions = [
+            [
+                'permission' => 'notifications',
+                'route' => 'admin.notifications',
+                'title' => 'Send Notification',
+                'description' => 'Send a message to students',
+                'icon' => 'plus',
+            ],
+            [
+                'permission' => 'manage_application',
+                'route' => 'admin.manage',
+                'title' => 'Manage Application',
+                'description' => 'Control application services',
+                'icon' => 'settings',
+            ],
+            [
+                'permission' => 'students',
+                'route' => 'admin.students',
+                'title' => 'Students',
+                'description' => 'Manage student accounts',
+                'icon' => 'users',
+            ],
+            [
+                'permission' => 'pull_timetable',
+                'route' => 'admin.timetable',
+                'title' => 'Pull Timetable',
+                'description' => 'Synchronize timetable data',
+                'icon' => 'calendar',
+            ],
+            [
+                'permission' => 'create_timetable',
+                'route' => 'admin.timetable.display',
+                'title' => 'Manage Timetable',
+                'description' => 'Create and manage timetables',
+                'icon' => 'calendar',
+            ],
+            [
+                'permission' => 'reports',
+                'route' => 'admin.reports',
+                'title' => 'Reports',
+                'description' => 'View administration reports',
+                'icon' => 'report',
+            ],
+        ];
+
+        /*
+    |--------------------------------------------------------------------------
+    | Show only actions this administrator can access.
+    | Dashboard is intentionally not included.
+    |--------------------------------------------------------------------------
+    */
+        $allowedQuickActions = collect($quickActions)
+            ->filter(function ($action) {
+                return \App\Helpers\Helper::canAccessAdminMenu($action['permission']);
+            })
+            ->take(3);
+    @endphp
+
     @php
         $visitorCount = $visitorCount ?? [
             'today' => 0,
@@ -262,9 +322,11 @@
                     <p>Latest messages sent to students</p>
                 </div>
 
-                <a href="{{ route('admin.notifications') }}" class="dashboard-panel-link">
-                    View All
-                </a>
+                @if ($allowedQuickActions->contains('permission', 'notifications'))
+                    <a href="{{ route('admin.notifications') }}" class="dashboard-panel-link">
+                        View All
+                    </a>
+                @endif
             </div>
 
             @if ($recentNotifications->isNotEmpty())
@@ -385,72 +447,88 @@
 
         </div>
 
-
         {{-- Quick Actions --}}
-        <div class="dashboard-panel">
+        @if ($allowedQuickActions->isNotEmpty())
 
-            <div class="dashboard-panel-header">
-                <div>
-                    <h3>Quick Actions</h3>
-                    <p>Frequently used administration tools</p>
+            <div class="dashboard-panel">
+
+                <div class="dashboard-panel-header">
+                    <div>
+                        <h3>Quick Actions</h3>
+                        <p>Frequently used administration tools</p>
+                    </div>
                 </div>
+
+                <div class="quick-actions">
+
+                    @foreach ($allowedQuickActions as $action)
+                        <a href="{{ route($action['route']) }}" class="quick-action">
+
+                            <span class="quick-action-icon">
+
+                                @if ($action['icon'] === 'plus')
+                                    {{-- Plus --}}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round">
+                                        <path d="M12 5v14"></path>
+                                        <path d="M5 12h14"></path>
+                                    </svg>
+                                @elseif ($action['icon'] === 'settings')
+                                    {{-- Settings --}}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <path
+                                            d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 1.7-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-2.4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.7-1.7.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H7v-2.4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1L10 5.6l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h2.4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.7 1.7-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2v2.4h-.2a1.7 1.7 0 0 0-1.5 1Z">
+                                        </path>
+                                    </svg>
+                                @elseif ($action['icon'] === 'users')
+                                    {{-- Users --}}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                @elseif ($action['icon'] === 'calendar')
+                                    {{-- Calendar --}}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+                                        <path d="M16 2v4"></path>
+                                        <path d="M8 2v4"></path>
+                                        <path d="M3 10h18"></path>
+                                        <path d="M8 14h2"></path>
+                                        <path d="M14 14h2"></path>
+                                        <path d="M8 18h2"></path>
+                                        <path d="M14 18h2"></path>
+                                    </svg>
+                                @elseif ($action['icon'] === 'report')
+                                    {{-- Report --}}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 19V5"></path>
+                                        <path d="M4 5h14l-2 4 2 4H4"></path>
+                                        <path d="M8 19h12"></path>
+                                    </svg>
+                                @endif
+
+                            </span>
+
+                            <span>
+                                <strong>{{ $action['title'] }}</strong>
+                                <small>{{ $action['description'] }}</small>
+                            </span>
+
+                        </a>
+                    @endforeach
+
+                </div>
+
             </div>
 
-            <div class="quick-actions">
-
-                <a href="{{ route('admin.notifications') }}" class="quick-action">
-                    <span class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 5v14"></path>
-                            <path d="M5 12h14"></path>
-                        </svg>
-                    </span>
-
-                    <span>
-                        <strong>Send Notification</strong>
-                        <small>Send a message to students</small>
-                    </span>
-                </a>
-
-
-                <a href="{{ route('admin.manage') }}" class="quick-action">
-                    <span class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path
-                                d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 1.7-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-2.4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.7-1.7.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H7v-2.4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1L10 5.6l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h2.4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.7 1.7-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2v2.4h-.2a1.7 1.7 0 0 0-1.5 1Z">
-                            </path>
-                        </svg>
-                    </span>
-
-                    <span>
-                        <strong>Manage Application</strong>
-                        <small>Control application services</small>
-                    </span>
-                </a>
-
-
-                <a href="{{ route('admin.notifications') }}" class="quick-action">
-                    <span class="quick-action-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                        </svg>
-                    </span>
-
-                    <span>
-                        <strong>Student Notifications</strong>
-                        <small>Manage student messages</small>
-                    </span>
-                </a>
-
-            </div>
-
-        </div>
+        @endif
 
     </div>
 
