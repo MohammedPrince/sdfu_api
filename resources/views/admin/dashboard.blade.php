@@ -262,7 +262,7 @@
                 </div>
 
                 <div class="application-status-row">
-                    <span>Semester Results</span>
+                    <span>Semester Result</span>
                     @php
                         $resultActive = $overview['result_active'];
                         $resultInactive = $overview['total'] - $resultActive;

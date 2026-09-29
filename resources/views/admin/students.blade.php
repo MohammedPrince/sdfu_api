@@ -162,7 +162,7 @@
                                         All Semesters
                                     </option>
 
-                                    @for ($i = 1; $i <= 12; $i++)
+                                    @for ($i = 1; $i <= 10; $i++)
                                         <option value="{{ $i }}" @selected(($filters['semester'] ?? '') == $i)>
                                             {{ $i }}
                                         </option>

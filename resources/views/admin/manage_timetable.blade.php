@@ -223,7 +223,7 @@
                                         Select Semester
                                     </option>
 
-                                    @for ($semester = 1; $semester <= 12; $semester++)
+                                    @for ($semester = 1; $semester <= 10; $semester++)
                                         <option value="{{ $semester }}"
                                             {{ old('semester') == $semester ? 'selected' : '' }}>
                                             {{ $semester }}
