@@ -9,7 +9,7 @@
 @section('content')
 
     <div class="manage-page">
-        
+
         {{-- Success --}}
         @if (session('success'))
             <div class="alert alert-success">
@@ -246,13 +246,13 @@
                                         Select TTID
                                     </option>
                                     <!-- TTID options will be populated via JavaScript or can be hardcoded common values -->
-                                    <option value="30">30</option>
-                                    <option value="31">31</option>
-                                    <option value="32">32</option>
-                                    <option value="33">33</option>
-                                    <option value="34">34</option>
-                                    <option value="35">35</option>
                                     <option value="40">40</option>
+                                    <option value="41">41</option>
+                                    <option value="42">42</option>
+                                    <option value="43">43</option>
+                                    <option value="44">44</option>
+                                    <option value="45">45</option>
+
                                 </select>
 
                             </div>
