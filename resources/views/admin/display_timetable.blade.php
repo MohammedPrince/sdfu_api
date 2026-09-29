@@ -1,8 +1,8 @@
 @extends('admin.layouts.app')
 
-@section('title', 'View Timetables')
-@section('page-title', 'View Timetables')
-@section('page-description', 'Update or delete existing timetables')
+@section('title', 'Create/View Timetables')
+@section('page-title', 'Create/View Timetables')
+@section('page-description', 'Create, Update or Delete existing timetables')
 
 @section('content')
 
@@ -42,18 +42,6 @@
                 </div>
 
             </div>
-
-
-            {{-- <div class="admin-card-header">
-
-                <div class="settings-section">
-                    <h4>Timetable</h4>
-
-                    //Timetable here
-                </div>
-
-            </div> --}}
-
 
             <div class="settings-section">
                 <div class="table-responsive">
@@ -118,14 +106,27 @@
                                     </td>
 
                                     <td>
-                                        <a href="{{ route('admin.timetable.edit', [
-                                            'faculty_code' => $timetable->Faculty_Code,
-                                            'major_code' => $timetable->Major_Code,
-                                            'batch' => $timetable->Batch_Year,
-                                            'ttid' => $timetable->TTID,
-                                        ]) }}"
-                                            class="btn-secondary">
-                                            Edit
+
+                                        <a
+                                            href="{{ route('admin.timetable.edit', [
+                                                'faculty_code' => $timetable->Faculty_Code,
+                                                'major_code' => $timetable->Major_Code,
+                                                'batch' => $timetable->Batch_Year,
+                                                'ttid' => $timetable->TTID,
+                                                'type' => 'view',
+                                            ]) }}">
+                                            <button class="btn-primary">View</button>
+                                        </a>
+
+                                        <a
+                                            href="{{ route('admin.timetable.edit', [
+                                                'faculty_code' => $timetable->Faculty_Code,
+                                                'major_code' => $timetable->Major_Code,
+                                                'batch' => $timetable->Batch_Year,
+                                                'ttid' => $timetable->TTID,
+                                                'type' => 'edit',
+                                            ]) }}">
+                                            <button class="btn-secondary">Edit</button>
                                         </a>
 
                                         <form method="POST"
@@ -134,6 +135,7 @@
                                                 'major_code' => $timetable->Major_Code,
                                                 'batch' => $timetable->Batch_Year,
                                                 'ttid' => $timetable->TTID,
+                                                'type' => 'edit',
                                             ]) }}"
                                             style="display:inline;"
                                             onsubmit="return confirm('Delete this complete timetable? This action cannot be undone.');">
@@ -146,9 +148,7 @@
                                             </button>
 
                                         </form>
-                                        {{-- <button type="button" class="btn-primary btn-view-timetable" data-url="#">
-                                            View
-                                        </button> --}}
+
                                     </td>
 
                                 </tr>
@@ -221,4 +221,46 @@
 
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewButtons = document.querySelectorAll('.btn-view-timetable');
+
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    const timetableView = document.getElementById('timetable-view');
+
+                    // Show loading state
+                    timetableView.innerHTML =
+                        '<div class="text-center py-4"><span class="loading loading-spinner loading-lg"></span></div>';
+
+                    fetch(url)
+                        .then(response => {
+                            // Log the response for debugging
+                            console.log('Response status:', response.status);
+                            console.log('Response ok:', response.ok);
+
+                            if (!response.ok) {
+                                // Try to get error message from response
+                                return response.text().then(errorText => {
+                                    throw new Error(
+                                        `HTTP ${response.status}: ${errorText || 'Network response was not ok'}`
+                                    );
+                                });
+                            }
+                            return response.text();
+                        })
+                        .then(html => {
+                            timetableView.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error loading timetable:', error);
+                            // Show more detailed error message for debugging
+                            timetableView.innerHTML =
+                                `<div class="alert alert-danger">Error loading timetable: ${error.message}</div>`;
+                        });
+                });
+            });
+        });
+    </script>
 @endsection

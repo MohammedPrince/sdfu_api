@@ -1,10 +1,48 @@
+@php
+
+    $isViewMode = $isViewMode ?? false;
+    $isEditMode = $isEditMode ?? !$isViewMode;
+
+    $facultyName = $facultyCode ?? '';
+    $majorName = $majorCode ?? '';
+
+    foreach ($faculties ?? [] as $faculty) {
+        if (!is_object($faculty)) {
+            continue;
+        }
+
+        if ((string) ($faculty->faculty_code ?? '') === (string) ($facultyCode ?? '')) {
+            $facultyName = $faculty->faculty_desc_e ?? $facultyCode;
+            break;
+        }
+    }
+
+    foreach ($majors ?? [] as $major) {
+        if (!is_object($major)) {
+            continue;
+        }
+
+        if ((string) ($major->major_code ?? '') === (string) ($majorCode ?? '')) {
+            $majorName = $major->major_desc_e ?? $majorCode;
+            break;
+        }
+    }
+@endphp
+
+
 @extends('admin.layouts.app')
 
-@section('title', 'Edit Timetable')
-@section('page-title', 'Edit Timetable')
-@section('page-description', 'Update the selected timetable')
+@section('title', $isViewMode ? 'View Timetable' : 'Edit Timetable')
+
+@section('page-title', $isViewMode ? 'View Timetable' : 'Edit Timetable')
+
+@section('page-description', $isViewMode ? 'View the selected timetable' : 'Update the selected timetable')
 
 @section('content')
+
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('css/timetable.css') }}">
+    @endpush
 
     @php
 
@@ -27,23 +65,30 @@
     @endphp
 
 
-    <div class="manage-page">
+
+    <div class="manage-page timetable-page">
+
+        {{-- ========================================================= --}}
+        {{-- ALERTS --}}
+        {{-- ========================================================= --}}
 
         @if (session('success'))
-            <div class="alert alert-success">
+            <div class="alert alert-success no-print">
                 {{ session('success') }}
             </div>
         @endif
 
+
         @if (session('error'))
-            <div class="alert alert-danger">
+            <div class="alert alert-danger no-print">
                 {{ session('error') }}
             </div>
         @endif
 
+
         @if ($errors->any())
 
-            <div class="alert alert-danger">
+            <div class="alert alert-danger no-print">
 
                 <ul>
 
@@ -60,38 +105,95 @@
         @endif
 
 
-        <div class="admin-card saved-settings-card">
+        {{-- ========================================================= --}}
+        {{-- MAIN CARD --}}
+        {{-- ========================================================= --}}
 
-            <div class="admin-card-header">
+        <div class="admin-card saved-settings-card timetable-page-card">
+
+
+            {{-- ===================================================== --}}
+            {{-- PAGE HEADER --}}
+            {{-- ===================================================== --}}
+
+            <div class="admin-card-header timetable-page-header">
 
                 <div>
 
                     <h3>
-                        Edit Timetable
+                        {{ $isViewMode ? 'View Timetable' : 'Edit Timetable' }}
                     </h3>
 
                     <p>
-                        Update the selected timetable.
+                        @if ($isViewMode)
+                            <b>{{ $facultyName }}, {{ $majorName }}, {{ $batchValue }}, Semester:
+                                {{ $semester }}</b>
+
+                            <div class="form-actions timetable-actions" style="direction: rtl;  ">
+
+                                <a href="{{ route('admin.timetable.print', [
+                                    'faculty_code' => $facultyCode,
+                                    'major_code' => $majorCode,
+                                    'batch' => $batchValue,
+                                    'ttid' => $ttid,
+                                ]) }}"
+                                    class="btn-danger timetable-print-button">
+                                    Print Timetable
+                                </a>
+
+                                <a href="{{ route('admin.timetable.edit', [
+                                    'faculty_code' => $facultyCode,
+                                    'major_code' => $majorCode,
+                                    'batch' => $batchValue,
+                                    'ttid' => $ttid,
+                                    'type' => 'edit',
+                                ]) }}"
+                                    class="btn-secondary">
+                                    Edit
+                                </a>
+
+                                <a href="{{ route('admin.timetable.display') }}" class="btn-primary">
+                                    Back
+                                </a>
+                            </div>
+                        @else
+                            Update the selected timetable.
+                        @endif
                     </p>
 
                 </div>
 
+
+
+
             </div>
 
 
-            <form method="POST"
-                action="{{ route('admin.timetable.update', [
-                    'faculty_code' => $facultyCode,
-                    'major_code' => $majorCode,
-                    'batch' => $batchValue,
-                    'ttid' => $ttid,
-                ]) }}"
-                id="editTimetableForm">
+            {{-- ===================================================== --}}
+            {{-- EDIT FORM START --}}
+            {{-- ===================================================== --}}
 
-                @csrf
+            @if ($isEditMode)
+                <form method="POST"
+                    action="{{ route('admin.timetable.update', [
+                        'faculty_code' => $facultyCode,
+                        'major_code' => $majorCode,
+                        'batch' => $batchValue,
+                        'ttid' => $ttid,
+                    ]) }}"
+                    id="editTimetableForm">
 
-                @method('PUT')
+                    @csrf
 
+                    @method('PUT')
+            @endif
+
+
+            {{-- ===================================================== --}}
+            {{-- EDIT CONFIGURATION --}}
+            {{-- ===================================================== --}}
+
+            @if ($isEditMode)
 
                 <div class="settings-section">
 
@@ -101,6 +203,8 @@
 
 
                     <div class="form-grid">
+
+                        {{-- Faculty --}}
 
                         <div class="form-group">
 
@@ -113,7 +217,9 @@
                                 @foreach ($faculties as $faculty)
                                     <option value="{{ $faculty->faculty_code }}"
                                         {{ (string) $faculty->faculty_code === (string) $facultyCode ? 'selected' : '' }}>
+
                                         {{ $faculty->faculty_desc_e }}
+
                                     </option>
                                 @endforeach
 
@@ -121,6 +227,8 @@
 
                         </div>
 
+
+                        {{-- Major --}}
 
                         <div class="form-group">
 
@@ -133,7 +241,9 @@
                                 @foreach ($majors as $major)
                                     <option value="{{ $major->major_code }}"
                                         {{ (string) $major->major_code === (string) $majorCode ? 'selected' : '' }}>
+
                                         {{ $major->major_desc_e }}
+
                                     </option>
                                 @endforeach
 
@@ -141,6 +251,8 @@
 
                         </div>
 
+
+                        {{-- Batch --}}
 
                         <div class="form-group">
 
@@ -153,7 +265,9 @@
                                 @foreach ($batches as $batch)
                                     <option value="{{ $batch->batch }}"
                                         {{ (string) $batch->batch === (string) $batchValue ? 'selected' : '' }}>
+
                                         {{ $batch->batch }}
+
                                     </option>
                                 @endforeach
 
@@ -161,6 +275,8 @@
 
                         </div>
 
+
+                        {{-- Semester --}}
 
                         <div class="form-group">
 
@@ -172,7 +288,9 @@
 
                                 @for ($i = 1; $i <= 10; $i++)
                                     <option value="{{ $i }}" {{ (int) $semester === $i ? 'selected' : '' }}>
-                                         {{ $i }}
+
+                                        {{ $i }}
+
                                     </option>
                                 @endfor
 
@@ -180,6 +298,8 @@
 
                         </div>
 
+
+                        {{-- TTID --}}
 
                         <div class="form-group">
 
@@ -191,7 +311,9 @@
 
                                 @foreach ([40, 41, 42, 43, 44, 45] as $id)
                                     <option value="{{ $id }}" {{ (int) $ttid === $id ? 'selected' : '' }}>
+
                                         {{ $id }}
+
                                     </option>
                                 @endforeach
 
@@ -202,124 +324,197 @@
                     </div>
 
                 </div>
+            @else
+                {{-- ================================================= --}}
+                {{-- VIEW MODE CONFIGURATION --}}
+                {{-- ================================================= --}}
 
-                <div class="settings-section">
+                <input type="hidden" id="faculty_code" value="{{ $facultyCode }}">
 
-                    <h4>
-                        Timetable
-                    </h4>
+                <input type="hidden" id="major_code" value="{{ $majorCode }}">
 
-                    <p class="text-muted">
-                        Add, remove or modify timetable entries.
-                    </p>
+                <input type="hidden" id="batch" value="{{ $batchValue }}">
 
+                <input type="hidden" id="semester" value="{{ $semester }}">
 
-                    <div class="timetable-editor-wrapper">
+                {{-- Hidden TTID for JS --}}
 
-                        <table class="timetable-editor">
+                <input type="hidden" id="ttid" value="{{ $ttid }}">
 
-                            <thead>
+            @endif
 
-                                <tr>
+            {{-- ===================================================== --}}
+            {{-- TIMETABLE --}}
+            {{-- ===================================================== --}}
 
-                                    <th class="timetable-day-header">
-                                        Day
-                                    </th>
+            <div class="settings-section timetable-section">
 
-                                    @foreach ($periods as $slot => $periodName)
-                                        <th>
-                                            {{ $periodName }}
-                                        </th>
-                                    @endforeach
+                <div class="timetable-section-header">
 
-                                </tr>
+                    <div>
 
-                            </thead>
-
-
-                            <tbody>
-
-                                @foreach ($days as $dayId => $dayName)
-                                    <tr>
-
-                                        <td class="timetable-day">
-                                            <strong>{{ $dayName }}</strong>
-                                        </td>
-
-                                        @foreach ($periods as $slot => $periodName)
-                                            @php
-                                                $periodId = $dayId * 4 + $slot;
-                                            @endphp
-
-                                            <td>
-
-                                                <div class="timetable-cell" data-day="{{ $dayId }}"
-                                                    data-period="{{ $periodId }}">
-
-                                                    <button type="button" class="btn-secondary timetable-add-btn"
-                                                        data-day="{{ $dayId }}" data-period="{{ $periodId }}">
-                                                        + Add
-                                                    </button>
-
-                                                    <div class="timetable-entries" data-day="{{ $dayId }}"
-                                                        data-period="{{ $periodId }}"></div>
-
-                                                </div>
-
-                                            </td>
-                                        @endforeach
-
-                                    </tr>
-                                @endforeach
-
-                            </tbody>
-
-                        </table>
+                        @if ($isEditMode)
+                            <h4>
+                                Timetable
+                            </h4>
+                            <p class="text-muted">
+                                Add, remove or modify timetable entries.
+                            </p>
+                        @else
+                        @endif
 
                     </div>
 
                 </div>
 
+                <div
+                    class="timetable-editor-wrapper
+                    {{ $isViewMode ? 'timetable-view-mode' : 'timetable-edit-mode' }}">
 
-                <div class="form-actions">
+
+                    <table class="timetable-editor">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="timetable-day-header">
+                                    Day
+                                </th>
+
+                                @foreach ($periods as $slot => $periodName)
+                                    <th>
+                                        {{ $periodName }}
+                                    </th>
+                                @endforeach
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach ($days as $dayId => $dayName)
+                                <tr>
+
+                                    <td class="timetable-day">
+
+                                        <strong>
+                                            {{ $dayName }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    @foreach ($periods as $slot => $periodName)
+                                        @php
+                                            $periodId = $dayId * 4 + $slot;
+                                        @endphp
+
+
+                                        <td>
+
+                                            <div class="timetable-cell" data-day="{{ $dayId }}"
+                                                data-period="{{ $periodId }}">
+
+
+                                                {{-- Add button ONLY in edit mode --}}
+
+                                                @if ($isEditMode)
+                                                    <button type="button" class="btn-secondary timetable-add-btn"
+                                                        data-day="{{ $dayId }}" data-period="{{ $periodId }}">
+
+                                                        + Add
+
+                                                    </button>
+                                                @endif
+
+
+                                                <div class="timetable-entries" data-day="{{ $dayId }}"
+                                                    data-period="{{ $periodId }}">
+                                                </div>
+
+                                            </div>
+
+                                        </td>
+                                    @endforeach
+
+                                </tr>
+                            @endforeach
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            {{-- ===================================================== --}}
+            {{-- ACTIONS --}}
+            {{-- ===================================================== --}}
+
+            @if ($isEditMode)
+                <div class="form-actions no-print">
 
                     <button type="submit" class="btn-primary">
+
                         Update Timetable
+
                     </button>
 
 
                     <a href="{{ route('admin.timetable.display') }}" class="btn-secondary">
+
                         Cancel
+
                     </a>
 
                 </div>
 
-            </form>
+                </form>
+            @endif
 
         </div>
-
     </div>
+
+
+    {{-- ============================================================= --}}
+    {{-- JAVASCRIPT VARIABLES --}}
+    {{-- ============================================================= --}}
 
     @push('scripts')
         <script>
             window.adminTimetableCoursesUrl =
                 @json(route('admin.timetable.courses'));
 
+
             window.timetableInstructors =
-                @json($instructors);
+                @json($instructors ?? []);
+
 
             window.timetableClassrooms =
-                @json($classrooms);
+                @json($classrooms ?? []);
+
 
             window.existingTimetableEntries =
-                @json($existingEntries);
+                @json($existingEntries ?? []);
+
 
             window.editTimetable =
-                true;
+                @json($isEditMode);
+
+
+            window.viewTimetable =
+                @json($isViewMode);
+
 
             window.adminMajorsUrl =
                 @json(url('/admin/manage/majors'));
         </script>
+
 
         <script src="{{ asset('js/admin/timetable.js') }}"></script>
 

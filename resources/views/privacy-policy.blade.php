@@ -3,135 +3,13 @@
 
 @section('content')
 
-    @push('styles')
-        <style>
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                margin: 0;
-                font-family:
-                    -apple-system,
-                    BlinkMacSystemFont,
-                    "Segoe UI",
-                    Roboto,
-                    Helvetica,
-                    Arial,
-                    sans-serif;
-
-                background: #f5f7fa;
-                color: #1f2937;
-                line-height: 1.7;
-            }
-
-            .privacy-container {
-                width: min(100% - 32px, 900px);
-                margin: 40px auto;
-            }
-
-            .privacy-card {
-                background: #ffffff;
-                border-radius: 14px;
-                padding: 40px;
-                box-shadow:
-                    0 4px 20px rgba(0, 0, 0, 0.06);
-            }
-
-            .privacy-header {
-                border-bottom: 1px solid #e5e7eb;
-                padding-bottom: 25px;
-                margin-bottom: 30px;
-            }
-
-            .privacy-header h1 {
-                margin: 0 0 8px;
-                font-size: 32px;
-                color: #111827;
-            }
-
-            .privacy-header p {
-                margin: 0;
-                color: #6b7280;
-            }
-
-            .privacy-section {
-                margin-bottom: 30px;
-            }
-
-            .privacy-section h2 {
-                margin: 0 0 12px;
-                font-size: 21px;
-                color: #111827;
-            }
-
-            .privacy-section h3 {
-                margin: 20px 0 8px;
-                font-size: 17px;
-                color: #374151;
-            }
-
-            .privacy-section p {
-                margin: 0 0 12px;
-            }
-
-            .privacy-section ul {
-                margin: 8px 0 15px;
-                padding-left: 25px;
-            }
-
-            .privacy-section li {
-                margin-bottom: 7px;
-            }
-
-            .privacy-highlight {
-                background: #f3f4f6;
-                border-left: 4px solid #2563eb;
-                padding: 15px 18px;
-                margin: 15px 0;
-                border-radius: 4px;
-            }
-
-            .privacy-footer {
-                border-top: 1px solid #e5e7eb;
-                margin-top: 35px;
-                padding-top: 20px;
-                color: #6b7280;
-                font-size: 14px;
-            }
-
-            a {
-                color: #2563eb;
-            }
-
-            @media (max-width: 600px) {
-
-                .privacy-container {
-                    width: min(100% - 20px, 900px);
-                    margin: 20px auto;
-                }
-
-                .privacy-card {
-                    padding: 24px 20px;
-                }
-
-                .privacy-header h1 {
-                    font-size: 26px;
-                }
-
-                .privacy-section h2 {
-                    font-size: 19px;
-                }
-            }
-        </style>
-    @endpush
 
 @section('title', 'Privacy Policy | The Future University')
 
 @section('content')
     <div class="privacy-container">
 
-        <article class="privacy-card" style="background-color: #ffeceb; ">
+        <article class="privacy-card" style="background-color: #ffffff; ">
 
             <header class="privacy-header">
 
@@ -149,7 +27,6 @@
                 </p>
 
             </header>
-
 
             <!-- 1 -->
 
@@ -171,7 +48,6 @@
                 </p>
 
             </section>
-
 
             <!-- 2 -->
 
@@ -228,7 +104,6 @@
 
             </section>
 
-
             <!-- 3 -->
 
             <section class="privacy-section">
@@ -254,7 +129,6 @@
 
             </section>
 
-
             <!-- 4 -->
 
             <section class="privacy-section">
@@ -274,7 +148,6 @@
                 </p>
 
             </section>
-
 
             <!-- 5 -->
 
@@ -309,7 +182,6 @@
 
             </section>
 
-
             <!-- 6 -->
 
             <section class="privacy-section">
@@ -330,7 +202,6 @@
 
             </section>
 
-
             <!-- 7 -->
 
             <section class="privacy-section">
@@ -346,7 +217,6 @@
                 </p>
 
             </section>
-
 
             <!-- 8 -->
 
@@ -368,7 +238,6 @@
 
             </section>
 
-
             <!-- 9 -->
 
             <section class="privacy-section">
@@ -387,7 +256,6 @@
                 </p>
 
             </section>
-
 
             <!-- 10 -->
 

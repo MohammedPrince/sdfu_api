@@ -411,17 +411,24 @@
                 @json(route('admin.timetable.courses'));
 
             window.timetableInstructors =
-                @json($instructors);
+                @json($instructors ?? []);
 
             window.timetableClassrooms =
-                @json($classrooms);
+                @json($classrooms ?? []);
+
+            /*
+             * CREATE MODE
+             */
+            window.editTimetable = false;
+            window.viewTimetable = false;
+
+            window.existingTimetableEntries = {};
 
             window.adminMajorsUrl =
                 @json(url('/admin/manage/majors'));
         </script>
 
         <script src="{{ asset('js/admin/timetable.js') }}"></script>
-
         <script src="{{ asset('js/admin/script.js') }}"></script>
     @endpush
 

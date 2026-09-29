@@ -224,8 +224,6 @@
                                     Clear
                                 </a>
 
-
-
                             </div>
 
                         </div>
@@ -248,7 +246,7 @@
 
                     <div>
 
-                        <h3>Student Accounts</h3>
+                        <h3>View/Manage Student Accounts</h3>
 
                         <p>
                             Students registered in the Future University
@@ -271,8 +269,26 @@
 
                 </div>
 
-
                 <div class="table-responsive">
+                    {{-- Student Search --}}
+                    <div class="students-table-toolbar">
+
+                        <div class="students-search">
+
+                           
+
+                            <input type="search" id="studentSearch" class="form-control"
+                                placeholder="Search by Student Index..." autocomplete="off" spellcheck="false">
+
+                         
+
+                        </div>
+
+                        <div class="students-search-info">
+                            <span id="studentSearchCount"></span>
+                        </div>
+
+                    </div>
 
                     <table class="settings-table students-table">
 
@@ -298,9 +314,11 @@
 
                                 <th>Last Activity</th>
 
-                                <th>Status</th>
+                                <th>DEL</th>
 
                                 <th>View</th>
+
+                                <th>Logout</th>
 
                             </tr>
 
@@ -309,7 +327,7 @@
                         <tbody>
 
                             @forelse($students as $student)
-                                <tr>
+                                <tr data-student-index="{{ strtolower(trim($student->stud_index)) }}">
 
                                     {{-- Student --}}
                                     <td>
@@ -408,7 +426,6 @@
 
                                     </td>
 
-
                                     {{-- Last FCM Activity --}}
                                     <td>
 
@@ -442,19 +459,19 @@
                                             action="{{ route('admin.students.status', base64_encode($student->id)) }}"
                                             style="display:inline;"
                                             onsubmit="return confirm('{{ $student->is_active
-                                                ? 'Are you sure you want to DISABLE this student account?'
-                                                : 'Are you sure you want to ENABLE this student account?' }}');">
+                                                ? 'Are you sure you want to DELETE this account?'
+                                                : 'Are you sure you want to RESTORE this account?' }}');">
 
                                             @csrf
                                             @method('PATCH')
 
                                             @if ($student->is_active)
                                                 <button type="submit" class="btn btn-sm btn-danger">
-                                                    Disable
+                                                    DELETE
                                                 </button>
                                             @else
                                                 <button type="submit" class="btn btn-sm btn-success">
-                                                    Enable
+                                                    RESTORE
                                                 </button>
                                             @endif
 
@@ -465,11 +482,30 @@
                                     {{-- View --}}
                                     <td>
 
-                                        <a href="{{ route('admin.students.show', base64_encode($student->id)) }}"
-                                            >
-                                           <button class="btn-primary btn-view-timetable">View</button> 
-                                        </a>
+                                        <a href="{{ route('admin.students.show', base64_encode($student->id)) }}"><button
+                                                class="btn-primary btn-view-timetable">View</button></a>
 
+                                    </td>
+
+                                    {{-- Force Logout --}}
+                                    <td>
+                                        @if ($student->tokens()->exists())
+                                            <form method="POST"
+                                                action="{{ route('admin.students.logout', base64_encode($student->id)) }}"
+                                                style="display:inline;"
+                                                onsubmit="return confirm('Are you sure you want to force logout this student from all devices?');">
+
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    Logout
+                                                </button>
+
+                                            </form>
+                                        @else
+                                            <span class="status-badge active">Logged Out</span>
+                                        @endif
                                     </td>
 
                                 </tr>
@@ -478,9 +514,9 @@
 
                                 <tr>
 
-                                    <td colspan="9" class="students-empty">
+                                    <td colspan="12" class="students-empty" id="noStudentsFound"
+                                        style="display:none;">
                                         No students found.
-
                                     </td>
 
                                 </tr>
@@ -492,64 +528,79 @@
 
                 </div>
 
+                <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+                    <form method="POST" action="{{ route('admin.students.forceLogoutAll') }}"
+                        onsubmit="return confirm('Are you sure you want to force logout ALL student accounts from all devices?');">
 
-                {{-- Pagination --}}
-                @if ($students->hasPages())
-                    @php
-                        $activityPaginator = $students;
-                        $startPage = max(1, $activityPaginator->currentPage() - 1);
-                        $endPage = min($activityPaginator->lastPage(), $activityPaginator->currentPage() + 1);
-                    @endphp
+                        @csrf
+                        @method('PATCH')
 
-                    <div class="pagination-wrapper report-pagination">
-                        <p class="report-pagination-summary">
-                            Showing {{ $activityPaginator->firstItem() }} to {{ $activityPaginator->lastItem() }} of
-                            {{ $activityPaginator->total() }} results
-                        </p>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            Force Logout All Accounts
+                        </button>
 
-                        <nav aria-label="Recent student activity pagination">
-                            <ul class="report-pagination-list">
-                                <li>
-                                    @if ($activityPaginator->onFirstPage())
-                                        <span class="is-disabled" aria-disabled="true">Previous</span>
-                                    @else
-                                        <a href="{{ $activityPaginator->previousPageUrl() }}" rel="prev">Previous</a>
-                                    @endif
-                                </li>
+                    </form>
 
-                                @foreach ($activityPaginator->getUrlRange($startPage, $endPage) as $page => $url)
+
+                    {{-- Pagination --}}
+                    @if ($students->hasPages())
+                        @php
+                            $activityPaginator = $students;
+                            $startPage = max(1, $activityPaginator->currentPage() - 1);
+                            $endPage = min($activityPaginator->lastPage(), $activityPaginator->currentPage() + 1);
+                        @endphp
+
+                        <div class="pagination-wrapper report-pagination">
+                            <p class="report-pagination-summary">
+                                Showing {{ $activityPaginator->firstItem() }} to {{ $activityPaginator->lastItem() }} of
+                                {{ $activityPaginator->total() }} results
+                            </p>
+
+                            <nav aria-label="Recent student activity pagination">
+                                <ul class="report-pagination-list">
                                     <li>
-                                        @if ($page === $activityPaginator->currentPage())
-                                            <span class="is-active" aria-current="page">{{ $page }}</span>
+                                        @if ($activityPaginator->onFirstPage())
+                                            <span class="is-disabled" aria-disabled="true">Previous</span>
                                         @else
-                                            <a href="{{ $url }}">{{ $page }}</a>
+                                            <a href="{{ $activityPaginator->previousPageUrl() }}"
+                                                rel="prev">Previous</a>
                                         @endif
                                     </li>
-                                @endforeach
 
-                                <li>
-                                    @if ($activityPaginator->hasMorePages())
-                                        <a href="{{ $activityPaginator->nextPageUrl() }}" rel="next">Next</a>
-                                    @else
-                                        <span class="is-disabled" aria-disabled="true">Next</span>
-                                    @endif
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                @endif
+                                    @foreach ($activityPaginator->getUrlRange($startPage, $endPage) as $page => $url)
+                                        <li>
+                                            @if ($page === $activityPaginator->currentPage())
+                                                <span class="is-active" aria-current="page">{{ $page }}</span>
+                                            @else
+                                                <a href="{{ $url }}">{{ $page }}</a>
+                                            @endif
+                                        </li>
+                                    @endforeach
+
+                                    <li>
+                                        @if ($activityPaginator->hasMorePages())
+                                            <a href="{{ $activityPaginator->nextPageUrl() }}" rel="next">Next</a>
+                                        @else
+                                            <span class="is-disabled" aria-disabled="true">Next</span>
+                                        @endif
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    @endif
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+        @push('scripts')
+            <script src="{{ asset('js/admin/datatable.js') }}"></script>
+            <script>
+                window.adminMajorsUrl = @json(url('/admin/manage/majors'));
+            </script>
 
-    @push('scripts')
-        <script>
-            window.adminMajorsUrl = @json(url('/admin/manage/majors'));
-        </script>
-
-        <script src="{{ asset('js/admin/script.js') }}"></script>
-    @endpush
-@endsection
+            <script src="{{ asset('js/admin/script.js') }}"></script>
+        @endpush
+    @endsection

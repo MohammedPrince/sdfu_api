@@ -16,7 +16,7 @@ class Helper
     public const ADMIN_ROLE = 1;
     public const STUDENT_ROLE = 2;
 
-    //Application Helpers
+    //Admin Panel Helpers
     public static function recordVisitor(): void
     {
         $sessionId = Request::session()->getId();
@@ -599,6 +599,34 @@ class Helper
         $html .= '</div>';
 
         return $html;
+    }
+
+    public static function canAccessAdminMenu(string $menu): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Only role 1 is allowed to use admin menu permissions
+        |--------------------------------------------------------------------------
+        */
+        if ((int) $user->role_id !== 1) {
+            return false;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check permissions for THIS user
+        |--------------------------------------------------------------------------
+        */
+        return $user->adminPermissions()
+            ->where('menu_key', $menu)
+            ->where('can_view', true)
+            ->exists();
     }
 
     //API Helpers

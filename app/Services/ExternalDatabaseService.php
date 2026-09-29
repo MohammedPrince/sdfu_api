@@ -788,25 +788,61 @@ class ExternalDatabaseService
     //         ->get();
     // }
 
+    // public function getTimetableClassrooms()
+    // {
+    //     return DB::connection('mysql_ott')
+    //         ->table('tbl_classrooms')
+    //         ->select([
+    //             'Class_ID as id',
+    //             'Class_Name as Class_Name',
+    //         ])
+    //         ->union(
+    //             DB::connection('mysql_ott')
+    //                 ->table('tbl_labs')
+    //                 ->where('Deleted', 0)
+    //                 ->select([
+    //                     'LabID as id',
+    //                     'LabName as Class_Name',
+    //                 ])
+    //         )
+    //         ->orderBy('Class_Name')
+    //         ->get();
+    // }
+
     public function getTimetableClassrooms()
     {
-        return DB::connection('mysql_ott')
+        $connection = DB::connection('mysql_ott');
+
+        $classrooms = $connection
             ->table('tbl_classrooms')
             ->select([
-                'Class_ID as id',
-                'Class_Name as Class_Name',
+                'Class_ID',
+                'Class_Name',
+                'Capacity',
+                'Site',
+                'Faculty_Code',
+                'Faculty_Office_Room',
             ])
-            ->union(
-                DB::connection('mysql_ott')
-                    ->table('tbl_labs')
-                    ->where('Deleted', 0)
-                    ->select([
-                        'LabID as id',
-                        'LabName as Class_Name',
-                    ])
-            )
             ->orderBy('Class_Name')
             ->get();
+
+        $labs = $connection
+            ->table('tbl_labs')
+            ->where(function ($query) {
+                $query->where('Deleted', 0)
+                    ->orWhereNull('Deleted');
+            })
+            ->select([
+                'LabID',
+                'LabName',
+            ])
+            ->orderBy('LabName')
+            ->get();
+
+        return [
+            'classrooms' => $classrooms,
+            'labs' => $labs,
+        ];
     }
 
     public function getTimetableTimes()

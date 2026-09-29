@@ -1,0 +1,380 @@
+ * {
+     box-sizing: border-box;
+ }
+
+ html,
+ body {
+     margin: 0;
+     padding: 0;
+     background: #fff;
+     color: #111;
+     font-family: Arial, Helvetica, sans-serif;
+ }
+
+ body {
+     padding: 25px;
+ }
+
+ .print-page {
+     width: 100%;
+     max-width: 1400px;
+     margin: 0 auto;
+ }
+
+ /* =========================================================
+           HEADER
+        ========================================================= */
+
+ .print-header {
+     text-align: center;
+     margin-bottom: 24px;
+ }
+
+ .print-header h1 {
+     margin: 0 0 8px;
+     font-size: 22px;
+     font-weight: 700;
+ }
+
+ .print-header .subtitle {
+     margin: 0;
+     font-size: 16px;
+     font-weight: 600;
+ }
+
+ .print-header .meta {
+     margin-top: 8px;
+     font-size: 13px;
+     color: #555;
+ }
+
+ .print-line {
+     height: 2px;
+     background: #111;
+     margin-top: 16px;
+ }
+
+ /* =========================================================
+           TIMETABLE
+        ========================================================= */
+
+ .print-timetable {
+     width: 100%;
+     border-collapse: collapse;
+     table-layout: fixed;
+ }
+
+ .print-timetable th,
+ .print-timetable td {
+     border: 1px solid #222;
+ }
+
+ .print-timetable thead th {
+     background: #f1f1f1;
+     text-align: center;
+     vertical-align: middle;
+     padding: 10px 6px;
+     font-size: 12px;
+     font-weight: 700;
+ }
+
+ .print-timetable th.day-column {
+     width: 105px;
+ }
+
+ .print-timetable tbody tr {
+     height: 120px;
+ }
+
+ .day-cell {
+     text-align: center;
+     vertical-align: middle;
+     font-size: 13px;
+     font-weight: 700;
+     background: #f8f8f8;
+ }
+
+ .time-cell {
+     vertical-align: top;
+     padding: 5px;
+ }
+
+ /* =========================================================
+           ENTRY
+        ========================================================= */
+
+ .timetable-entry {
+     border: 1px solid #555;
+     padding: 8px;
+     margin: 2px 0 5px;
+     background: #fff;
+     min-height: 95px;
+ }
+
+ .course {
+     font-size: 12px;
+     font-weight: 700;
+     line-height: 1.35;
+     margin-bottom: 6px;
+ }
+
+ .instructor,
+ .room,
+ .group,
+ .entry-type {
+     font-size: 10px;
+     line-height: 1.5;
+ }
+
+ .entry-type {
+     margin-top: 5px;
+     font-weight: 700;
+ }
+
+ .empty-cell {
+     height: 100%;
+     min-height: 100px;
+ }
+
+ /* =========================================================
+           PRINT BUTTON
+        ========================================================= */
+
+ .print-actions {
+     text-align: center;
+     margin-bottom: 20px;
+ }
+
+ .print-button {
+     display: inline-block;
+     border: 0;
+     padding: 10px 20px;
+     border-radius: 6px;
+     background: #222;
+     color: #fff;
+     font-size: 14px;
+     cursor: pointer;
+ }
+
+ .back-button {
+     display: inline-block;
+     margin-left: 8px;
+     padding: 10px 20px;
+     border-radius: 6px;
+     background: #eee;
+     color: #222;
+     text-decoration: none;
+     font-size: 14px;
+ }
+
+ /* =========================================================
+           FOOTER
+        ========================================================= */
+
+ .print-footer {
+     margin-top: 15px;
+     text-align: right;
+     font-size: 10px;
+     color: #666;
+ }
+
+ /* =========================================================
+           PRINT
+        ========================================================= */
+
+ @media print {
+
+     @page {
+         margin: 4mm;
+     }
+
+     html,
+     body {
+         width: 100%;
+         height: auto;
+         margin: 0 !important;
+         padding: 0 !important;
+         background: #fff !important;
+     }
+
+     .print-page {
+         width: 100%;
+         max-width: none;
+         margin: 0;
+         padding: 0;
+     }
+
+     /* Hide browser-page controls */
+     .print-actions {
+         display: none !important;
+     }
+
+     /* =========================================================
+       PRINT HEADER
+    ========================================================= */
+
+     .print-header {
+         margin: 0 0 5mm 0;
+         padding: 0;
+         text-align: center;
+     }
+
+     .print-header h1 {
+         margin: 0 0 2mm 0;
+         font-size: 17px;
+         line-height: 1.15;
+     }
+
+     .print-header .subtitle {
+         margin: 0;
+         font-size: 11px;
+         line-height: 1.2;
+     }
+
+     .print-header .meta {
+         margin-top: 1.5mm;
+         font-size: 8px;
+     }
+
+     .print-line {
+         height: 1px;
+         margin-top: 3mm;
+         background: #000;
+     }
+
+     /* =========================================================
+       TIMETABLE
+    ========================================================= */
+
+     .print-timetable {
+         width: 100%;
+         height: auto;
+         margin: 0;
+         border-collapse: collapse;
+         table-layout: fixed;
+
+         /* IMPORTANT */
+         page-break-inside: auto;
+     }
+
+     .print-timetable thead {
+         display: table-header-group;
+     }
+
+     .print-timetable tbody {
+         display: table-row-group;
+     }
+
+     .print-timetable tr {
+         page-break-inside: avoid;
+         break-inside: avoid;
+     }
+
+     .print-timetable th,
+     .print-timetable td {
+         border: 0.6px solid #000;
+     }
+
+     /* Header row */
+
+     .print-timetable thead th {
+         height: 8mm;
+         padding: 1.5mm 1mm;
+
+         background: #f1f1f1;
+
+         font-size: 8px;
+         line-height: 1.1;
+         font-weight: 700;
+
+         text-align: center;
+         vertical-align: middle;
+     }
+
+     .print-timetable th.day-column {
+         width: 18mm;
+     }
+
+     /* Day rows */
+
+     .print-timetable tbody tr {
+         height: 25mm;
+     }
+
+     .day-cell {
+         width: 18mm;
+         padding: 1mm;
+
+         background: #f8f8f8;
+
+         font-size: 8px;
+         font-weight: 700;
+
+         text-align: center;
+         vertical-align: middle;
+     }
+
+     .time-cell {
+         height: 25mm;
+         padding: 1.2mm;
+
+         vertical-align: top;
+     }
+
+     /* =========================================================
+       ENTRY
+    ========================================================= */
+
+     .timetable-entry {
+         min-height: 0;
+
+         margin: 0 0 1mm 0;
+         padding: 1.5mm;
+
+         border: 0.5px solid #555;
+
+         background: #fff;
+
+         page-break-inside: avoid;
+         break-inside: avoid;
+     }
+
+     .course {
+         margin: 0 0 1mm 0;
+
+         font-size: 7.5px;
+         line-height: 1.2;
+         font-weight: 700;
+     }
+
+     .instructor,
+     .room,
+     .group,
+     .entry-type {
+         font-size: 6.5px;
+         line-height: 1.25;
+     }
+
+     .entry-type {
+         margin-top: 1mm;
+         font-weight: 700;
+     }
+
+     .empty-cell {
+         min-height: 0;
+         height: 100%;
+     }
+
+     /* =========================================================
+       FOOTER
+    ========================================================= */
+
+     .print-footer {
+         margin-top: 2mm;
+
+         font-size: 6px;
+         color: #555;
+
+         text-align: right;
+     }
+ }

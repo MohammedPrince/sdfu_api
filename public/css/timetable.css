@@ -1,0 +1,447 @@
+/* =========================================================
+                   TIMETABLE EDITOR
+                   ========================================================= */
+
+.timetable-editor-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+    border: 1px solid #eadfe1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 28px rgba(70, 20, 30, 0.07);
+}
+
+/* ---------------------------------------------------------
+                   Table
+                   --------------------------------------------------------- */
+
+.timetable-editor {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    background: #ffffff;
+}
+
+/* ---------------------------------------------------------
+                   Header
+                   --------------------------------------------------------- */
+
+.timetable-editor thead th {
+    height: 62px;
+    padding: 12px 10px;
+    background: linear-gradient(135deg,
+            #7d2634 0%,
+            #922f3d 100%);
+    color: #ffffff;
+    border-right: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: 3px solid #641722;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    vertical-align: middle;
+    letter-spacing: .1px;
+}
+
+.timetable-editor thead th:first-child {
+    width: 120px;
+    border-top-left-radius: 15px;
+}
+
+.timetable-editor thead th:last-child {
+    border-right: none;
+    border-top-right-radius: 15px;
+}
+
+/* ---------------------------------------------------------
+                   Body
+                   --------------------------------------------------------- */
+
+.timetable-editor tbody td {
+    min-height: 150px;
+    padding: 10px;
+    border-right: 1px solid #e7e0e2;
+    border-bottom: 1px solid #e7e0e2;
+    background: #ffffff;
+    vertical-align: top;
+    transition:
+        background-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.timetable-editor tbody td:last-child {
+    border-right: none;
+}
+
+.timetable-editor tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---------------------------------------------------------
+                   Day column
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-day {
+    width: 120px;
+    min-width: 120px;
+    padding: 16px 10px;
+    background: linear-gradient(180deg,
+            #fff8f8 0%,
+            #fdf1f2 100%);
+    color: #641722;
+    text-align: center;
+    vertical-align: middle;
+    border-right: 2px solid #ead5d8;
+}
+
+.timetable-editor .timetable-day strong {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #ead5d8;
+    color: #641722;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 3px 8px rgba(70, 20, 30, .05);
+}
+
+/* ---------------------------------------------------------
+                   Individual timetable cell
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-cell {
+    min-height: 145px;
+    position: relative;
+    padding: 4px;
+    border-radius: 10px;
+    transition: background-color .2s ease;
+}
+
+.timetable-edit-mode .timetable-editor .timetable-cell:hover {
+    background: #fffafa;
+}
+
+/* ---------------------------------------------------------
+                   Add button
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 34px;
+    margin-bottom: 8px;
+    padding: 7px 10px;
+    border: 1px dashed #c99ca3;
+    border-radius: 8px;
+    background: #fff8f9;
+    color: #7d2634;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+.timetable-editor .timetable-add-btn:hover {
+    background: #fbe9eb;
+    border-color: #922f3d;
+    transform: translateY(-1px);
+}
+
+.timetable-editor .timetable-add-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ---------------------------------------------------------
+                   Timetable entry
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-entry {
+    position: relative;
+    margin-bottom: 10px;
+    padding: 13px;
+    border: 1px solid #eadfe1;
+    border-left: 4px solid #8d2c39;
+    border-radius: 11px;
+    background: linear-gradient(145deg,
+            #ffffff 0%,
+            #fffafb 100%);
+    box-shadow:
+        0 4px 12px rgba(70, 20, 30, .07),
+        inset 0 1px 0 rgba(255, 255, 255, .8);
+}
+
+.timetable-editor .timetable-entry:last-child {
+    margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------
+                   Entry header
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee2e4;
+}
+
+.timetable-editor .timetable-entry-header strong {
+    color: #641722;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* ---------------------------------------------------------
+                   Remove button
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    padding: 0;
+    border: 1px solid #f0c6cb;
+    border-radius: 50%;
+    background: #fff4f5;
+    color: #c52d3d;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background-color .2s ease,
+        color .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+.timetable-editor .timetable-remove-btn:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+/* ---------------------------------------------------------
+                   Form controls inside entries
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-entry .form-group {
+    margin-bottom: 9px;
+}
+
+.timetable-editor .timetable-entry .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.timetable-editor .timetable-entry label {
+    display: block;
+    margin-bottom: 5px;
+    color: #641722;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.timetable-editor .timetable-entry .form-control {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid #dfd2d4;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #3e2529;
+    font-size: 12px;
+    outline: none;
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background-color .2s ease;
+}
+
+.timetable-editor .timetable-entry .form-control:hover {
+    border-color: #c99ca3;
+}
+
+.timetable-editor .timetable-entry .form-control:focus {
+    border-color: #8d2c39;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(141, 44, 57, .10);
+}
+
+/* ---------------------------------------------------------
+                   Hours
+                   --------------------------------------------------------- */
+
+.timetable-editor .timetable-entry .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* ---------------------------------------------------------
+                   Empty cell
+                   --------------------------------------------------------- */
+
+.timetable-edit-mode .timetable-editor .timetable-entries:empty {
+    min-height: 60px;
+}
+
+/* ---------------------------------------------------------
+                   View mode
+                   --------------------------------------------------------- */
+
+.timetable-view-mode .timetable-editor-wrapper {
+    border-color: #ddd5d7;
+    box-shadow: 0 10px 30px rgba(70, 20, 30, .06);
+}
+
+.timetable-view-mode .timetable-editor {
+    min-width: 950px;
+}
+
+.timetable-view-mode .timetable-editor thead th {
+    background: linear-gradient(135deg,
+            #641722 0%,
+            #842b38 100%);
+}
+
+.timetable-view-mode .timetable-editor .timetable-day {
+    background: #fcf4f5;
+}
+
+.timetable-view-mode .timetable-editor .timetable-cell {
+    min-height: 120px;
+}
+
+/* ---------------------------------------------------------
+                   Responsive
+                   --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+
+    .timetable-editor-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .timetable-editor {
+        min-width: 1000px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .timetable-editor-wrapper {
+        margin-top: 15px;
+        border-radius: 12px;
+    }
+
+    .timetable-editor {
+        min-width: 950px;
+    }
+
+    .timetable-editor thead th {
+        height: 55px;
+        padding: 8px;
+        font-size: 11px;
+    }
+
+    .timetable-editor tbody td {
+        padding: 7px;
+    }
+
+    .timetable-editor .timetable-day {
+        min-width: 95px;
+        width: 95px;
+    }
+
+    .timetable-editor .timetable-day strong {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+
+    .timetable-editor .timetable-entry {
+        padding: 10px;
+    }
+
+}
+
+/* ---------------------------------------------------------
+                   Print
+                   --------------------------------------------------------- */
+
+@media print {
+
+    .timetable-editor-wrapper {
+        overflow: visible !important;
+        border: 1px solid #999 !important;
+        box-shadow: none !important;
+    }
+
+    .timetable-editor {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .timetable-editor thead th {
+        background: #eeeeee !important;
+        color: #000000 !important;
+        border: 1px solid #999 !important;
+    }
+
+    .timetable-editor tbody td {
+        border: 1px solid #999 !important;
+    }
+
+    .timetable-editor .timetable-day {
+        background: #f5f5f5 !important;
+        color: #000000 !important;
+    }
+
+    .timetable-editor .timetable-add-btn,
+    .timetable-editor .timetable-remove-btn {
+        display: none !important;
+    }
+
+    .timetable-editor .timetable-entry {
+        box-shadow: none !important;
+        border-color: #999 !important;
+    }
+
+}
+
+.timetable-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    text-align: left;
+}
+
+.timetable-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}

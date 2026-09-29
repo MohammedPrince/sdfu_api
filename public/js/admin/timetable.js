@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Elements
+    | Configuration elements
     |--------------------------------------------------------------------------
     */
 
@@ -13,41 +13,104 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let courses = [];
 
-    const instructors = Array.isArray(window.timetableInstructors)
-        ? window.timetableInstructors
-        : [];
-
-    const classrooms = Array.isArray(window.timetableClassrooms)
-        ? window.timetableClassrooms
-        : [];
 
     /*
     |--------------------------------------------------------------------------
-    | Edit mode
+    | Modes
     |--------------------------------------------------------------------------
     */
 
     const isEditMode = Boolean(window.editTimetable);
+    const isViewMode = Boolean(window.viewTimetable);
+
 
     /*
-    | Expected structure:
+    |--------------------------------------------------------------------------
+    | Instructors
+    |--------------------------------------------------------------------------
+    */
+
+    const instructors = Array.isArray(window.timetableInstructors)
+        ? window.timetableInstructors
+        : [];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Classrooms / Labs
+    |--------------------------------------------------------------------------
     |
-    | window.existingTimetableEntries = {
-    |     "0": {
-    |         "1": [
-    |             {
-    |                 course_code: "BABA301",
-    |                 stud_group: 1,
-    |                 instructor_id: 5,
-    |                 class_id: 2,
-    |                 entry_type: "theory",
-    |                 theory_hrs: 2,
-    |                 practical_hrs: 0
-    |             }
-    |         ]
-    |     }
+    | Expected:
+    |
+    | window.timetableClassrooms = {
+    |     classrooms: [...],
+    |     labs: [...]
     | }
     |
+    | Theory / Tutorial -> classrooms
+    | LAB                 -> labs
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    const timetableClassroomData =
+        window.timetableClassrooms &&
+            typeof window.timetableClassrooms === 'object' &&
+            !Array.isArray(window.timetableClassrooms)
+            ? window.timetableClassrooms
+            : {};
+
+    let timetableClassroomsList =
+        Array.isArray(timetableClassroomData.classrooms)
+            ? timetableClassroomData.classrooms
+            : [];
+
+    let timetableLabsList =
+        Array.isArray(timetableClassroomData.labs)
+            ? timetableClassroomData.labs
+            : [];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backward compatibility
+    |--------------------------------------------------------------------------
+    |
+    | If PHP still returns one flat array, detect labs automatically.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    if (Array.isArray(window.timetableClassrooms)) {
+
+        timetableClassroomsList = [];
+        timetableLabsList = [];
+
+        window.timetableClassrooms.forEach(function (item) {
+
+            if (!item) {
+                return;
+            }
+
+            const isLab =
+                item.LabID !== undefined ||
+                item.lab_id !== undefined ||
+                item.LabName !== undefined ||
+                item.lab_name !== undefined;
+
+            if (isLab) {
+                timetableLabsList.push(item);
+            } else {
+                timetableClassroomsList.push(item);
+            }
+        });
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Existing entries
+    |--------------------------------------------------------------------------
     */
 
     const existingEntries =
@@ -56,9 +119,10 @@ document.addEventListener('DOMContentLoaded', function () {
             ? window.existingTimetableEntries
             : {};
 
+
     /*
     |--------------------------------------------------------------------------
-    | Escape HTML
+    | Helpers
     |--------------------------------------------------------------------------
     */
 
@@ -76,27 +140,28 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/'/g, '&#039;');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Get configuration
-    |--------------------------------------------------------------------------
-    */
 
     function getConfiguration() {
 
         return {
-            faculty: facultySelect ? facultySelect.value : '',
-            major: majorSelect ? majorSelect.value : '',
-            batch: batchSelect ? batchSelect.value : '',
-            semester: semesterSelect ? semesterSelect.value : ''
+            faculty: facultySelect
+                ? facultySelect.value
+                : '',
+
+            major: majorSelect
+                ? majorSelect.value
+                : '',
+
+            batch: batchSelect
+                ? batchSelect.value
+                : '',
+
+            semester: semesterSelect
+                ? semesterSelect.value
+                : ''
         };
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Configuration complete
-    |--------------------------------------------------------------------------
-    */
 
     function configurationIsComplete() {
 
@@ -110,9 +175,235 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | Enable / Disable Add buttons
+    | Classroom helpers
+    |--------------------------------------------------------------------------
+    */
+
+    function getClassroomId(item) {
+
+        if (!item) {
+            return '';
+        }
+
+        return item.Class_ID ??
+            item.class_id ??
+            item.id ??
+            '';
+    }
+
+
+    function getClassroomName(item) {
+
+        if (!item) {
+            return '';
+        }
+
+        return item.Class_Name ??
+            item.class_name ??
+            item.name ??
+            '';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lab helpers
+    |--------------------------------------------------------------------------
+    */
+
+    function getLabId(item) {
+
+        if (!item) {
+            return '';
+        }
+
+        return item.LabID ??
+            item.lab_id ??
+            item.id ??
+            '';
+    }
+
+
+    function getLabName(item) {
+
+        if (!item) {
+            return '';
+        }
+
+        return item.LabName ??
+            item.lab_name ??
+            item.name ??
+            '';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find room
+    |--------------------------------------------------------------------------
+    */
+
+    function findRoomById(id, type) {
+
+        const list = type === 'lab'
+            ? timetableLabsList
+            : timetableClassroomsList;
+
+        return list.find(function (item) {
+
+            const itemId = type === 'lab'
+                ? getLabId(item)
+                : getClassroomId(item);
+
+            return String(itemId) === String(id ?? '');
+
+        }) || null;
+    }
+
+
+    function getRoomName(id, type) {
+
+        if (
+            id === null ||
+            id === undefined ||
+            id === ''
+        ) {
+            return '';
+        }
+
+        const item = findRoomById(id, type);
+
+        if (!item) {
+            return String(id);
+        }
+
+        return type === 'lab'
+            ? getLabName(item)
+            : getClassroomName(item);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Course name
+    |--------------------------------------------------------------------------
+    */
+
+    function getCourseName(courseCode) {
+
+        if (!courseCode) {
+            return '';
+        }
+
+        const course = courses.find(function (item) {
+
+            const code =
+                item.Course_Code ??
+                item.course_code ??
+                '';
+
+            return String(code) === String(courseCode);
+
+        });
+
+        if (!course) {
+            return '';
+        }
+
+        return course.Course_Name ??
+            course.course_name ??
+            '';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Instructor name
+    |--------------------------------------------------------------------------
+    */
+
+    function getInstructorName(instructorId) {
+
+        if (
+            instructorId === null ||
+            instructorId === undefined ||
+            instructorId === ''
+        ) {
+            return '';
+        }
+
+        const instructor = instructors.find(function (item) {
+
+            const id =
+                item.Instructor_ID ??
+                item.instructor_id ??
+                '';
+
+            return String(id) === String(instructorId);
+
+        });
+
+        if (!instructor) {
+            return String(instructorId);
+        }
+
+        return instructor.Instructor_Name ??
+            instructor.instructor_name ??
+            String(instructorId);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Group name
+    |--------------------------------------------------------------------------
+    */
+
+    function getGroupName(group) {
+
+        const groups = {
+            '1': 'A',
+            '2': 'B',
+            '3': 'C'
+        };
+
+        return groups[String(group)] ??
+            group ??
+            '';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Type name
+    |--------------------------------------------------------------------------
+    */
+
+    function getTypeName(type) {
+
+        switch (type) {
+
+            case 'theory':
+                return 'Lecture';
+
+            case 'tutorial':
+                return 'Tutorial';
+
+            case 'lab':
+                return 'LAB';
+
+            default:
+                return type || 'Lecture';
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Add button state
     |--------------------------------------------------------------------------
     */
 
@@ -122,14 +413,21 @@ document.addEventListener('DOMContentLoaded', function () {
             .querySelectorAll('.timetable-add-btn')
             .forEach(function (button) {
 
-                button.disabled = disabled;
+                if (isViewMode) {
 
+                    button.style.display = 'none';
+
+                    return;
+                }
+
+                button.disabled = disabled;
             });
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | Clear timetable entries
+    | Clear entries
     |--------------------------------------------------------------------------
     */
 
@@ -144,6 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Load courses
@@ -153,12 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadCourses() {
 
         const config = getConfiguration();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Configuration incomplete
-        |--------------------------------------------------------------------------
-        */
 
         if (
             !config.faculty ||
@@ -171,17 +464,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             setAddButtonsDisabled(true);
 
-            return;
+            if (isViewMode) {
+                renderViewEntries();
+            }
 
+            if (isEditMode) {
+                renderExistingEntries();
+            }
+
+            return;
         }
+
 
         setAddButtonsDisabled(true);
 
-        /*
-        |--------------------------------------------------------------------------
-        | URL
-        |--------------------------------------------------------------------------
-        */
 
         if (!window.adminTimetableCoursesUrl) {
 
@@ -191,10 +487,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             courses = [];
 
+            if (isViewMode) {
+                renderViewEntries();
+            }
+
+            if (isEditMode) {
+                renderExistingEntries();
+            }
+
             setAddButtonsDisabled(false);
 
             return;
         }
+
 
         try {
 
@@ -202,6 +507,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.adminTimetableCoursesUrl,
                 window.location.origin
             );
+
 
             url.searchParams.set(
                 'faculty_code',
@@ -223,6 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 config.semester
             );
 
+
             const response = await fetch(
                 url.toString(),
                 {
@@ -235,26 +542,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             );
 
+
             if (!response.ok) {
 
                 throw new Error(
                     'Failed to load courses. HTTP ' +
                     response.status
                 );
-
             }
+
 
             const data = await response.json();
 
-            /*
-            |--------------------------------------------------------------------------
-            | Support:
-            |
-            | { courses: [...] }
-            | OR
-            | [...]
-            |--------------------------------------------------------------------------
-            */
 
             if (Array.isArray(data)) {
 
@@ -270,20 +569,18 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
 
                 courses = [];
-
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Edit mode
-            |--------------------------------------------------------------------------
-            */
 
-            if (isEditMode) {
+            if (isViewMode) {
+
+                renderViewEntries();
+
+            } else if (isEditMode) {
 
                 renderExistingEntries();
-
             }
+
 
         } catch (error) {
 
@@ -294,22 +591,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
             courses = [];
 
-            /*
-            |--------------------------------------------------------------------------
-            | Do not show alert in edit mode if the page is initially loading
-            |--------------------------------------------------------------------------
-            */
 
-            alert(
-                'Unable to load courses. Please try again.'
-            );
+            if (isViewMode) {
+
+                renderViewEntries();
+
+            } else if (isEditMode) {
+
+                renderExistingEntries();
+
+                alert(
+                    'Unable to load courses. Please try again.'
+                );
+            }
 
         } finally {
 
             setAddButtonsDisabled(false);
-
         }
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -325,6 +626,9 @@ document.addEventListener('DOMContentLoaded', function () {
             </option>
         `;
 
+        let selectedExists = false;
+
+
         courses.forEach(function (course) {
 
             const code =
@@ -338,9 +642,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 '';
 
             const selected =
-                String(code) === String(selectedCourse ?? '')
+                String(code) ===
+                    String(selectedCourse ?? '')
                     ? 'selected'
                     : '';
+
+
+            if (selected) {
+                selectedExists = true;
+            }
+
 
             html += `
                 <option
@@ -348,14 +659,33 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${selected}
                 >
                     ${escapeHtml(code)}
-                    ${name ? ' - ' + escapeHtml(name) : ''}
+                    ${name
+                    ? ' - ' + escapeHtml(name)
+                    : ''}
                 </option>
             `;
-
         });
+
+
+        if (
+            selectedCourse &&
+            !selectedExists
+        ) {
+
+            html += `
+                <option
+                    value="${escapeHtml(selectedCourse)}"
+                    selected
+                >
+                    ${escapeHtml(selectedCourse)}
+                </option>
+            `;
+        }
+
 
         return html;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -371,6 +701,9 @@ document.addEventListener('DOMContentLoaded', function () {
             </option>
         `;
 
+        let selectedExists = false;
+
+
         instructors.forEach(function (instructor) {
 
             const id =
@@ -384,9 +717,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 '';
 
             const selected =
-                String(id) === String(selectedInstructor ?? '')
+                String(id) ===
+                    String(selectedInstructor ?? '')
                     ? 'selected'
                     : '';
+
+
+            if (selected) {
+                selectedExists = true;
+            }
+
 
             html += `
                 <option
@@ -396,42 +736,87 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${escapeHtml(name)}
                 </option>
             `;
-
         });
+
+
+        if (
+            selectedInstructor &&
+            !selectedExists
+        ) {
+
+            html += `
+                <option
+                    value="${escapeHtml(selectedInstructor)}"
+                    selected
+                >
+                    ${escapeHtml(selectedInstructor)}
+                </option>
+            `;
+        }
+
 
         return html;
     }
+
 
     /*
     |--------------------------------------------------------------------------
-    | Classroom options
+    | Classroom / Lab options
+    |--------------------------------------------------------------------------
+    |
+    | Theory   -> normal classrooms
+    | Tutorial -> normal classrooms
+    | LAB      -> labs
+    |
     |--------------------------------------------------------------------------
     */
 
-    function buildClassroomOptions(selectedClassroom) {
+    function buildClassroomOptions(
+        selectedRoom,
+        selectedType = 'theory'
+    ) {
+
+        const isLab = selectedType === 'lab';
+
+        const list = isLab
+            ? timetableLabsList
+            : timetableClassroomsList;
+
 
         let html = `
             <option value="">
-                Select Classroom
+                ${isLab
+                ? 'Select Lab'
+                : 'Select Classroom'}
             </option>
         `;
 
-        classrooms.forEach(function (classroom) {
 
-            const id =
-                classroom.Class_ID ??
-                classroom.class_id ??
-                '';
+        let selectedExists = false;
 
-            const name =
-                classroom.Class_Name ??
-                classroom.class_name ??
-                '';
+
+        list.forEach(function (room) {
+
+            const id = isLab
+                ? getLabId(room)
+                : getClassroomId(room);
+
+            const name = isLab
+                ? getLabName(room)
+                : getClassroomName(room);
+
 
             const selected =
-                String(id) === String(selectedClassroom ?? '')
+                String(id) ===
+                    String(selectedRoom ?? '')
                     ? 'selected'
                     : '';
+
+
+            if (selected) {
+                selectedExists = true;
+            }
+
 
             html += `
                 <option
@@ -441,11 +826,39 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${escapeHtml(name)}
                 </option>
             `;
-
         });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Preserve existing room if it no longer exists in lookup
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            selectedRoom &&
+            !selectedExists
+        ) {
+
+            html += `
+                <option
+                    value="${escapeHtml(selectedRoom)}"
+                    selected
+                >
+                    ${escapeHtml(
+                getRoomName(
+                    selectedRoom,
+                    selectedType
+                ) || selectedRoom
+            )}
+                </option>
+            `;
+        }
+
 
         return html;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -470,11 +883,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         ];
 
+
         let html = `
             <option value="">
                 Select Group
             </option>
         `;
+
+
+        let selectedExists = false;
+
 
         groups.forEach(function (group) {
 
@@ -484,6 +902,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? 'selected'
                     : '';
 
+
+            if (selected) {
+                selectedExists = true;
+            }
+
+
             html += `
                 <option
                     value="${group.value}"
@@ -492,11 +916,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${group.label}
                 </option>
             `;
-
         });
+
+
+        if (
+            selectedGroup &&
+            !selectedExists
+        ) {
+
+            html += `
+                <option
+                    value="${escapeHtml(selectedGroup)}"
+                    selected
+                >
+                    ${escapeHtml(selectedGroup)}
+                </option>
+            `;
+        }
+
 
         return html;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -510,29 +951,37 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedType ||
             'theory';
 
+
         return `
             <option
                 value="theory"
-                ${type === 'theory' ? 'selected' : ''}
+                ${type === 'theory'
+                ? 'selected'
+                : ''}
             >
                 Theory
             </option>
 
             <option
                 value="tutorial"
-                ${type === 'tutorial' ? 'selected' : ''}
+                ${type === 'tutorial'
+                ? 'selected'
+                : ''}
             >
                 Tutorial
             </option>
 
             <option
                 value="lab"
-                ${type === 'lab' ? 'selected' : ''}
+                ${type === 'lab'
+                ? 'selected'
+                : ''}
             >
                 LAB
             </option>
         `;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -569,17 +1018,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const theoryHours =
             values.theory_hrs ??
-            (entryType === 'theory' ? 2 : 0);
+            0;
 
         const practicalHours =
             values.practical_hrs ??
-            (entryType === 'lab' ? 2 : 0);
+            0;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Find container
-        |--------------------------------------------------------------------------
-        */
 
         const container = document.querySelector(
             '.timetable-entries[data-day="' +
@@ -589,26 +1033,38 @@ document.addEventListener('DOMContentLoaded', function () {
             '"]'
         );
 
+
         if (!container) {
-
-            console.warn(
-                'Timetable container not found:',
-                day,
-                period
-            );
-
             return null;
         }
 
+
         /*
         |--------------------------------------------------------------------------
-        | Create element
+        | View mode
+        |--------------------------------------------------------------------------
+        */
+
+        if (isViewMode) {
+
+            return createViewTimetableEntry(
+                day,
+                period,
+                values
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Edit mode
         |--------------------------------------------------------------------------
         */
 
         const entry = document.createElement('div');
 
         entry.className = 'timetable-entry';
+
 
         entry.innerHTML = `
 
@@ -629,8 +1085,6 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
 
-            <!-- Course -->
-
             <div class="form-group">
 
                 <label>
@@ -642,15 +1096,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     class="form-control timetable-course"
                     required
                 >
-
                     ${buildCourseOptions(courseCode)}
-
                 </select>
 
             </div>
 
-
-            <!-- Group -->
 
             <div class="form-group">
 
@@ -663,15 +1113,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     class="form-control"
                     required
                 >
-
                     ${buildGroupOptions(studGroup)}
-
                 </select>
 
             </div>
 
-
-            <!-- Instructor -->
 
             <div class="form-group">
 
@@ -683,35 +1129,30 @@ document.addEventListener('DOMContentLoaded', function () {
                     name="timetable[${day}][${period}][${index}][instructor_id]"
                     class="form-control"
                 >
-
                     ${buildInstructorOptions(instructorId)}
-
                 </select>
 
             </div>
 
-
-            <!-- Classroom -->
 
             <div class="form-group">
 
                 <label>
-                    Classroom
+                    Classroom / Lab
                 </label>
 
                 <select
                     name="timetable[${day}][${period}][${index}][class_id]"
-                    class="form-control"
+                    class="form-control timetable-room"
                 >
-
-                    ${buildClassroomOptions(classId)}
-
+                    ${buildClassroomOptions(
+            classId,
+            entryType
+        )}
                 </select>
 
             </div>
 
-
-            <!-- Type -->
 
             <div class="form-group">
 
@@ -723,15 +1164,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     name="timetable[${day}][${period}][${index}][entry_type]"
                     class="form-control timetable-entry-type"
                 >
-
                     ${buildTypeOptions(entryType)}
-
                 </select>
 
             </div>
 
-
-            <!-- Hours -->
 
             <div class="form-grid">
 
@@ -774,24 +1211,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         `;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Append
-        |--------------------------------------------------------------------------
-        */
 
         container.appendChild(entry);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Update fields according to type
-        |--------------------------------------------------------------------------
-        */
 
         updateEntryFields(entry);
 
+
         return entry;
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -801,20 +1230,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateEntryFields(entry) {
 
+        if (!entry) {
+            return;
+        }
+
+
         const typeSelect =
-            entry.querySelector('.timetable-entry-type');
+            entry.querySelector(
+                '.timetable-entry-type'
+            );
+
+
+        const roomSelect =
+            entry.querySelector(
+                '.timetable-room'
+            );
+
 
         const theoryHours =
-            entry.querySelector('.timetable-theory-hours');
+            entry.querySelector(
+                '.timetable-theory-hours'
+            );
+
 
         const practicalHours =
-            entry.querySelector('.timetable-practical-hours');
+            entry.querySelector(
+                '.timetable-practical-hours'
+            );
+
 
         if (!typeSelect) {
             return;
         }
 
-        const type = typeSelect.value;
+
+        const type =
+            typeSelect.value || 'theory';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rebuild classroom / lab list
+        |--------------------------------------------------------------------------
+        */
+
+        if (roomSelect) {
+
+            const currentRoom =
+                roomSelect.value;
+
+
+            roomSelect.innerHTML =
+                buildClassroomOptions(
+                    currentRoom,
+                    type
+                );
+        }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -833,14 +1305,14 @@ document.addEventListener('DOMContentLoaded', function () {
             ) {
 
                 theoryHours.value = 2;
-
             }
+
 
             if (practicalHours) {
                 practicalHours.value = 0;
             }
-
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -854,6 +1326,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 theoryHours.value = 0;
             }
 
+
             if (
                 practicalHours &&
                 (
@@ -863,10 +1336,9 @@ document.addEventListener('DOMContentLoaded', function () {
             ) {
 
                 practicalHours.value = 0;
-
             }
-
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -880,6 +1352,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 theoryHours.value = 0;
             }
 
+
             if (
                 practicalHours &&
                 (
@@ -889,12 +1362,10 @@ document.addEventListener('DOMContentLoaded', function () {
             ) {
 
                 practicalHours.value = 2;
-
             }
-
         }
-
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -910,11 +1381,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 'click',
                 function () {
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Validate configuration
-                    |--------------------------------------------------------------------------
-                    */
+                    if (isViewMode) {
+                        return;
+                    }
+
 
                     if (!configurationIsComplete()) {
 
@@ -925,11 +1395,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Validate courses
-                    |--------------------------------------------------------------------------
-                    */
 
                     if (!courses.length) {
 
@@ -940,32 +1405,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | IMPORTANT:
-                    |
-                    | period is the GLOBAL tim.id:
-                    |
-                    | Saturday:  1 - 4
-                    | Sunday:    5 - 8
-                    | Monday:    9 - 12
-                    | Tuesday:  13 - 16
-                    | Wednesday:17 - 20
-                    | Thursday: 21 - 24
-                    |--------------------------------------------------------------------------
-                    */
 
                     const day =
                         this.dataset.day;
 
+
                     const period =
                         this.dataset.period;
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Find cell
-                    |--------------------------------------------------------------------------
-                    */
 
                     const container =
                         document.querySelector(
@@ -976,42 +1423,31 @@ document.addEventListener('DOMContentLoaded', function () {
                             '"]'
                         );
 
-                    if (!container) {
 
+                    if (!container) {
                         return;
                     }
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Generate index
-                    |--------------------------------------------------------------------------
-                    */
 
                     const index =
                         container.querySelectorAll(
                             '.timetable-entry'
                         ).length;
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Create
-                    |--------------------------------------------------------------------------
-                    */
 
                     createTimetableEntry(
                         day,
                         period,
                         index
                     );
-
                 }
             );
-
         });
+
 
     /*
     |--------------------------------------------------------------------------
-    | Remove dynamically-created entry
+    | Remove timetable entry
     |--------------------------------------------------------------------------
     */
 
@@ -1024,23 +1460,32 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.timetable-remove-btn'
                 );
 
+
             if (!button) {
                 return;
             }
+
+
+            if (isViewMode) {
+                return;
+            }
+
 
             const entry =
                 button.closest(
                     '.timetable-entry'
                 );
 
+
             if (!entry) {
                 return;
             }
 
-            entry.remove();
 
+            entry.remove();
         }
     );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -1057,62 +1502,54 @@ document.addEventListener('DOMContentLoaded', function () {
                     'timetable-entry-type'
                 )
             ) {
-
                 return;
             }
+
+
+            if (isViewMode) {
+                return;
+            }
+
 
             const entry =
                 event.target.closest(
                     '.timetable-entry'
                 );
 
+
             if (!entry) {
                 return;
             }
 
-            updateEntryFields(entry);
 
+            updateEntryFields(entry);
         }
     );
 
+
     /*
     |--------------------------------------------------------------------------
-    | Render existing timetable entries
+    | Render existing timetable
     |--------------------------------------------------------------------------
     */
 
     function renderExistingEntries() {
 
-        /*
-        |--------------------------------------------------------------------------
-        | Make sure courses are loaded
-        |--------------------------------------------------------------------------
-        */
+        clearTimetableEntries();
 
-        if (!courses.length) {
+
+        if (
+            !existingEntries ||
+            typeof existingEntries !== 'object'
+        ) {
 
             console.warn(
-                'Cannot render existing timetable entries because courses are empty.'
+                'No existing timetable entries found.'
             );
 
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent duplicate rendering
-        |--------------------------------------------------------------------------
-        */
-
-        clearTimetableEntries();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Loop:
-        |
-        | existingEntries[day][period][]
-        |--------------------------------------------------------------------------
-        */
 
         Object.keys(existingEntries).forEach(
             function (day) {
@@ -1120,13 +1557,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 const periods =
                     existingEntries[day];
 
+
                 if (
                     !periods ||
                     typeof periods !== 'object'
                 ) {
-
                     return;
                 }
+
 
                 Object.keys(periods).forEach(
                     function (period) {
@@ -1134,13 +1572,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         const entries =
                             periods[period];
 
-                        if (!Array.isArray(entries)) {
 
+                        if (!Array.isArray(entries)) {
                             return;
                         }
 
+
                         entries.forEach(
-                            function (values, index) {
+                            function (
+                                values,
+                                index
+                            ) {
 
                                 createTimetableEntry(
                                     day,
@@ -1157,8 +1599,227 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
         );
-
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | View entry
+    |--------------------------------------------------------------------------
+    */
+
+    function createViewTimetableEntry(
+        day,
+        period,
+        values = {}
+    ) {
+
+        const container = document.querySelector(
+            '.timetable-entries[data-day="' +
+            day +
+            '"][data-period="' +
+            period +
+            '"]'
+        );
+
+
+        if (!container) {
+            return null;
+        }
+
+
+        const courseCode =
+            values.course_code ??
+            '';
+
+        const studGroup =
+            values.stud_group ??
+            '';
+
+        const instructorId =
+            values.instructor_id ??
+            '';
+
+        const classId =
+            values.class_id ??
+            '';
+
+        const entryType =
+            values.entry_type ??
+            'theory';
+
+
+        const courseName =
+            getCourseName(courseCode);
+
+
+        const instructorName =
+            getInstructorName(instructorId);
+
+
+        const roomName =
+            getRoomName(
+                classId,
+                entryType
+            );
+
+
+        const groupName =
+            getGroupName(studGroup);
+
+
+        const typeName =
+            getTypeName(entryType);
+
+
+        const entry =
+            document.createElement('div');
+
+
+        entry.className =
+            'timetable-entry timetable-view-entry';
+
+
+        entry.innerHTML = `
+
+            <div class="timetable-view-entry-course">
+
+                ${escapeHtml(courseCode)}
+
+                ${courseName
+                ? ' - ' +
+                escapeHtml(courseName)
+                : ''
+            }
+
+            </div>
+
+
+            ${instructorName
+                ? `
+                        <div class="timetable-view-entry-line">
+
+                            <strong>
+                                Instructor:
+                            </strong>
+
+                            ${escapeHtml(
+                    instructorName
+                )}
+
+                        </div>
+                      `
+                : ''
+            }
+
+
+            ${roomName || groupName
+                ? `
+                        <div class="timetable-view-entry-line">
+
+                            <strong>
+                                Room:
+                            </strong>
+
+                            ${escapeHtml(
+                    roomName || '—'
+                )}
+
+                            ${groupName
+                    ? ', Group: ' +
+                    escapeHtml(
+                        groupName
+                    )
+                    : ''
+                }
+
+                        </div>
+                      `
+                : ''
+            }
+
+
+            <div class="timetable-view-entry-type">
+
+                ${escapeHtml(typeName)}
+
+            </div>
+
+        `;
+
+
+        container.appendChild(entry);
+
+
+        return entry;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Render view entries
+    |--------------------------------------------------------------------------
+    */
+
+    function renderViewEntries() {
+
+        clearTimetableEntries();
+
+
+        if (
+            !existingEntries ||
+            typeof existingEntries !== 'object'
+        ) {
+            return;
+        }
+
+
+        Object.keys(existingEntries).forEach(
+            function (day) {
+
+                const periods =
+                    existingEntries[day];
+
+
+                if (
+                    !periods ||
+                    typeof periods !== 'object'
+                ) {
+                    return;
+                }
+
+
+                Object.keys(periods).forEach(
+                    function (period) {
+
+                        const entries =
+                            periods[period];
+
+
+                        if (!Array.isArray(entries)) {
+                            return;
+                        }
+
+
+                        entries.forEach(
+                            function (values) {
+
+                                createViewTimetableEntry(
+                                    day,
+                                    period,
+                                    values
+                                );
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+        );
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -1168,19 +1829,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function configurationChanged() {
 
-        /*
-        |--------------------------------------------------------------------------
-        | If user changes academic configuration, old entries must disappear.
-        |--------------------------------------------------------------------------
-        */
+        if (isViewMode) {
+            return;
+        }
+
 
         clearTimetableEntries();
 
         courses = [];
 
         loadCourses();
-
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -1194,8 +1854,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'change',
             configurationChanged
         );
-
     }
+
 
     if (majorSelect) {
 
@@ -1203,8 +1863,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'change',
             configurationChanged
         );
-
     }
+
 
     if (batchSelect) {
 
@@ -1212,8 +1872,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'change',
             configurationChanged
         );
-
     }
+
 
     if (semesterSelect) {
 
@@ -1221,20 +1881,12 @@ document.addEventListener('DOMContentLoaded', function () {
             'change',
             configurationChanged
         );
-
     }
+
 
     /*
     |--------------------------------------------------------------------------
     | Initial load
-    |--------------------------------------------------------------------------
-    |
-    | This is important for EDIT mode.
-    |
-    | When the edit page opens, Faculty/Major/Batch/Semester are already
-    | selected. We need to load the courses and then render the existing
-    | timetable entries.
-    |
     |--------------------------------------------------------------------------
     */
 
@@ -1244,8 +1896,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     } else {
 
-        setAddButtonsDisabled(true);
+        if (isViewMode) {
 
+            /*
+            |--------------------------------------------------------------------------
+            | View mode can have hidden configuration inputs.
+            |--------------------------------------------------------------------------
+            */
+
+            renderViewEntries();
+
+        } else {
+
+            setAddButtonsDisabled(true);
+        }
     }
 
 });

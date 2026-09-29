@@ -1,4 +1,30 @@
+@php
+    $user = auth()->user();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Menu Permission Check
+    |--------------------------------------------------------------------------
+    */
+    $can = function (string $menu) {
+        return \App\Helpers\Helper::canAccessAdminMenu($menu);
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Permissions Access
+    |--------------------------------------------------------------------------
+    | Only username "prince" with role_id = 1 can manage permissions.
+    |--------------------------------------------------------------------------
+    */
+    $canManagePermissions = (int) $user->role_id === 1 && strtolower(trim($user->username ?? '')) === 'prince';
+@endphp
+
 <nav class="admin-sidebar">
+
+    {{-- ========================================================= --}}
+    {{-- BRAND --}}
+    {{-- ========================================================= --}}
 
     <div class="admin-sidebar-brand">
 
@@ -12,182 +38,288 @@
             <span>Future University</span>
             <small>Student Desk Panel</small>
         </div>
+
     </div>
 
     <div class="admin-sidebar-divider"></div>
 
+
     <div class="admin-sidebar-menu">
 
-        <div class="admin-menu-label">
-            MAIN
-        </div>
+        {{-- ========================================================= --}}
+        {{-- MAIN --}}
+        {{-- ========================================================= --}}
 
-        <a href="{{ url('/admin/dashboard') }}"
-            class="admin-nav-item {{ request()->is('admin/dashboard') ? 'active' : '' }}">
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H4C3.45 21 3 20.55 3 20V10.5Z"
-                        stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-                    <path d="M9 21V13H15V21" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-                </svg>
-            </span>
+        @if ($can('dashboard'))
+            <div class="admin-menu-label">
+                MAIN
+            </div>
 
-            <span class="admin-nav-text">
-                Dashboard
-            </span>
-        </a>
+            <a href="{{ url('/admin/dashboard') }}"
+                class="admin-nav-item {{ request()->is('admin/dashboard') ? 'active' : '' }}">
 
-        <div class="admin-menu-label admin-menu-label-spaced">
-            MANAGEMENT
-        </div>
+                <span class="admin-nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H4C3.45 21 3 20.55 3 20V10.5Z"
+                            stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
 
-        <a href="{{ url('/admin/manage') }}"
-            class="admin-nav-item
-            {{ request()->is('admin/manage') ? 'active' : '' }}">
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5A3.5 3.5 0 0 0 12 15.5Z" stroke="currentColor"
-                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9 21V13H15V21" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    </svg>
+                </span>
 
-                    <path
-                        d="M19.4 15A1.7 1.7 0 0 0 19.74 16.88L19.8 16.94L18.94 18.44L18.86 18.39A1.7 1.7 0 0 0 17.02 18.42L16.96 18.46A1.7 1.7 0 0 0 16.13 20.08V20.2H14.4L14.38 20.08A1.7 1.7 0 0 0 13.16 18.67H13.08A1.7 1.7 0 0 0 11.45 19.65L11.39 19.76L9.66 19.13L9.7 19.02A1.7 1.7 0 0 0 9.12 17.3L9.06 17.25A1.7 1.7 0 0 0 7.25 17.34L7.15 17.4L6.15 15.83L6.25 15.76A1.7 1.7 0 0 0 6.54 13.89V13.82A1.7 1.7 0 0 0 5.1 12.55H5V10.82H5.12A1.7 1.7 0 0 0 6.54 9.55V9.48A1.7 1.7 0 0 0 6.25 7.61L6.15 7.54L7.15 5.97L7.25 6.03A1.7 1.7 0 0 0 9.06 6.12L9.12 6.07A1.7 1.7 0 0 0 9.7 4.35L9.66 4.24L11.39 3.61L11.45 3.72A1.7 1.7 0 0 0 13.08 4.7H13.16A1.7 1.7 0 0 0 14.38 3.29L14.4 3.17H16.13V3.29A1.7 1.7 0 0 0 16.96 4.91L17.02 4.95A1.7 1.7 0 0 0 18.86 4.98L18.94 4.93L19.8 6.43L19.74 6.49A1.7 1.7 0 0 0 19.4 8.37V8.44A1.7 1.7 0 0 0 20.84 9.71H21V11.44H20.88A1.7 1.7 0 0 0 19.4 12.71V15Z"
-                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </span>
+                <span class="admin-nav-text">
+                    Dashboard
+                </span>
 
-            <span class="admin-nav-text">
-                Manage Application
-            </span>
-        </a>
-
-        <a href="{{ url('/admin/notifications') }}"
-            class="admin-nav-item
-            {{ request()->is('admin/notifications') ? 'active' : '' }}">
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M18 9A6 6 0 0 0 6 9C6 16 3.5 16 3.5 18H20.5C20.5 16 18 16 18 9Z" stroke="currentColor"
-                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-
-                    <path d="M10 21H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </svg>
-            </span>
-
-            <span class="admin-nav-text">
-                Push Notifications
-            </span>
-        </a>
-
-        <a href="{{ url('/admin/students') }}"
-            class="admin-nav-item {{ request()->is('admin/students*') ? 'active' : '' }}">
-
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M16 21V19C16 16.8 14.2 15 12 15H6C3.8 15 2 16.8 2 19V21" stroke="currentColor"
-                        stroke-width="1.8" stroke-linecap="round" />
-
-                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8" />
-
-                    <path d="M22 21V19C22 17.2 20.8 15.7 19 15.2" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" />
-
-                    <path d="M16 3.2C17.8 3.7 19 5.2 19 7" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" />
-                </svg>
-            </span>
-
-            <span class="admin-nav-text">
-                Students
-            </span>
-        </a>
-
-        <div class="admin-menu-label admin-menu-label-spaced">
-            TIMETABLE
-        </div>
-
-        <a href="{{ url('/admin/timetable') }}"
-            class="admin-nav-item
-            {{ request()->is('admin/timetable') ? 'active' : '' }}">
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor"
-                        stroke-width="1.8" />
-
-                    <path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M7 14H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M12 14H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M17 14H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M7 18H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M12 18H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </svg>
-            </span>
-
-            <span class="admin-nav-text">
-                Pull Timetable
-            </span>
-        </a>
-
-        <a href="{{ url('/admin/timetable/display') }}"
-            class="admin-nav-item
-    {{ request()->is('admin/timetable/display*') || request()->is('admin/timetable/create*') || request()->is('admin/timetable/edit*') ? 'active' : '' }}">
-
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor"
-                        stroke-width="1.8" />
-
-                    <path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <!-- Plus -->
-                    <path d="M12 13V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-                    <path d="M9 16H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </svg>
-            </span>
-
-            <span class="admin-nav-text">
-                Create Timetable
-            </span>
-        </a>
+            </a>
+        @endif
 
 
-        <div class="admin-menu-label admin-menu-label-spaced">
-            REPORTS
-        </div>
+        {{-- ========================================================= --}}
+        {{-- ADMINISTRATION --}}
+        {{-- ========================================================= --}}
 
-        <a href="{{ url('/admin/reports') }}"
-            class="admin-nav-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
+        @if ($canManagePermissions)
+            <div class="admin-menu-label admin-menu-label-spaced">
+                ADMINISTRATION
+            </div>
 
-            <span class="admin-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 19V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <a href="{{ route('admin.permissions') }}"
+                class="admin-nav-item {{ request()->is('admin/permissions*') ? 'active' : '' }}">
 
-                    <path d="M4 19H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <span class="admin-nav-icon">
 
-                    <path d="M7 15L11 11L14 13L20 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
-            </span>
+                    <svg viewBox="0 0 24 24" fill="none">
 
-            <span class="admin-nav-text">
-                Reports
-            </span>
-        </a>
+                        <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+
+                        <path d="M3 20C3 16.7 5.7 14 9 14C12.3 14 15 16.7 15 20" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" />
+
+                        <path d="M16 11H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                        <path d="M18.5 8.5V13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    </svg>
+
+                </span>
+
+                <span class="admin-nav-text">
+                    User Permissions
+                </span>
+
+            </a>
+        @endif
+
+
+        {{-- ========================================================= --}}
+        {{-- MANAGEMENT --}}
+        {{-- ========================================================= --}}
+
+        @if ($can('manage_application') || $can('notifications') || $can('students'))
+
+            <div class="admin-menu-label admin-menu-label-spaced">
+                MANAGEMENT
+            </div>
+
+
+            {{-- Manage Application --}}
+            @if ($can('manage_application'))
+                <a href="{{ url('/admin/manage') }}"
+                    class="admin-nav-item {{ request()->is('admin/manage') ? 'active' : '' }}">
+
+                    <span class="admin-nav-icon">
+                        {{-- keep your existing Manage Application SVG --}}
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5A3.5 3.5 0 0 0 12 15.5Z" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+
+                            <path
+                                d="M19.4 15A1.7 1.7 0 0 0 19.74 16.88L19.8 16.94L18.94 18.44L18.86 18.39A1.7 1.7 0 0 0 17.02 18.42L16.96 18.46A1.7 1.7 0 0 0 16.13 20.08V20.2H14.4L14.38 20.08A1.7 1.7 0 0 0 13.16 18.67H13.08A1.7 1.7 0 0 0 11.45 19.65L11.39 19.76L9.66 19.13L9.7 19.02A1.7 1.7 0 0 0 9.12 17.3L9.06 17.25A1.7 1.7 0 0 0 7.25 17.34L7.15 17.4L6.15 15.83L6.25 15.76A1.7 1.7 0 0 0 6.54 13.89V13.82A1.7 1.7 0 0 0 5.1 12.55H5V10.82H5.12A1.7 1.7 0 0 0 6.54 9.55V9.48A1.7 1.7 0 0 0 6.25 7.61L6.15 7.54L7.15 5.97L7.25 6.03A1.7 1.7 0 0 0 9.06 6.12L9.12 6.07A1.7 1.7 0 0 0 9.7 4.35L9.66 4.24L11.39 3.61L11.45 3.72A1.7 1.7 0 0 0 13.08 4.7H13.16A1.7 1.7 0 0 0 14.38 3.29L14.4 3.17H16.13V3.29A1.7 1.7 0 0 0 16.96 4.91L17.02 4.95A1.7 1.7 0 0 0 18.86 4.98L18.94 4.93L19.8 6.43L19.74 6.49A1.7 1.7 0 0 0 19.4 8.37V8.44A1.7 1.7 0 0 0 20.84 9.71H21V11.44H20.88A1.7 1.7 0 0 0 19.4 12.71V15Z"
+                                stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
+
+                    <span class="admin-nav-text">
+                        Manage Application
+                    </span>
+
+                </a>
+            @endif
+
+
+            {{-- Push Notifications --}}
+            @if ($can('notifications'))
+                <a href="{{ url('/admin/notifications') }}"
+                    class="admin-nav-item {{ request()->is('admin/notifications') ? 'active' : '' }}">
+
+                    <span class="admin-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M18 9A6 6 0 0 0 6 9C6 16 3.5 16 3.5 18H20.5C20.5 16 18 16 18 9Z"
+                                stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                stroke-linejoin="round" />
+
+                            <path d="M10 21H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        </svg>
+                    </span>
+
+                    <span class="admin-nav-text">
+                        Push Notifications
+                    </span>
+
+                </a>
+            @endif
+
+
+            {{-- Students --}}
+            @if ($can('students'))
+                <a href="{{ url('/admin/students') }}"
+                    class="admin-nav-item {{ request()->is('admin/students*') ? 'active' : '' }}">
+
+                    <span class="admin-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M16 21V19C16 16.8 14.2 15 12 15H6C3.8 15 2 16.8 2 19V21" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" />
+
+                            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8" />
+
+                            <path d="M22 21V19C22 17.2 20.8 15.7 19 15.2" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" />
+
+                            <path d="M16 3.2C17.8 3.7 19 5.2 19 7" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" />
+                        </svg>
+                    </span>
+
+                    <span class="admin-nav-text">
+                        Students
+                    </span>
+
+                </a>
+            @endif
+
+        @endif
+
+
+        {{-- ========================================================= --}}
+        {{-- TIMETABLE --}}
+        {{-- ========================================================= --}}
+
+        @if ($can('pull_timetable') || $can('create_timetable'))
+
+            <div class="admin-menu-label admin-menu-label-spaced">
+                TIMETABLE
+            </div>
+
+
+            @if ($can('pull_timetable'))
+                <a href="{{ url('/admin/timetable') }}"
+                    class="admin-nav-item {{ request()->is('admin/timetable') ? 'active' : '' }}">
+
+                    <span class="admin-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor"
+                                stroke-width="1.8" />
+
+                            <path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M7 14H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M12 14H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M17 14H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M7 18H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M12 18H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        </svg>
+                    </span>
+
+                    <span class="admin-nav-text">
+                        Pull Timetable
+                    </span>
+
+                </a>
+            @endif
+
+
+            @if ($can('create_timetable'))
+                <a href="{{ url('/admin/timetable/display') }}"
+                    class="admin-nav-item
+                    {{ request()->is('admin/timetable/display*') ||
+                    request()->is('admin/timetable/create*') ||
+                    request()->is('admin/timetable/edit*')
+                        ? 'active'
+                        : '' }}">
+
+                    <span class="admin-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor"
+                                stroke-width="1.8" />
+
+                            <path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M12 13V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                            <path d="M9 16H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        </svg>
+                    </span>
+
+                    <span class="admin-nav-text">
+                        Create Timetable
+                    </span>
+
+                </a>
+            @endif
+
+        @endif
+
+
+        {{-- ========================================================= --}}
+        {{-- REPORTS --}}
+        {{-- ========================================================= --}}
+
+        @if ($can('reports'))
+            <div class="admin-menu-label admin-menu-label-spaced">
+                REPORTS
+            </div>
+
+            <a href="{{ url('/admin/reports') }}"
+                class="admin-nav-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
+
+                <span class="admin-nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M4 19V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                        <path d="M4 19H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                        <path d="M7 15L11 11L14 13L20 7" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>
+
+                <span class="admin-nav-text">
+                    Reports
+                </span>
+
+            </a>
+        @endif
 
     </div>
 
+
+    {{-- ========================================================= --}}
+    {{-- SIDEBAR BOTTOM --}}
+    {{-- ========================================================= --}}
 
     <div class="admin-sidebar-bottom">
 
@@ -196,13 +328,13 @@
         <div class="admin-sidebar-user">
 
             <div class="admin-user-avatar">
-                {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                {{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}
             </div>
 
             <div class="admin-user-info">
 
                 <strong>
-                    {{ auth()->user()->name ?? 'Administrator' }}
+                    {{ $user->name ?? 'Administrator' }}
                 </strong>
 
                 <span>
@@ -215,19 +347,26 @@
 
 
         <form method="POST" action="{{ url('/admin/logout') }}">
+
             @csrf
 
             <button type="submit" class="admin-logout-button">
+
                 <svg viewBox="0 0 24 24" fill="none">
+
                     <path d="M10 17L15 12L10 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                         stroke-linejoin="round" />
 
                     <path d="M15 12H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
 
                     <path d="M21 3V21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
                 </svg>
 
-                <span>Sign Out</span>
+                <span>
+                    Sign Out
+                </span>
+
             </button>
 
         </form>

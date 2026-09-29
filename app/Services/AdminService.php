@@ -129,6 +129,17 @@ class AdminService
     {
         return $this->adminRepository->toggleStudentAccountStatus($studentId);
     }
+
+    public function forceLogout(int $studentId)
+    {
+        return $this->adminRepository->forceLogout($studentId);
+    }
+
+    public function forceLogoutAll()
+    {
+       return $this->adminRepository->forceLogoutAll();  
+    }
+
     //Studnets End
 
     //Timetable Start

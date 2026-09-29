@@ -17,6 +17,8 @@
 
     <link rel="stylesheet" href="{{ asset('css/admin-desk.css') }}">
 
+    @stack('styles')
+
 </head>
 
 

@@ -95,7 +95,7 @@
                 <span>Account</span>
 
                 <strong>
-                    {!! $student->is_active ? '<b style="color:#34734b">Active</b>' : '<b style="color:#dc3545">Inactive</b>' !!}
+                    {!! $student->is_active ? '<b style="color:#34734b">Active</b>' : '<b style="color:#dc3545">Deleted</b>' !!}
                 </strong>
             </div>
 
@@ -241,9 +241,11 @@
                 </div>
 
                 <form method="POST"
-                    action="{{ route('admin.students.status', [
-                        'studentId' => base64_encode($student->id),
-                    ]) }}">
+                    action="{{ route('admin.students.status', ['studentId' => base64_encode($student->id)]) }}"
+                    style="display:inline;"
+                    @if ($student->is_active) onsubmit="return confirm('Are you sure you want to DELETE this account?');"
+                    @else
+                        onsubmit="return confirm('Are you sure you want to RESTORE this account?');" @endif>
 
                     @csrf
                     @method('PATCH')
@@ -254,7 +256,17 @@
                             <strong>Account Status</strong>
 
                             <span>
-                                {{ $student->is_active ? 'Student can access the application.' : 'Student account is currently disabled.' }}
+                                @if ($student->is_active)
+                                    Student can access the application.
+                                    <strong style="color:#dc3545;">
+                                        Toggle to Delete
+                                    </strong>
+                                @else
+                                    Student account is currently <strong>DELETED</strong>
+                                    <strong style="color:#34734b;">
+                                        Toggle to Restore
+                                    </strong>
+                                @endif
                             </span>
                         </div>
 

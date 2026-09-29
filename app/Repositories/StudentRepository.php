@@ -1632,7 +1632,7 @@ class StudentRepository
             return [
                 'success' => false,
                 'code' => 400,
-                'message' => 'Account is already inactive/deleted',
+                'message' => 'Account already deleted',
             ];
         }
 

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Illuminate\Support\Facades\DB;
 
 class AdminRepository
 {
@@ -242,7 +243,7 @@ class AdminRepository
             $majorCode,
             $batch,
             $semester,
-          
+
         );
     }
 
@@ -488,6 +489,79 @@ class AdminRepository
                 ? 'Student account enabled successfully.'
                 : 'Student account disabled successfully.',
         ];
+    }
+
+    public function forceLogout(int $studentId)
+    {
+        return DB::transaction(function () use ($studentId) {
+
+            $user = User::where('id', $studentId)->where('role_id', Helper::STUDENT_ROLE)->first();
+
+            if (!$user) {
+                return [
+                    'success' => false,
+                    'message' => 'Student account not found.',
+                ];
+            }
+
+            // Disable the student account
+            // $user->is_active = false;
+            // $user->save();
+
+            // Delete ALL Sanctum tokens = force logout from all devices
+            $user->tokens()->delete();
+
+            return [
+                'success' => true,
+                'is_active' => false,
+                'message' => 'Student account disabled and logged out from all devices successfully.',
+            ];
+        });
+    }
+
+    public function forceLogoutAll()
+    {
+        return DB::transaction(function () {
+
+            $students = User::where('role_id', Helper::STUDENT_ROLE)->get();
+
+            if ($students->isEmpty()) {
+                return [
+                    'success' => false,
+                    'message' => 'No student accounts found.',
+                ];
+            }
+
+            $studentIds = $students->pluck('id');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Disable all student accounts
+            |--------------------------------------------------------------------------
+            */
+
+            // User::whereIn('id', $studentIds)
+            //     ->update([
+            //         'is_active' => false,
+            //     ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delete all Sanctum tokens
+            |--------------------------------------------------------------------------
+            */
+
+            $tokenCount = DB::table('personal_access_tokens')->where('tokenable_type', User::class)->whereIn('tokenable_id', $studentIds)->delete();
+
+            return [
+                'success' => true,
+                'message' => $students->count()
+                    . ' student account(s) disabled and '
+                    . $tokenCount
+                    . ' login token(s) deleted successfully.',
+            ];
+        });
+
     }
 
     public function getReports(array $filters = []): array
