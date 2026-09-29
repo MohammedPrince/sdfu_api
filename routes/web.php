@@ -85,9 +85,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/manage', [MainController::class, 'updateApplication'])
                 ->name('manage.update');
 
-            Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])
-                ->name('manage.majors');
-
         });
 
 
@@ -220,6 +217,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         });
 
+        /*
+        |--------------------------------------------------------------------------
+        | JS For Faculty, Major and Batch
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/manage/majors/{faculty_code}', [MainController::class, 'getMajors'])->name('manage.majors');
 
         /*
         |--------------------------------------------------------------------------
