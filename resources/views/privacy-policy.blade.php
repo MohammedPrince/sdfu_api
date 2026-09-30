@@ -7,6 +7,7 @@
 @section('title', 'Privacy Policy | The Future University')
 
 @section('content')
+
     <div class="privacy-container">
 
         <article class="privacy-card" style="background-color: #ffffff; ">

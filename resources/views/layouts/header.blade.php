@@ -1,11 +1,11 @@
-<header>
+<header class="site-header">
 
     <div class="brand">
-
-        <img src="{{ asset('images/logo.png') }}" alt="Future University" class="brand-logo">
+        <img src="{{ asset('images/logo.png') }}"
+             alt="Future University"
+             class="brand-logo">
 
         <div class="brand-text">
-
             <div class="brand-title">
                 The Future University
             </div>
@@ -13,14 +13,18 @@
             <div class="brand-subtitle">
                 Student Desk Application
             </div>
-
         </div>
-
     </div>
 
     {{-- Mobile menu button --}}
-    <button type="button" class="mobile-menu-button" id="mobileMenuButton" aria-label="Toggle navigation"
-        aria-expanded="false">
+    <button
+        type="button"
+        class="mobile-menu-button"
+        id="mobileMenuButton"
+        aria-label="Toggle navigation"
+        aria-expanded="false"
+        aria-controls="headerNav"
+    >
         <span></span>
         <span></span>
         <span></span>
@@ -28,15 +32,18 @@
 
     <nav class="header-nav" id="headerNav">
 
-        <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
+        <a href="{{ url('/') }}"
+           class="nav-link {{ request()->is('/') ? 'active' : '' }}">
             Home
         </a>
 
-        <a href="{{ url('/#services') }}" class="nav-link">
+        <a href="{{ url('/#services') }}"
+           class="nav-link">
             Application Services
         </a>
 
-        <a href="{{ url('/privacy-policy') }}" class="nav-link {{ request()->is('privacy-policy*') ? 'active' : '' }}">
+        <a href="{{ url('/privacy-policy') }}"
+           class="nav-link {{ request()->is('privacy-policy*') ? 'active' : '' }}">
             Privacy & Policy
         </a>
 
@@ -45,76 +52,75 @@
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
-        const button = document.getElementById('mobileMenuButton');
-        const nav = document.getElementById('headerNav');
+    const button = document.getElementById('mobileMenuButton');
+    const nav = document.getElementById('headerNav');
 
-        if (!button || !nav) {
-            return;
-        }
+    if (!button || !nav) {
+        return;
+    }
 
-        button.addEventListener('click', function() {
+    /*
+    |--------------------------------------------------------------------------
+    | Toggle mobile menu
+    |--------------------------------------------------------------------------
+    */
+    button.addEventListener('click', function (event) {
 
-            const isOpen = nav.classList.toggle('open');
+        event.stopPropagation();
+
+        const isOpen = nav.classList.toggle('open');
+
+        button.setAttribute(
+            'aria-expanded',
+            isOpen ? 'true' : 'false'
+        );
+
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Close menu after clicking a navigation link
+    |--------------------------------------------------------------------------
+    */
+    nav.querySelectorAll('.nav-link').forEach(function (link) {
+
+        link.addEventListener('click', function () {
+
+            nav.classList.remove('open');
 
             button.setAttribute(
                 'aria-expanded',
-                isOpen ? 'true' : 'false'
+                'false'
             );
 
         });
 
+    });
 
-        /*
-        |--------------------------------------------------------------------------
-        | Close menu when clicking a link
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Close menu when clicking outside
+    |--------------------------------------------------------------------------
+    */
+    document.addEventListener('click', function (event) {
 
-        nav.querySelectorAll('.nav-link').forEach(function(link) {
+        if (
+            !nav.contains(event.target) &&
+            !button.contains(event.target)
+        ) {
 
-            link.addEventListener('click', function() {
+            nav.classList.remove('open');
 
-                nav.classList.remove('open');
+            button.setAttribute(
+                'aria-expanded',
+                'false'
+            );
 
-                button.setAttribute(
-                    'aria-expanded',
-                    'false'
-                );
-
-            });
-
-        });
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Close menu when clicking outside
-        |--------------------------------------------------------------------------
-        */
-
-        document.addEventListener('click', function(event) {
-
-            if (
-                !headerNavContains(event.target, nav) &&
-                event.target !== button &&
-                !button.contains(event.target)
-            ) {
-                nav.classList.remove('open');
-
-                button.setAttribute(
-                    'aria-expanded',
-                    'false'
-                );
-            }
-
-        });
-
-
-        function headerNavContains(target, element) {
-            return element.contains(target);
         }
 
     });
+
+});
 </script>

@@ -566,7 +566,6 @@ class AdminRepository
         });
 
     }
-
     public function getReports(array $filters = []): array
     {
         /*

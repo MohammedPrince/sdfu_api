@@ -17,6 +17,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+
         $credentials = $request->validate([
             'username' => [
                 'required',
@@ -122,11 +123,9 @@ class AuthController extends Controller
         | Invalid username / password
         |--------------------------------------------------------------------------
         */
-        return back()
-            ->withInput($request->only('username'))
-            ->withErrors([
-                'username' => 'The username or password is incorrect.',
-            ]);
+        return back()->withInput($request->only('username'))->withErrors([
+            'username' => 'The username or password is incorrect.',
+        ]);
     }
 
     public function logout(Request $request)
