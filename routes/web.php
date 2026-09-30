@@ -38,6 +38,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('admin')->group(function () {
 
+
+        Route::middleware('admin.permissions')->group(function () {
+
+            Route::get('/users', [AdminPermissionController::class, 'manageUser'])
+                ->name('users');
+
+            Route::post('/users', [AdminPermissionController::class, 'storeUser'])
+                ->name('users.store');
+
+            Route::put('/users/{userId}', [AdminPermissionController::class, 'updateUser'])
+                ->name('users.update');
+
+            Route::delete('/users/{userId}', [AdminPermissionController::class, 'deleteUser'])
+                ->name('users.destroy');
+
+        });
+
         /*
         |--------------------------------------------------------------------------
         | User Permissions

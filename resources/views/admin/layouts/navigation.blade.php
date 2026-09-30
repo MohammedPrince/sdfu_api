@@ -84,8 +84,8 @@
                 ADMINISTRATION
             </div>
 
-            <a href="{{ route('admin.permissions') }}"
-                class="admin-nav-item {{ request()->is('admin/permissions*') ? 'active' : '' }}">
+            <a href="{{ route('admin.users') }}"
+                class="admin-nav-item {{ request()->is('admin/users*') ? 'active' : '' }}">
 
                 <span class="admin-nav-icon">
 
@@ -99,6 +99,40 @@
                         <path d="M16 11H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
 
                         <path d="M18.5 8.5V13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+                    </svg>
+
+                </span>
+
+                <span class="admin-nav-text">
+                    Manage Users
+                </span>
+
+            </a>
+
+            <a href="{{ route('admin.permissions') }}"
+                class="admin-nav-item {{ request()->is('admin/permissions*') ? 'active' : '' }}">
+
+                <span class="admin-nav-icon">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+
+                        <!-- Shield -->
+                        <path d="M12 3
+             L20 6
+             V11
+             C20 16.2 16.8 19.6 12 21
+             C7.2 19.6 4 16.2 4 11
+             V6
+             Z">
+                        </path>
+
+                        <!-- Check -->
+                        <path d="M8.5 12
+             L10.8 14.3
+             L15.8 9.3">
+                        </path>
 
                     </svg>
 
