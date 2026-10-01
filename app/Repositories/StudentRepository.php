@@ -1050,6 +1050,11 @@ class StudentRepository
             'courses' => $courses,
         ];
 
+        if ($semesterResult['status'] === 'Incomplete') {
+            $semesterResult['gpa'] = '0.00';
+            $semesterResult['cgpa'] = '0.00';
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Response
