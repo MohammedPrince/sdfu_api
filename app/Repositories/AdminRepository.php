@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Helpers\Helper;
+use App\Models\AppVersion;
 use App\Models\Notification;
 use App\Models\SystemSetting;
 use App\Models\User;
@@ -12,11 +13,12 @@ use App\Services\ExternalDatabaseService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use Illuminate\Support\Facades\DB;
+use function CuyZ\Valinor\Compiler\return_;
 
 class AdminRepository
 {
@@ -85,6 +87,48 @@ class AdminRepository
         return User::where('role_id', Helper::STUDENT_ROLE)->count();
     }
 
+    public function getAppVersions()
+    {
+        return AppVersion::query()
+            ->orderByRaw("
+            CASE platform
+                WHEN 'ios' THEN 1
+                WHEN 'android' THEN 2
+                ELSE 3
+            END
+        ")->get();
+    }
+
+    public function storeAppVersion(array $data)
+    {
+        $appVersion = AppVersion::updateOrCreate(
+            [
+                'platform' => strtolower($data['platform']),
+            ],
+            [
+                'minimum_version' => $data['minimum_version'],
+                'app_url' => $data['app_url'],
+                'force_update' => $data['force_update'],
+                'created_by' => auth()->id(),
+            ]
+        );
+
+        return $appVersion;
+    }
+
+    public function deleteAppVersion(int $id)
+    {
+        $appVersion = AppVersion::findOrFail($id);
+
+        $platform = strtoupper($appVersion->platform);
+
+        $appVersion->delete();
+
+        return [
+            'success' => true,
+            'platform' => $platform,
+        ];
+    }
     public function getSavedSettings()
     {
 

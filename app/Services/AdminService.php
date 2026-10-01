@@ -64,6 +64,21 @@ class AdminService
         return $this->adminRepository->getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid);
     }
 
+    public function getAppVersions()
+    {
+        return $this->adminRepository->getAppVersions();
+    }
+
+    function storeAppVersion(array $data)
+    {
+        return $this->adminRepository->storeAppVersion($data);
+    }
+
+    public function deleteAppVersion(int $id)
+    {
+        return $this->adminRepository->deleteAppVersion($id);
+    }
+  
     public function getSavedSettings()
     {
         return $this->adminRepository->getSavedSettings();
@@ -137,7 +152,7 @@ class AdminService
 
     public function forceLogoutAll()
     {
-       return $this->adminRepository->forceLogoutAll();  
+        return $this->adminRepository->forceLogoutAll();
     }
 
     //Studnets End

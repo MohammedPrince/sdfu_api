@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Helpers\Helper;
+use App\Models\AppVersion;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\UserDevice;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\PersonalAccessToken;
+
 use function CuyZ\Valinor\Compiler\return_;
 
 class StudentRepository
@@ -374,6 +376,16 @@ class StudentRepository
 
         /*
         |--------------------------------------------------------------------------
+        | Header data
+        |--------------------------------------------------------------------------
+        */
+
+        $platform = strtolower(trim((string) request()->header('X-Platform', '')));
+        $currentAppVersion = trim((string) request()->header('X-App-Version', ''));
+        $appVersion = null;
+
+        /*
+        |--------------------------------------------------------------------------
         | Student information
         |--------------------------------------------------------------------------
         */
@@ -694,13 +706,8 @@ class StudentRepository
 
             $timetable = null;
 
-            //$timetableActive = false;
-
         }
-        // else {
 
-        //     $timetableActive = true;
-        // }
 
         /*
         |--------------------------------------------------------------------------
@@ -739,6 +746,46 @@ class StudentRepository
                     ->exists();
             }
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application Version
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            in_array($platform, ['ios', 'android'], true) &&
+            $currentAppVersion !== ''
+        ) {
+
+            $versionConfig = AppVersion::query()
+                ->where('platform', $platform)
+                ->first();
+
+            if ($versionConfig) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Force Update
+                |--------------------------------------------------------------------------
+                |
+                | Force update only applies when the installed application
+                | version is lower than the configured minimum version.
+                |
+                */
+
+                $forceUpdate = version_compare($currentAppVersion, $versionConfig->minimum_version, '<') && (bool) $versionConfig->force_update;
+
+                $appVersion = [
+                    'platform' => $versionConfig->platform,
+                    'minimum_version' => $versionConfig->minimum_version,
+                    'app_url' => $versionConfig->app_url,
+                    'force_update' => $forceUpdate,
+                    'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
+
+                ];
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -795,6 +842,8 @@ class StudentRepository
             'timetable' => $timetable,
 
             'appStatus' => $appStatus,
+
+            'appVersion' => $appVersion
         ];
     }
 

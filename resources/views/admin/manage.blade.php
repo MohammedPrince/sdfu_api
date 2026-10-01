@@ -28,12 +28,299 @@
             </div>
         @endif
 
+        {{-- ========================================================= --}}
+        {{-- APP VERSIONS --}}
+        {{-- ========================================================= --}}
+
+        <div class="notification-grid">
+
+            <div class="admin-card">
+
+                <div class="admin-card-header">
+
+                    <div>
+
+                        <h3>App Versions</h3>
+
+                        <p>
+                            Configure minimum supported versions and update links
+                            for Android and iOS applications.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form method="POST" action="{{ route('admin.manage.app-version.store') }}">
+
+                    @csrf
+
+                    <div class="settings-section">
+
+                        <h4>Version Configuration</h4>
+
+
+                        <div class="form-grid">
+
+                            {{-- Platform --}}
+                            <div class="form-group">
+
+                                <label for="version_platform">
+                                    Platform
+                                </label>
+
+                                <select name="platform" id="version_platform" class="form-control" required>
+
+                                    <option value="">
+                                        Select Platform
+                                    </option>
+
+                                    <option value="ios" {{ old('platform') === 'ios' ? 'selected' : '' }}>
+                                        iOS
+                                    </option>
+
+                                    <option value="android" {{ old('platform') === 'android' ? 'selected' : '' }}>
+                                        Android
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            {{-- Minimum Version --}}
+                            <div class="form-group">
+
+                                <label for="minimum_version">
+                                    Minimum Version
+                                </label>
+
+                                <input type="text" name="minimum_version" id="minimum_version" class="form-control"
+                                    placeholder="e.g. 1.6.2" value="{{ old('minimum_version') }}" required>
+
+                            </div>
+
+
+                            {{-- App URL --}}
+                            <div class="form-group" style="grid-column: 1 / -1;">
+
+                                <label for="app_url">
+                                    App URL
+                                </label>
+
+                                <input type="url" name="app_url" id="app_url" class="form-control"
+                                    placeholder="https://apps.apple.com/..." value="{{ old('app_url') }}" required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Force Update --}}
+                    <div class="settings-section">
+
+                        <h4>Update Policy</h4>
+
+                        <div class="status-list">
+
+                            <div class="status-item">
+
+                                <div class="status-info">
+
+                                    <strong>
+                                        Force Update
+                                    </strong>
+
+                                    <span>
+                                        Prevent students from continuing until
+                                        they update to the required version.
+                                    </span>
+
+                                </div>
+
+                                <label class="switch">
+
+                                    <input type="hidden" name="force_update" value="0">
+
+                                    <input type="checkbox" name="force_update" value="1"
+                                        {{ old('force_update', 0) ? 'checked' : '' }}>
+
+                                    <span class="slider"></span>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button type="submit" class="btn-primary">
+                            Save App Version
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            {{-- Existing Versions --}}
+            <div class="admin-card">
+
+                <div class="admin-card-header">
+
+                    <div>
+
+                        <h3>Configured Versions</h3>
+
+                        <p>
+                            Current minimum versions for each mobile platform.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                @if ($appVersions->isEmpty())
+
+                    <div class="empty-state">
+
+                        <p>
+                            No application versions have been configured.
+                        </p>
+
+                    </div>
+                @else
+                    <div class="table-responsive">
+
+                        <table class="settings-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Platform
+                                    </th>
+
+                                    <th>
+                                        Minimum Version
+                                    </th>
+
+                                    <th>
+                                        Force Update
+                                    </th>
+
+                                    <th>
+                                        URL
+                                    </th>
+
+                                    <th>
+                                        Action
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                @foreach ($appVersions as $version)
+                                    <tr>
+
+                                        <td>
+
+                                            <strong>
+                                                {{ strtoupper($version->platform) }}
+                                            </strong>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            <span class="status-badge active">
+                                                {{ $version->minimum_version }}
+                                            </span>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            @if ($version->force_update)
+                                                <span class="status-badge active">
+                                                    Required
+                                                </span>
+                                            @else
+                                                <span class="status-badge inactive">
+                                                    Optional
+                                                </span>
+                                            @endif
+
+                                        </td>
+
+
+                                        <td>
+
+                                            <a href="{{ $version->app_url }}" target="_blank" rel="noopener">
+                                                <button class="btn-primary btn-sm">Open Store</button>
+                                            </a>
+
+                                        </td>
+
+
+                                        <td class="actions-cell">
+
+                                            <form method="POST"
+                                                action="{{ route('admin.manage.app-version.delete', $version->id) }}"
+                                                onsubmit="return confirm(
+                                            'Delete this app version configuration?'
+                                        );">
+
+                                                @csrf
+
+                                                @method('DELETE')
+
+                                                <button type="submit" class="btn-danger btn-sm">
+                                                    Delete
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+                                @endforeach
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        </div>
+
 
         {{-- ========================================================= --}}
         {{-- SETTINGS + SAVED SETTINGS --}}
         {{-- ========================================================= --}}
 
-        <div class="manage-settings-grid">
+        <div class="admin-card-grid" style="padding-top: 24px;">
 
             {{-- ===================================================== --}}
             {{-- LEFT: MANAGE APPLICATION SETTINGS --}}
@@ -435,7 +722,7 @@
 
                                             <a href="{{ route('admin.manage', ['edit' => $setting['id']]) }}"
                                                 class="btn-edit btn-sm">
-                                               <button class="btn-primary btn-view-timetable">Edit</button> 
+                                                <button class="btn-primary btn-view-timetable">Edit</button>
                                             </a>
 
                                         </td>

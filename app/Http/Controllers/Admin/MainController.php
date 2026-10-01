@@ -7,10 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\AdminService;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
 
 
 class MainController extends Controller
@@ -101,6 +102,7 @@ class MainController extends Controller
             'recentNotifications'
         ));
     }
+
     public function manageApplication(Request $request)
     {
 
@@ -109,6 +111,7 @@ class MainController extends Controller
         $majors = $this->adminService->getMajors();
         $batches = $this->adminService->getBatches();
         $savedSettings = $this->adminService->getSavedSettings();
+        $appVersions = $this->adminService->getAppVersions();
 
         $editSetting = null;
 
@@ -125,9 +128,67 @@ class MainController extends Controller
             'batches',
             'settings',
             'savedSettings',
-            'editSetting'
+            'editSetting',
+            'appVersions'
         ));
     }
+
+    public function storeAppVersion(Request $request)
+    {
+        $validated = $request->validate([
+            'platform' => [
+                'required',
+                'string',
+                Rule::in(['ios', 'android']),
+            ],
+
+            'minimum_version' => [
+                'required',
+                'string',
+                'max:30',
+                'regex:/^\d+(\.\d+){0,3}$/',
+            ],
+
+            'app_url' => [
+                'required',
+                'url',
+                'max:2048',
+            ],
+
+            'force_update' => [
+                'nullable',
+                'boolean',
+            ],
+        ]);
+
+
+        $validated['created_by'] = auth()->id();
+
+        $storeAppVersion = $this->adminService->storeAppVersion($validated);
+        if (!$storeAppVersion) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to add app version.');
+        }
+
+        return redirect()
+            ->route('admin.manage')
+            ->with('success', 'App version added successfully.');
+    }
+
+    public function deleteAppVersion(int $id)
+    {
+        $result = $this->adminService->deleteAppVersion($id);
+
+        return redirect()
+            ->route('admin.manage')
+            ->with(
+                'success',
+                $result['platform'] . ' app version deleted successfully.'
+            );
+    }
+
     public function updateApplication(Request $request)
     {
         $validated = $request->validate([
@@ -204,6 +265,7 @@ class MainController extends Controller
                 'Application settings saved successfully.'
             );
     }
+
     public function getMajors(string $faculty_code)
     {
         $majors = $this->adminService->getMajorsByFaculty($faculty_code);

@@ -68,6 +68,7 @@ class MainController extends Controller
                 'feeDetails' => $result['feeDetails'],
                 'timetable' => $result['timetable'],
                 'appStatus' => $result['appStatus'],
+                'appVersion' => $result['appVersion'],
             ],
         ]);
     }

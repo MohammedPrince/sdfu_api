@@ -96,6 +96,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::middleware('menu:manage_application')->group(function () {
 
+            Route::post(
+                '/manage/app-version',
+                [MainController::class, 'storeAppVersion']
+            )->name('manage.app-version.store');
+
+
+            Route::delete(
+                '/manage/app-version/{id}',
+                [MainController::class, 'deleteAppVersion']
+            )->name('manage.app-version.delete');
+
             Route::get('/manage', [MainController::class, 'manageApplication'])
                 ->name('manage');
 
