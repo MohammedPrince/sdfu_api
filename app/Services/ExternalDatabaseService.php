@@ -143,13 +143,13 @@ class ExternalDatabaseService
         $semester
     ): array {
 
-        $specialMajors = [7, 8, 26, 28, 29, 30];
+        // $specialMajors = [7, 8, 26, 28, 29, 30];
 
-        if (($semester == 10 && !in_array($majorCode, $specialMajors)) || ($semester == 6 && in_array($majorCode, $specialMajors))) {
-            // Keep semester as it is.
-        } else {
-            $semester = $semester - 1;
-        }
+        // if (($semester == 10 && !in_array($majorCode, $specialMajors)) || ($semester == 6 && in_array($majorCode, $specialMajors))) {
+        //     // Keep semester as it is.
+        // } else {
+        //     $semester = $semester - 1;
+        // }
 
         $db = DB::connection('mysql_sis');
 
