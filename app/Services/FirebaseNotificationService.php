@@ -336,6 +336,8 @@ class FirebaseNotificationService
                 'message' => $e->getMessage(),
             ]);
 
+            //dd('FCM test failed: ' . $e->getMessage());
+
             return false;
         }
     }

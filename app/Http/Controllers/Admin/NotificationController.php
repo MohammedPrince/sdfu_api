@@ -148,7 +148,6 @@ class NotificationController extends Controller
 
         ]);
 
-
         $sent = $this->firebaseNotificationService->sendToStudentIndex(
 
             studentIndex: $validated['student_index'],
@@ -184,7 +183,7 @@ class NotificationController extends Controller
 
     public function testFirebase()
     {
-        $token = 'ciq7hF0MTHywke-_TCK_Nw:APA91bHzyhqEA2BvDIfjRotSmDMUpgi9YLXGFjvdiBTFw89hbpDZ94fvcPywEyK3peFXzImCnmSoFyO2OzmneY3BL1tcFmh1uafASUQ0Qw_fVd05qG7VfhE';
+        $token = '';
 
         $sent = $this->firebaseNotificationService->sendTestToken(
             $token,
