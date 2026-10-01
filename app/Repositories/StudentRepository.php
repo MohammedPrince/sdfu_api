@@ -1264,12 +1264,26 @@ class StudentRepository
         if (
             !$user->id ||
             !$user->stud_index ||
-            (int) $user->role_id !== Helper::STUDENT_ROLE || $user->role_id = false
+            (int) $user->role_id !== Helper::STUDENT_ROLE
         ) {
             return [
                 'success' => false,
                 'code' => 404,
                 'message' => 'Student account not found',
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Make sure account is active
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->is_active) {
+            return [
+                'success' => false,
+                'code' => 403,
+                'message' => 'Account has been deleted',
             ];
         }
 
@@ -1350,11 +1364,15 @@ class StudentRepository
 
         /*
         |--------------------------------------------------------------------------
-        | Update LOCAL SDFU password
+        | Update LOCAL SDFU password ONLY
         |--------------------------------------------------------------------------
         */
 
         $user->password = Hash::make($newPassword);
+
+        // Explicitly preserve the student role.
+        $user->role_id = Helper::STUDENT_ROLE;
+
         $user->save();
 
         /*
