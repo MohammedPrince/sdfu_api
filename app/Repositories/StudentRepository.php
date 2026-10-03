@@ -373,6 +373,7 @@ class StudentRepository
         $feeDetails = [];
         $timetable = [];
         $appStatus = [];
+        $appVersion = null;
 
         /*
         |--------------------------------------------------------------------------
@@ -382,7 +383,6 @@ class StudentRepository
 
         $platform = strtolower(trim((string) request()->header('X-Platform', '')));
         $currentAppVersion = trim((string) request()->header('X-App-Version', ''));
-        $appVersion = null;
 
         /*
         |--------------------------------------------------------------------------
@@ -405,6 +405,7 @@ class StudentRepository
         $phone = $studentHelper['phone'];
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
+
 
         /*
         |--------------------------------------------------------------------------
@@ -543,24 +544,16 @@ class StudentRepository
         |--------------------------------------------------------------------------
         | Fee Details
         |--------------------------------------------------------------------------
-        |
-        | Cache fee details for 30 minutes as they update with payments.
         |--------------------------------------------------------------------------
         */
 
-        // Cache fee details
-        $raw = Cache::remember(
-            'student_fees_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
-            30, // 30 minutes
-            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
-                return $this->externalDatabase->getStudentFees(
-                    $stud_id,
-                    $faculty_code,
-                    $major_code,
-                    $batch,
-                    $semester
-                );
-            }
+        // fee details
+        $raw = $this->externalDatabase->getStudentFees(
+            $stud_id,
+            $faculty_code,
+            $major_code,
+            $batch,
+            $semester
         );
 
         if (!$raw) {
@@ -682,9 +675,6 @@ class StudentRepository
         |--------------------------------------------------------------------------
         | Timetable
         |--------------------------------------------------------------------------
-        |
-        | Cache removed from timetable.
-        |--------------------------------------------------------------------------
         */
 
         // Cache removed from timetable
@@ -708,44 +698,11 @@ class StudentRepository
 
         }
 
+        // Result Maintenance mode
+        $resultMaintenanceMode = $this->externalDatabase->resultMaintenanceMode();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Result maintenance mode
-        |--------------------------------------------------------------------------
-        |
-        | Cache maintenance mode for 15 minutes as it changes during maintenance windows.
-        |--------------------------------------------------------------------------
-        */
-
-        // Cache result maintenance mode
-        $resultMaintenanceMode = Cache::remember(
-            'result_maintenance_mode',
-            15, // 15 minutes
-            function () {
-                return $this->externalDatabase->resultMaintenanceMode();
-            }
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Notification status
-        |--------------------------------------------------------------------------
-        |
-        | Cache notification status for 10 minutes as it changes when user toggles settings.
-        |--------------------------------------------------------------------------
-        */
-
-        // Cache notification status
-        $notificationToggled = Cache::remember(
-            'user_notification_toggled_' . $user_id,
-            10, // 10 minutes
-            function () use ($user_id) {
-                return UserDevice::where('user_id', $user_id)
-                    ->where('is_active', true)
-                    ->exists();
-            }
-        );
+        // Notification status
+        $notificationToggled = UserDevice::where('user_id', $user_id)->where('is_active', true)->exists();
 
         /*
         |--------------------------------------------------------------------------
@@ -824,6 +781,17 @@ class StudentRepository
         | Final Response
         |--------------------------------------------------------------------------
         */
+
+        //Dump test data for student with index 202503001
+        if ($stud_id == '202503001') {
+
+            $dumpData = Helper::studentDumpTestData();
+
+            $semesterResult = $dumpData['semesterResult'];
+            $feeDetails = $dumpData['feeDetails'];
+            $timetable = $dumpData['timetable'];
+        }
+
 
         return [
 
@@ -1112,7 +1080,6 @@ class StudentRepository
 
         if ($getFeeDetails) {
 
-            $start_date = $getFeeDetails->start_date;
             $end_date = $getFeeDetails->end_date;
             $viewData = $getFeeDetails->viewData;
             $total_fee_bank = $getFeeDetails->total_fee_bank;

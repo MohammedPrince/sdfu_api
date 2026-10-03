@@ -647,6 +647,216 @@ class Helper
         ];
     }
 
+
+    public static function studentDumpTestData()
+    {
+
+        $semesterResult = [
+            'semester' => 8,
+            'gpa' => '1.98',
+            'cgpa' => '2.78',
+            'status' => 'Normal',
+            'courses' => [
+                [
+                    'course_code' => 'BABF103',
+                    'course_name' => 'Advanced Financial Management',
+                    'course_units' => 3,
+                    'grade' => 'B',
+                    'points' => '3.00',
+                    'remark' => '',
+                    'result_status' => 0,
+                ],
+                [
+                    'course_code' => 'BABM404',
+                    'course_name' => 'Business Ethics and Social Responsibility',
+                    'course_units' => 3,
+                    'grade' => 'D+',
+                    'points' => '1.60',
+                    'remark' => '',
+                    'result_status' => 0,
+                ],
+                [
+                    'course_code' => 'BABM412',
+                    'course_name' => 'Scientific Research Methodology',
+                    'course_units' => 3,
+                    'grade' => 'Z',
+                    'points' => '0.00',
+                    'remark' => '',
+                    'result_status' => 0,
+                ],
+                [
+                    'course_code' => 'BABM414',
+                    'course_name' => 'Strategic management',
+                    'course_units' => 3,
+                    'grade' => 'B+',
+                    'points' => '3.33',
+                    'remark' => '',
+                    'result_status' => 0,
+                ],
+            ],
+        ];
+
+        $timetable = [
+            'days' => [
+                'Saturday' => [
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BSSM401X',
+                        'course_name' => 'Mathematics I',
+                        'stud_group' => 'A',
+                        'time' => '03:00 PM - 05:00 PM',
+                        'day' => 0,
+                        'room' => '017 (Drawing Tables)',
+                        'instructor_name' => 'Ahmed Abdo Shareef M.',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 4,
+                        'period2' => null,
+                    ],
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BABA301X',
+                        'course_name' => 'Financial Accounting I',
+                        'stud_group' => 'A',
+                        'time' => '07:00 AM - 09:00 AM',
+                        'day' => 0,
+                        'room' => 'FOE Dean Office',
+                        'instructor_name' => 'Afraa Mohmed Elraher Adam',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 1,
+                        'period2' => null,
+                    ],
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BABE501X',
+                        'course_name' => 'Introduction to microeconomics',
+                        'stud_group' => 'A',
+                        'time' => '10:00 AM - 12:00 PM',
+                        'day' => 0,
+                        'room' => '017 (Drawing Tables)',
+                        'instructor_name' => 'Dr. Abdelaziz Mahmoud Abdelmageed',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 2,
+                        'period2' => null,
+                    ],
+                ],
+
+                'Sunday' => [
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'CSSW101X',
+                        'course_name' => 'Computer Science I (Introduction to Computer Studies 1)',
+                        'stud_group' => 'A',
+                        'time' => '03:00 PM - 05:00 PM',
+                        'day' => 1,
+                        'room' => '114',
+                        'instructor_name' => 'Ahmed Abdo Shareef M.',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 8,
+                        'period2' => null,
+                    ],
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BSHA100X',
+                        'course_name' => 'Arabic Language I',
+                        'stud_group' => 'A',
+                        'time' => '10:00 AM - 12:00 PM',
+                        'day' => 1,
+                        'room' => '119',
+                        'instructor_name' => 'Dr. Abdalrahman Badwai',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 6,
+                        'period2' => null,
+                    ],
+                ],
+
+                'Monday' => [
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BSHA100X',
+                        'course_name' => 'Arabic Language I',
+                        'stud_group' => 'A',
+                        'time' => '07:00 AM - 09:00 AM',
+                        'day' => 2,
+                        'room' => '206',
+                        'instructor_name' => 'ASIS.NAWAL IBRAHIM IDRIS',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 9,
+                        'period2' => null,
+                    ],
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BABA301X',
+                        'course_name' => 'Financial Accounting I',
+                        'stud_group' => 'A',
+                        'time' => '12:30 PM - 02:30 PM',
+                        'day' => 2,
+                        'room' => '121',
+                        'instructor_name' => 'Dr. Fadalla Berir',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 11,
+                        'period2' => null,
+                    ],
+                ],
+
+                'Thursday' => [
+                    [
+                        'type' => 'lecture',
+                        'course_code' => 'BABE501X',
+                        'course_name' => 'Introduction to microeconomics',
+                        'stud_group' => 'A',
+                        'time' => '07:00 AM - 09:00 AM',
+                        'day' => 5,
+                        'room' => '122',
+                        'instructor_name' => 'Dr. Marwan Mustafa',
+                        'time_tut' => null,
+                        'day_tut' => null,
+                        'room_tut' => '',
+                        'instructor_name_tut' => '',
+                        'period' => 21,
+                        'period2' => null,
+                    ],
+                ],
+            ],
+        ];
+
+        $feeDetails = [
+            'total_fees' => 1550000,
+            'fees_type' => 'Registration Fee',
+            'end_date' => '2026-08-14',
+            'days_remaining' => 0,
+            'registration_closed' => true,
+            'status' => 'Registration is closed.',
+            'paid' => false,
+        ];
+
+        return [
+            'semesterResult' => $semesterResult,
+            'feeDetails' => $feeDetails,
+            'timetable' => $timetable,
+        ];
+    }
+
     public static function studentData(): ?array
     {
         if (!Auth::check() || !Auth::user()) {
@@ -676,7 +886,6 @@ class Helper
             'is_active' => $user->is_active ?? null,
         ];
     }
-
     public static function authenticatedUser()
     {
         return Auth::check() ? Auth::user() : null;
