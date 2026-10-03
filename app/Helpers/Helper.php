@@ -847,7 +847,7 @@ class Helper
             'days_remaining' => 0,
             'registration_closed' => true,
             'status' => 'Registration is closed.',
-            'paid' => false,
+            'paid' => true,
         ];
 
         return [
