@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\AppVersion;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\UserDevice;
@@ -857,7 +858,7 @@ class Helper
         ];
     }
 
-    public static function buildTestResponse($dumpData, $studentHelper, ExternalDatabaseService $externalDatabase)
+    public static function buildTestResponse($dumpData, $studentHelper, ExternalDatabaseService $externalDatabase, $platform, $currentAppVersion)
     {
 
         $studentData = [
@@ -874,25 +875,45 @@ class Helper
             'gender' => $studentHelper['gender'] ?? null,
         ];
 
-        return [
-            'success' => true,
-            'code' => 200,
-            'message' => 'Main Data Retrieved Successfully',
-            'studentDetails' => $studentData,
-            'semesterResult' => $dumpData['semesterResult'],
-            'feeDetails' => $dumpData['feeDetails'],
-            'timetable' => $dumpData['timetable'],
-            'appStatus' => [
-                'active' => true,
-                'tabs_status' => [
-                    'fee' => true,
-                    'result' => true,
-                    'timetable' => true,
+        if (in_array($platform, ['ios', 'android'], true) && $currentAppVersion !== '') {
+
+            $versionConfig = AppVersion::query()->where('platform', $platform)->first();
+
+            if ($versionConfig) {
+
+
+                $forceUpdate = version_compare($currentAppVersion, $versionConfig->minimum_version, '<') && (bool) $versionConfig->force_update;
+
+                $appVersion = [
+                    'platform' => $versionConfig->platform,
+                    'minimum_version' => $versionConfig->minimum_version,
+                    'app_url' => $versionConfig->app_url,
+                    'force_update' => $forceUpdate,
+                    'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
+
+                ];
+            }
+
+            return [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Main Data Retrieved Successfully',
+                'studentDetails' => $studentData,
+                'semesterResult' => $dumpData['semesterResult'],
+                'feeDetails' => $dumpData['feeDetails'],
+                'timetable' => $dumpData['timetable'],
+                'appStatus' => [
+                    'active' => true,
+                    'tabs_status' => [
+                        'fee' => true,
+                        'result' => true,
+                        'timetable' => true,
+                    ],
+                    'notificationToggled' => UserDevice::where('user_id', $studentHelper['id'])->where('is_active', true)->exists(),
                 ],
-                'notificationToggled' => UserDevice::where('user_id', $studentHelper['id'])->where('is_active', true)->exists(),
-            ],
-            'appVersion' => null
-        ];
+                'appVersion' => $appVersion
+            ];
+        }
     }
 
     public static function studentData(): ?array

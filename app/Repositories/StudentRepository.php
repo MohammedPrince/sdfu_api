@@ -365,21 +365,6 @@ class StudentRepository
 
         /*
         |--------------------------------------------------------------------------
-        | Test Data Override (Early Check to Avoid Unnecessary Processing)
-        |--------------------------------------------------------------------------
-        */
-
-        $studentHelper = Helper::studentData();
-        $stud_id = $studentHelper['stud_id'];
-
-        // Check for test student early to avoid unnecessary processing
-        if ($stud_id == '202503001') {
-            $dumpData = Helper::studentDumpTestData();
-            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
         | Initialize data
         |--------------------------------------------------------------------------
         */
@@ -399,6 +384,7 @@ class StudentRepository
 
         $platform = strtolower(trim((string) request()->header('X-Platform', '')));
         $currentAppVersion = trim((string) request()->header('X-App-Version', ''));
+
 
         /*
         |--------------------------------------------------------------------------
@@ -421,6 +407,19 @@ class StudentRepository
         $phone = $studentHelper['phone'];
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Test Data Override (Early Check to Avoid Unnecessary Processing)
+        |--------------------------------------------------------------------------
+        */
+
+        // Check for test student early to avoid unnecessary processing
+        if ($stud_id == '202503001') {
+            $dumpData = Helper::studentDumpTestData();
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase,$platform,$currentAppVersion);
+        }
 
 
         /*
@@ -765,6 +764,9 @@ class StudentRepository
                 ];
             }
         }
+
+
+
 
         /*
         |--------------------------------------------------------------------------
