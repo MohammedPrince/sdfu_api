@@ -859,9 +859,14 @@ class Helper
         ];
     }
 
-    public static function buildTestResponse($dumpData, $studentHelper, ExternalDatabaseService $externalDatabase, $platform = null, $currentAppVersion = null, $apiType)
-    {
-
+    public static function buildTestResponse(
+        $dumpData,
+        $studentHelper,
+        ExternalDatabaseService $externalDatabase,
+        $platform = null,
+        $currentAppVersion = null,
+        $apiType
+    ) {
         $appVersion = [];
 
         $studentData = [
@@ -878,34 +883,37 @@ class Helper
             'gender' => $studentHelper['gender'] ?? null,
         ];
 
-        if ($apiType == 'mainData') {
-            if (in_array($platform, ['ios', 'android'], true) && $currentAppVersion !== '') {
+        if ($apiType === 'mainData') {
 
-                $versionConfig = AppVersion::query()->where('platform', $platform)->first();
+            if (
+                in_array($platform, ['ios', 'android'], true) &&
+                $currentAppVersion !== ''
+            ) {
+                $versionConfig = AppVersion::where(
+                    'platform',
+                    $platform
+                )->first();
+
                 if ($versionConfig) {
-                    $forceUpdate = version_compare($currentAppVersion, $versionConfig->minimum_version, '<') && (bool) $versionConfig->force_update;
+                    $forceUpdate = version_compare(
+                        $currentAppVersion,
+                        $versionConfig->minimum_version,
+                        '<'
+                    ) && (bool) $versionConfig->force_update;
+
                     $appVersion = [
                         'platform' => $versionConfig->platform,
                         'minimum_version' => $versionConfig->minimum_version,
                         'app_url' => $versionConfig->app_url,
                         'force_update' => $forceUpdate,
                         'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
-
                     ];
                 }
             }
-        } else {
-
-            $appVersion = [
-                'platform' => $platform,
-                'minimum_version' => '1.0.0',
-                'app_url' => 'https://example.com/app',
-                'force_update' => false,
-                'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
-            ];
         }
 
         return match ($apiType) {
+
             'profile' => [
                 'success' => true,
                 'code' => 200,
@@ -934,30 +942,35 @@ class Helper
                 'semesterResult' => $dumpData['semesterResult'],
             ],
 
-            default => null,
-        };
-
-
-        return [
-            'success' => true,
-            'code' => 200,
-            'message' => 'Main Data Retrieved Successfully',
-            'studentDetails' => $studentData,
-            'semesterResult' => $dumpData['semesterResult'],
-            'feeDetails' => $dumpData['feeDetails'],
-            'timetable' => $dumpData['timetable'],
-            'appStatus' => [
-                'active' => true,
-                'tabs_status' => [
-                    'fee' => true,
-                    'result' => true,
-                    'timetable' => true,
+            'mainData' => [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Main Data Retrieved Successfully',
+                'studentDetails' => $studentData,
+                'semesterResult' => $dumpData['semesterResult'],
+                'feeDetails' => $dumpData['feeDetails'],
+                'timetable' => $dumpData['timetable'],
+                'appStatus' => [
+                    'active' => true,
+                    'tabs_status' => [
+                        'fee' => true,
+                        'result' => true,
+                        'timetable' => true,
+                    ],
+                    'notificationToggled' => UserDevice::where(
+                        'user_id',
+                        $studentHelper['id']
+                    )->where('is_active', true)->exists(),
                 ],
-                'notificationToggled' => UserDevice::where('user_id', $studentHelper['id'])->where('is_active', true)->exists(),
+                'appVersion' => $appVersion,
             ],
-            'appVersion' => $appVersion
-        ];
 
+            default => [
+                'success' => false,
+                'code' => 400,
+                'message' => 'Invalid API type',
+            ],
+        };
     }
 
     public static function getFacultyAndMajorNames(int|string $faculty_code, int|string $major_code, ExternalDatabaseService $externalDatabase): array
