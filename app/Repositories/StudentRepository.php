@@ -346,7 +346,6 @@ class StudentRepository
             'studentDetails' => $LoginDetails,
         ];
     }
-
     public function mainData()
     {
 
@@ -360,6 +359,22 @@ class StudentRepository
 
         if (!$auth['success']) {
             return $auth;
+        }
+
+
+        /*
+  |--------------------------------------------------------------------------
+  | Test Data Override (Early Check to Avoid Unnecessary Processing)
+  |--------------------------------------------------------------------------
+  */
+
+        $studentHelper = Helper::studentData();
+        $stud_id = $studentHelper['stud_id'];
+
+        // Check for test student early to avoid unnecessary processing
+        if ($stud_id == '202503001') {
+            $dumpData = Helper::studentDumpTestData();
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase);
         }
 
         /*
@@ -493,7 +508,7 @@ class StudentRepository
 
         // Cache student results
         $results = Cache::remember(
-            'student_results_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
+            'student_result_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
             360, // 1 hour
             function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
                 return $this->externalDatabase->getStudentResult(
@@ -677,13 +692,19 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        // Cache removed from timetable
-        $timetable = $this->externalDatabase->getStudentTimetable(
-            $stud_id,
-            $faculty_code,
-            $major_code,
-            $batch,
-            $semester
+        // Cache timetable for 15 minutes (adjust based on how frequently it changes)
+        $timetable = Cache::remember(
+            'timetable_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
+            15, // 15 minutes
+            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+                return $this->externalDatabase->getStudentTimetable(
+                    $stud_id,
+                    $faculty_code,
+                    $major_code,
+                    $batch,
+                    $semester
+                );
+            }
         );
 
         /*

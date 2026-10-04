@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Models\Visitor;
 use App\Services\ExternalDatabaseService;
 use Illuminate\Support\Facades\Auth;
@@ -647,7 +648,6 @@ class Helper
         ];
     }
 
-
     public static function studentDumpTestData()
     {
 
@@ -854,6 +854,44 @@ class Helper
             'semesterResult' => $semesterResult,
             'feeDetails' => $feeDetails,
             'timetable' => $timetable,
+        ];
+    }
+
+    public static function buildTestResponse($dumpData, $studentHelper, ExternalDatabaseService $externalDatabase)
+    {
+
+        $studentData = [
+            'stud_id' => $studentHelper['stud_id'],
+            'student_name' => $studentHelper['stud_full_name'],
+            'email' => $studentHelper['email'] ?? null,
+            'phone' => $studentHelper['phone'] ?? null,
+            'faculty_code' => $studentHelper['faculty_code'],
+            'major_code' => $studentHelper['major_code'],
+            'faculty' => $externalDatabase->getFacultyName($studentHelper['faculty_code']),
+            'major' => $externalDatabase->getMajorName($studentHelper['major_code']),
+            'batch' => $studentHelper['batch'],
+            'semester' => (int) $studentHelper['semester'],
+            'gender' => $studentHelper['gender'] ?? null,
+        ];
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Main Data Retrieved Successfully',
+            'studentDetails' => $studentData,
+            'semesterResult' => $dumpData['semesterResult'],
+            'feeDetails' => $dumpData['feeDetails'],
+            'timetable' => $dumpData['timetable'],
+            'appStatus' => [
+                'active' => true,
+                'tabs_status' => [
+                    'fee' => true,
+                    'result' => true,
+                    'timetable' => true,
+                ],
+                'notificationToggled' => UserDevice::where('user_id', $studentHelper['id'])->where('is_active', true)->exists(),
+            ],
+            'appVersion' => null
         ];
     }
 
