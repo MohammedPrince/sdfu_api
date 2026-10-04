@@ -99,6 +99,11 @@ class AdminRepository
         ")->get();
     }
 
+    public function getAppVersion(int $id)
+    {
+        return AppVersion::find($id);
+    }
+
     public function storeAppVersion(array $data)
     {
         $appVersion = AppVersion::updateOrCreate(
@@ -114,6 +119,22 @@ class AdminRepository
         );
 
         return $appVersion;
+    }
+
+    public function updateAppVersion(array $data)
+    {
+        $appVersion = AppVersion::find($data['id']);
+
+        if (!$appVersion) {
+            return false;
+        }
+
+        $appVersion->platform = $data['platform'];
+        $appVersion->minimum_version = $data['minimum_version'];
+        $appVersion->app_url = $data['app_url'];
+        $appVersion->force_update = (bool) ($data['force_update'] ?? false);
+
+        return $appVersion->save();
     }
 
     public function deleteAppVersion(int $id)

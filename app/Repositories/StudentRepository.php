@@ -346,6 +346,7 @@ class StudentRepository
             'studentDetails' => $LoginDetails,
         ];
     }
+
     public function mainData()
     {
 
@@ -363,10 +364,10 @@ class StudentRepository
 
 
         /*
-  |--------------------------------------------------------------------------
-  | Test Data Override (Early Check to Avoid Unnecessary Processing)
-  |--------------------------------------------------------------------------
-  */
+        |--------------------------------------------------------------------------
+        | Test Data Override (Early Check to Avoid Unnecessary Processing)
+        |--------------------------------------------------------------------------
+        */
 
         $studentHelper = Helper::studentData();
         $stud_id = $studentHelper['stud_id'];
@@ -1676,7 +1677,6 @@ class StudentRepository
 
         $studentHelper = Helper::studentData();
 
-        $stud_id = $studentHelper['stud_id'];
         $role_id = $studentHelper['role_id'];
         $is_active = $studentHelper['is_active'];
 

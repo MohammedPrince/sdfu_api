@@ -8,6 +8,11 @@
 
 @section('content')
 
+    @php
+        $editingAppVersion = $editAppVersion ?? null;
+        $isEditingAppVersion = $editingAppVersion !== null;
+    @endphp
+
     <div class="manage-page">
 
         {{-- Success --}}
@@ -52,9 +57,15 @@
                 </div>
 
 
-                <form method="POST" action="{{ route('admin.manage.app-version.store') }}">
-
+                <form method="POST"
+                    action="{{ $isEditingAppVersion
+                        ? route('admin.manage.app-version.update', $editAppVersion->id)
+                        : route('admin.manage.app-version.store') }}">
                     @csrf
+
+                    @if ($isEditingAppVersion)
+                        @method('PUT')
+                    @endif
 
                     <div class="settings-section">
 
@@ -76,11 +87,13 @@
                                         Select Platform
                                     </option>
 
-                                    <option value="ios" {{ old('platform') === 'ios' ? 'selected' : '' }}>
+                                    <option value="ios"
+                                        {{ old('platform', $editAppVersion->platform ?? '') === 'ios' ? 'selected' : '' }}>
                                         iOS
                                     </option>
 
-                                    <option value="android" {{ old('platform') === 'android' ? 'selected' : '' }}>
+                                    <option value="android"
+                                        {{ old('platform', $editAppVersion->platform ?? '') === 'android' ? 'selected' : '' }}>
                                         Android
                                     </option>
 
@@ -97,7 +110,8 @@
                                 </label>
 
                                 <input type="text" name="minimum_version" id="minimum_version" class="form-control"
-                                    placeholder="e.g. 1.6.2" value="{{ old('minimum_version') }}" required>
+                                    placeholder="e.g. 1.6.2"
+                                    value="{{ old('minimum_version', $editAppVersion->minimum_version ?? '') }}" required>
 
                             </div>
 
@@ -110,7 +124,8 @@
                                 </label>
 
                                 <input type="url" name="app_url" id="app_url" class="form-control"
-                                    placeholder="https://apps.apple.com/..." value="{{ old('app_url') }}" required>
+                                    placeholder="https://apps.apple.com/..."
+                                    value="{{ old('app_url', $editAppVersion->app_url ?? '') }}" required>
 
                             </div>
 
@@ -146,7 +161,7 @@
                                     <input type="hidden" name="force_update" value="0">
 
                                     <input type="checkbox" name="force_update" value="1"
-                                        {{ old('force_update', 0) ? 'checked' : '' }}>
+                                        {{ old('force_update', isset($editAppVersion) ? $editAppVersion->force_update : 0) ? 'checked' : '' }}>
 
                                     <span class="slider"></span>
 
@@ -162,8 +177,14 @@
                     <div class="form-actions">
 
                         <button type="submit" class="btn-primary">
-                            Save App Version
+                            {{ $isEditingAppVersion ? 'Update App Version' : 'Save App Version' }}
                         </button>
+
+                        @if ($isEditingAppVersion)
+                            <a href="{{ route('admin.manage') }}" class="btn-secondary">
+                                Cancel
+                            </a>
+                        @endif
 
                     </div>
 
@@ -282,20 +303,20 @@
 
                                         <td class="actions-cell">
 
+                                            <a href="{{ route('admin.manage', ['edit_version' => $version->id]) }}">
+                                                <button class="btn-secondary btn-sm">Edit</button>
+                                            </a>
+
                                             <form method="POST"
                                                 action="{{ route('admin.manage.app-version.delete', $version->id) }}"
-                                                onsubmit="return confirm(
-                                            'Delete this app version configuration?'
-                                        );">
-
+                                                style="display:inline-block;"
+                                                onsubmit="return confirm('Delete this app version configuration?');">
                                                 @csrf
-
                                                 @method('DELETE')
 
                                                 <button type="submit" class="btn-danger btn-sm">
                                                     Delete
                                                 </button>
-
                                             </form>
 
                                         </td>

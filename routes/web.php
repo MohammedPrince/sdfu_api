@@ -101,6 +101,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 [MainController::class, 'storeAppVersion']
             )->name('manage.app-version.store');
 
+            Route::put(
+                '/manage/app-version/{id}',
+                [MainController::class, 'updateAppVersion']
+            )->name('manage.app-version.update');
+
 
             Route::delete(
                 '/manage/app-version/{id}',

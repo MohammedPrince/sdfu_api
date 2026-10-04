@@ -105,8 +105,9 @@ class MainController extends Controller
 
     public function manageApplication(Request $request)
     {
-
+        $editAppVersion = null;
         $settings = null;
+
         $faculties = $this->adminService->getFaculties();
         $majors = $this->adminService->getMajors();
         $batches = $this->adminService->getBatches();
@@ -122,6 +123,13 @@ class MainController extends Controller
             );
         }
 
+        if ($request->filled('edit_version')) {
+
+            $editAppVersion = $this->adminService->getAppVersion(
+                (int) $request->input('edit_version')
+            );
+        }
+
         return view('admin.manage', compact(
             'faculties',
             'majors',
@@ -129,7 +137,8 @@ class MainController extends Controller
             'settings',
             'savedSettings',
             'editSetting',
-            'appVersions'
+            'appVersions',
+            'editAppVersion'
         ));
     }
 
@@ -175,6 +184,50 @@ class MainController extends Controller
         return redirect()
             ->route('admin.manage')
             ->with('success', 'App version added successfully.');
+    }
+
+    public function updateAppVersion(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'platform' => [
+                'required',
+                'string',
+                Rule::in(['ios', 'android']),
+            ],
+
+            'minimum_version' => [
+                'required',
+                'string',
+                'max:30',
+                'regex:/^\d+(\.\d+){0,3}$/',
+            ],
+
+            'app_url' => [
+                'required',
+                'url',
+                'max:2048',
+            ],
+
+            'force_update' => [
+                'nullable',
+                'boolean',
+            ],
+        ]);
+
+        $validated['id'] = $id;
+
+        $updated = $this->adminService->updateAppVersion($validated);
+
+        if (!$updated) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to update app version.');
+        }
+
+        return redirect()
+            ->route('admin.manage')
+            ->with('success', 'App version updated successfully.');
     }
 
     public function deleteAppVersion(int $id)

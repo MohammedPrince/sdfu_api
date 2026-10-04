@@ -69,16 +69,27 @@ class AdminService
         return $this->adminRepository->getAppVersions();
     }
 
+    public function getAppVersion(int $id)
+    {
+        return $this->adminRepository->getAppVersion($id);
+    }
+
     function storeAppVersion(array $data)
     {
         return $this->adminRepository->storeAppVersion($data);
+    }
+
+
+    public function updateAppVersion(array $data)
+    {
+        return $this->adminRepository->updateAppVersion($data);
     }
 
     public function deleteAppVersion(int $id)
     {
         return $this->adminRepository->deleteAppVersion($id);
     }
-  
+
     public function getSavedSettings()
     {
         return $this->adminRepository->getSavedSettings();
