@@ -19,6 +19,11 @@ class Helper
     public const ADMIN_ROLE = 1;
     public const STUDENT_ROLE = 2;
 
+    public const STUD_IDS = [
+        '202503001',
+        '202503002',
+    ];
+
     //Admin Panel Helpers
     public static function recordVisitor(): void
     {

@@ -414,7 +414,7 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        if ($stud_id == '202503001' || $stud_id == '202503002') {
+        if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
             $dumpData = Helper::studentDumpTestData();
             return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform, $currentAppVersion, 'mainData');
         }
@@ -815,7 +815,7 @@ class StudentRepository
         $facultyMajor = Helper::getFacultyAndMajorNames($faculty_code, $major_code, $this->externalDatabase);
 
         //Dump Data for testing. Profile
-        if ($stud_id == '202503001' || $stud_id == '202503002') {
+        if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
             $dumpData = Helper::studentDumpTestData();
             return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'profile');
         }
@@ -883,7 +883,7 @@ class StudentRepository
         $semester = $studentHelper['semester'];
 
         //Dump Data for testing. Result
-        if ($stud_id == '202503001' || $stud_id == '202503002') {
+        if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
             $dumpData = Helper::studentDumpTestData();
             return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'result');
         }
@@ -1009,7 +1009,7 @@ class StudentRepository
         $paymentStatus = false;
 
         //Dump Data for testing. Fees
-        if ($stud_id == '202503001' || $stud_id == '202503002') {
+        if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
             $dumpData = Helper::studentDumpTestData();
             return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'fee');
         }
@@ -1106,7 +1106,7 @@ class StudentRepository
         $semester = $studentHelper['semester'];
 
         //Dump Data for testing. Fees
-        if ($stud_id == '202503001' || $stud_id == '202503002') {
+        if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
             $dumpData = Helper::studentDumpTestData();
             return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'timetable');
         }
