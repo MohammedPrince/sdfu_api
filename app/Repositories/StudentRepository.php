@@ -257,8 +257,10 @@ class StudentRepository
         $email = $user->email;
         $gender = $user->gender;
 
-        $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-        $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+        // $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
+        // $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+
+        $facultyMajor = Helper::getFacultyAndMajorNames($faculty_code, $major_code, $this->externalDatabase);
 
         /*
         |--------------------------------------------------------------------------
@@ -329,8 +331,8 @@ class StudentRepository
             'stud_phone' => $phone,
             'faculty_code' => $faculty_code,
             'major_code' => $major_code,
-            'faculty' => $faculty_desc_e,
-            'major' => $major_desc_e,
+            'faculty' => $facultyMajor['faculty'],
+            'major' => $facultyMajor['major'],
             'batch' => $batch,
             'sem' => (int) $semester,
             'gender' => $gender,
@@ -376,15 +378,11 @@ class StudentRepository
         $appStatus = [];
         $appVersion = null;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Header data
-        |--------------------------------------------------------------------------
-        */
-
         $platform = strtolower(trim((string) request()->header('X-Platform', '')));
         $currentAppVersion = trim((string) request()->header('X-App-Version', ''));
 
+        $current_date = now()->format('Y-m-d');
+        $today = Carbon::today();
 
         /*
         |--------------------------------------------------------------------------
@@ -408,6 +406,7 @@ class StudentRepository
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
 
+        $facultyMajor = Helper::getFacultyAndMajorNames($faculty_code, $major_code, $this->externalDatabase);
 
         /*
         |--------------------------------------------------------------------------
@@ -415,12 +414,10 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        // Check for test student early to avoid unnecessary processing
-        if ($stud_id == '202503001') {
+        if ($stud_id == '202503001' || $stud_id == '202503002') {
             $dumpData = Helper::studentDumpTestData();
-            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase,$platform,$currentAppVersion);
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform, $currentAppVersion, 'mainData');
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -437,43 +434,8 @@ class StudentRepository
 
         $settings = $applicationStatus['settings'];
 
-        /*
-        |--------------------------------------------------------------------------
-        | Date information
-        |--------------------------------------------------------------------------
-        */
-
-        $current_date = now()->format('Y-m-d');
-        $today = Carbon::today();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Student Profile
-        |--------------------------------------------------------------------------
-        |
-        | Cache faculty and major information for 24 hours as they rarely change.
-        |--------------------------------------------------------------------------
-        */
-
-        // Cache faculty name
-        $faculty = Cache::remember(
-            'faculty_name_' . $faculty_code,
-            1440, // 24 hours
-            function () use ($faculty_code) {
-                return $this->externalDatabase->getFacultyName($faculty_code);
-            }
-        );
-
-        // Cache major name
-        $major = Cache::remember(
-            'major_name_' . $major_code,
-            1440, // 24 hours
-            function () use ($major_code) {
-                return $this->externalDatabase->getMajorName($major_code);
-            }
-        );
-
         $studentData = [
+
             'stud_id' => $stud_id,
 
             'student_name' => $stud_full_name,
@@ -486,9 +448,9 @@ class StudentRepository
 
             'major_code' => $major_code,
 
-            'faculty' => $faculty,
+            'faculty' => $facultyMajor['faculty'],
 
-            'major' => $major,
+            'major' => $facultyMajor['major'],
 
             'batch' => $batch,
 
@@ -731,14 +693,9 @@ class StudentRepository
         |--------------------------------------------------------------------------
         */
 
-        if (
-            in_array($platform, ['ios', 'android'], true) &&
-            $currentAppVersion !== ''
-        ) {
+        if (in_array($platform, ['ios', 'android'], true) && $currentAppVersion !== '') {
 
-            $versionConfig = AppVersion::query()
-                ->where('platform', $platform)
-                ->first();
+            $versionConfig = AppVersion::query()->where('platform', $platform)->first();
 
             if ($versionConfig) {
 
@@ -764,8 +721,6 @@ class StudentRepository
                 ];
             }
         }
-
-
 
 
         /*
@@ -805,16 +760,6 @@ class StudentRepository
         | Final Response
         |--------------------------------------------------------------------------
         */
-
-        //Dump test data for student with index 202503001
-        if ($stud_id == '202503001') {
-
-            $dumpData = Helper::studentDumpTestData();
-
-            $semesterResult = $dumpData['semesterResult'];
-            $feeDetails = $dumpData['feeDetails'];
-            $timetable = $dumpData['timetable'];
-        }
 
 
         return [
@@ -867,8 +812,13 @@ class StudentRepository
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
 
-        $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
-        $major_desc_e = $this->externalDatabase->getMajorName($major_code);
+        $facultyMajor = Helper::getFacultyAndMajorNames($faculty_code, $major_code, $this->externalDatabase);
+
+        //Dump Data for testing. Profile
+        if ($stud_id == '202503001' || $stud_id == '202503002') {
+            $dumpData = Helper::studentDumpTestData();
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'profile');
+        }
 
         $studentDetails = [
             'stud_index' => $stud_id,
@@ -877,8 +827,8 @@ class StudentRepository
             'stud_phone' => $phone ?? null,
             'faculty_code' => $faculty_code ?? null,
             'major_code' => $major_code ?? null,
-            'faculty' => $faculty_desc_e ?? null,
-            'major' => $major_desc_e ?? null,
+            'faculty' => $facultyMajor['faculty'] ?? null,
+            'major' => $facultyMajor['major'] ?? null,
             'batch' => $batch ?? null,
             'sem' => (int) $semester,
             'gender' => $gender,
@@ -932,43 +882,11 @@ class StudentRepository
         $batch = $studentHelper['batch'];
         $semester = $studentHelper['semester'];
 
-        /*
-        |--------------------------------------------------------------------------
-        | Result cache - temporarily disabled
-        |--------------------------------------------------------------------------
-        */
-
-        /*
-        $cacheKey = "student:{$stud_id}:{$faculty_code}:{$major_code}:{$batch}:{$semester}:result";
-
-        $payload = Cache::remember(
-            $cacheKey,
-            3600,
-            function () use (
-                $stud_id,
-                $faculty_code,
-                $major_code,
-                $batch,
-                $semester
-            ) {
-                $results = $this->externalDatabase->getStudentResult(
-                    $stud_id,
-                    $faculty_code,
-                    $major_code,
-                    $batch,
-                    $semester
-                );
-
-                // ...
-            }
-        );
-        */
-
-        /*
-        |--------------------------------------------------------------------------
-        | Get result directly from external database
-        |--------------------------------------------------------------------------
-        */
+        //Dump Data for testing. Result
+        if ($stud_id == '202503001' || $stud_id == '202503002') {
+            $dumpData = Helper::studentDumpTestData();
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'result');
+        }
 
         $results = $this->externalDatabase->getStudentResult(
             $stud_id,
@@ -978,11 +896,6 @@ class StudentRepository
             $semester
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Result not found
-        |--------------------------------------------------------------------------
-        */
 
         if (empty($results)) {
             return [
@@ -992,11 +905,6 @@ class StudentRepository
             ];
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Student details
-        |--------------------------------------------------------------------------
-        */
 
         $first = $results[0];
 
@@ -1100,6 +1008,12 @@ class StudentRepository
         $today = Carbon::today();
         $paymentStatus = false;
 
+        //Dump Data for testing. Fees
+        if ($stud_id == '202503001' || $stud_id == '202503002') {
+            $dumpData = Helper::studentDumpTestData();
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'fee');
+        }
+
         $getFeeDetails = $this->externalDatabase->getStudentFees($stud_id, $faculty_code, $major_code, $batch, $semester);
 
         if ($getFeeDetails) {
@@ -1190,6 +1104,13 @@ class StudentRepository
         $major_code = $studentHelper['major_code'];
         $batch = $studentHelper['batch'];
         $semester = $studentHelper['semester'];
+
+        //Dump Data for testing. Fees
+        if ($stud_id == '202503001' || $stud_id == '202503002') {
+            $dumpData = Helper::studentDumpTestData();
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'timetable');
+        }
+
 
         $timetable = $this->externalDatabase->getStudentTimetable(
             $stud_id,
@@ -1399,6 +1320,13 @@ class StudentRepository
     //Notifications
     public function getNotifications()
     {
+
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
+        }
+
         // Check application status
         $applicationStatus = Helper::checkApplicationStatus();
 
@@ -1409,15 +1337,7 @@ class StudentRepository
         // Get authenticated student
         $studentHelper = Helper::studentData();
 
-        if (!$studentHelper) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated',
-            ];
-        }
 
-        // Helper::studentData() returns stud_id
         $user_id = $studentHelper['id'];
 
         // Get notifications for this student
@@ -1465,6 +1385,13 @@ class StudentRepository
 
     public function markNotificationAsRead($notificationId)
     {
+
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
+        }
+
         // Check application status
         $applicationStatus = Helper::checkApplicationStatus();
 
@@ -1474,15 +1401,6 @@ class StudentRepository
 
         // Get authenticated student
         $studentHelper = Helper::studentData();
-
-        if (!$studentHelper || !isset($studentHelper['user'])) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated',
-            ];
-        }
-
         $user_id = $studentHelper['user']->id;
 
         // Find notification belonging to this student
@@ -1521,6 +1439,13 @@ class StudentRepository
 
     public function markAllNotificationsAsRead()
     {
+
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
+        }
+
         // Check application status
         $applicationStatus = Helper::checkApplicationStatus();
 
@@ -1530,15 +1455,6 @@ class StudentRepository
 
         // Get authenticated student
         $studentHelper = Helper::studentData();
-
-        if (!$studentHelper || !isset($studentHelper['user'])) {
-            return [
-                'success' => false,
-                'code' => 401,
-                'message' => 'Student not authenticated',
-            ];
-        }
-
         $user_id = $studentHelper['user']->id;
 
         // Mark all unread notifications as read
@@ -1560,6 +1476,12 @@ class StudentRepository
 
     public function registerToken($request)
     {
+
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
+        }
 
         //Check application status
         $applicationStatus = Helper::checkApplicationStatus();
@@ -1640,6 +1562,12 @@ class StudentRepository
 
     public function logout()
     {
+
+        $auth = Helper::authenticatedStudent();
+
+        if (!$auth['success']) {
+            return $auth;
+        }
         //Check application status
         $applicationStatus = Helper::checkApplicationStatus();
         if (!$applicationStatus['success']) {

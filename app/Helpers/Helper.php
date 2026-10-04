@@ -11,6 +11,7 @@ use App\Services\ExternalDatabaseService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class Helper
 {
@@ -858,8 +859,10 @@ class Helper
         ];
     }
 
-    public static function buildTestResponse($dumpData, $studentHelper, ExternalDatabaseService $externalDatabase, $platform, $currentAppVersion)
+    public static function buildTestResponse($dumpData, $studentHelper, ExternalDatabaseService $externalDatabase, $platform = null, $currentAppVersion = null, $apiType)
     {
+
+        $appVersion = [];
 
         $studentData = [
             'stud_id' => $studentHelper['stud_id'],
@@ -875,45 +878,113 @@ class Helper
             'gender' => $studentHelper['gender'] ?? null,
         ];
 
-        if (in_array($platform, ['ios', 'android'], true) && $currentAppVersion !== '') {
+        if ($apiType == 'mainData') {
+            if (in_array($platform, ['ios', 'android'], true) && $currentAppVersion !== '') {
 
-            $versionConfig = AppVersion::query()->where('platform', $platform)->first();
+                $versionConfig = AppVersion::query()->where('platform', $platform)->first();
+                if ($versionConfig) {
+                    $forceUpdate = version_compare($currentAppVersion, $versionConfig->minimum_version, '<') && (bool) $versionConfig->force_update;
+                    $appVersion = [
+                        'platform' => $versionConfig->platform,
+                        'minimum_version' => $versionConfig->minimum_version,
+                        'app_url' => $versionConfig->app_url,
+                        'force_update' => $forceUpdate,
+                        'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
 
-            if ($versionConfig) {
-
-
-                $forceUpdate = version_compare($currentAppVersion, $versionConfig->minimum_version, '<') && (bool) $versionConfig->force_update;
-
-                $appVersion = [
-                    'platform' => $versionConfig->platform,
-                    'minimum_version' => $versionConfig->minimum_version,
-                    'app_url' => $versionConfig->app_url,
-                    'force_update' => $forceUpdate,
-                    'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
-
-                ];
+                    ];
+                }
             }
+        } else {
 
-            return [
-                'success' => true,
-                'code' => 200,
-                'message' => 'Main Data Retrieved Successfully',
-                'studentDetails' => $studentData,
-                'semesterResult' => $dumpData['semesterResult'],
-                'feeDetails' => $dumpData['feeDetails'],
-                'timetable' => $dumpData['timetable'],
-                'appStatus' => [
-                    'active' => true,
-                    'tabs_status' => [
-                        'fee' => true,
-                        'result' => true,
-                        'timetable' => true,
-                    ],
-                    'notificationToggled' => UserDevice::where('user_id', $studentHelper['id'])->where('is_active', true)->exists(),
-                ],
-                'appVersion' => $appVersion
+            $appVersion = [
+                'platform' => $platform,
+                'minimum_version' => '1.0.0',
+                'app_url' => 'https://example.com/app',
+                'force_update' => false,
+                'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
             ];
         }
+
+        return match ($apiType) {
+            'profile' => [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Profile Retrieved Successfully',
+                'studentDetails' => $studentData,
+            ],
+
+            'timetable' => [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Timetable Retrieved Successfully',
+                'timetableDetails' => $dumpData['timetable'],
+            ],
+
+            'fee' => [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Fee Details Retrieved Successfully',
+                'feeDetails' => $dumpData['feeDetails'],
+            ],
+
+            'result' => [
+                'success' => true,
+                'code' => 200,
+                'message' => 'Semester Result Retrieved Successfully',
+                'semesterResult' => $dumpData['semesterResult'],
+            ],
+
+            default => null,
+        };
+
+
+        return [
+            'success' => true,
+            'code' => 200,
+            'message' => 'Main Data Retrieved Successfully',
+            'studentDetails' => $studentData,
+            'semesterResult' => $dumpData['semesterResult'],
+            'feeDetails' => $dumpData['feeDetails'],
+            'timetable' => $dumpData['timetable'],
+            'appStatus' => [
+                'active' => true,
+                'tabs_status' => [
+                    'fee' => true,
+                    'result' => true,
+                    'timetable' => true,
+                ],
+                'notificationToggled' => UserDevice::where('user_id', $studentHelper['id'])->where('is_active', true)->exists(),
+            ],
+            'appVersion' => $appVersion
+        ];
+
+    }
+
+    public static function getFacultyAndMajorNames(int|string $faculty_code, int|string $major_code, ExternalDatabaseService $externalDatabase): array
+    {
+
+        // Cache faculty name for 24 hours
+        $faculty = Cache::remember(
+            'faculty_name_' . $faculty_code,
+            1440,
+            function () use ($faculty_code, $externalDatabase) {
+                return $externalDatabase->getFacultyName($faculty_code);
+            }
+        );
+
+        // Cache major name for 24 hours
+        $major = Cache::remember(
+            'major_name_' . $major_code,
+            1440,
+            function () use ($major_code, $externalDatabase) {
+                return $externalDatabase->getMajorName($major_code);
+            }
+        );
+
+        return [
+            'faculty' => $faculty,
+            'major' => $major,
+        ];
     }
 
     public static function studentData(): ?array
