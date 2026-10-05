@@ -313,111 +313,157 @@ class AdminRepository
     }
 
     //Studnets Start
+    // Students Start
+
     public function getStudents(array $filters): LengthAwarePaginator
     {
 
-        $query = User::query()
-            ->where('role_id', Helper::STUDENT_ROLE)
-            ->withCount('devices')
-            ->withMax('devices', 'last_seen_at');
+        $query = User::query()->where('role_id', Helper::STUDENT_ROLE)->withCount('devices')->withMax('devices', 'last_seen_at');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search: Student Index / Name / Email
+        |--------------------------------------------------------------------------
+        */
 
         if (!empty($filters['search'])) {
 
-            $search = $filters['search'];
+            $search = trim($filters['search']);
 
             $query->where(function ($q) use ($search) {
+
                 $q->where('stud_index', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
+
             });
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty
+        |--------------------------------------------------------------------------
+        */
+
         if (!empty($filters['faculty_code'])) {
+
             $query->where(
                 'faculty_code',
                 $filters['faculty_code']
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Major
+        |--------------------------------------------------------------------------
+        */
+
         if (!empty($filters['major_code'])) {
+
             $query->where(
                 'major_code',
                 $filters['major_code']
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Batch
+        |--------------------------------------------------------------------------
+        */
+
         if (!empty($filters['batch'])) {
+
             $query->where(
                 'batch',
                 $filters['batch']
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Semester
+        |--------------------------------------------------------------------------
+        */
+
         if (!empty($filters['semester'])) {
+
             $query->where(
                 'semester',
                 $filters['semester']
             );
         }
 
-        if ($filters['status'] !== null && $filters['status'] !== '') {
+        /*
+        |--------------------------------------------------------------------------
+        | Account Status
+        |--------------------------------------------------------------------------
+        |
+        | 1 = Active
+        | 0 = Inactive
+        |
+        | Uses users.is_active, NOT system_settings.api_active.
+        |
+        */
 
-            $active = (bool) $filters['status'];
+        if (
+            isset($filters['status']) &&
+            $filters['status'] !== ''
+        ) {
 
-            $query->whereExists(function ($q) use ($active) {
-
-                $q->selectRaw('1')
-                    ->from('system_settings')
-                    ->whereColumn(
-                        'system_settings.faculty_code',
-                        'users.faculty_code'
-                    )
-                    ->whereColumn(
-                        'system_settings.major_code',
-                        'users.major_code'
-                    )
-                    ->whereColumn(
-                        'system_settings.batch',
-                        'users.batch'
-                    )
-                    ->whereColumn(
-                        'system_settings.semester',
-                        'users.semester'
-                    )
-                    ->where(
-                        'system_settings.api_active',
-                        $active
-                    );
-            });
+            $query->where(
+                'is_active',
+                (bool) $filters['status']
+            );
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Students
+        |--------------------------------------------------------------------------
+        */
 
         $students = $query
             ->orderBy('name')
-            ->paginate(10, ['*'], 'students_page')
+            ->paginate(
+                10,
+                ['*'],
+                'students_page'
+            )
             ->appends(request()->query());
 
-        $settings = SystemSetting::query()
-            ->get()
-            ->keyBy(function ($setting) {
-                return implode('|', [
-                    $setting->faculty_code,
-                    $setting->major_code,
-                    $setting->batch,
-                    $setting->semester,
-                ]);
-            });
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty / Major Data
+        |--------------------------------------------------------------------------
+        */
 
-        $faculties = $this->externalDatabase->faculties()->keyBy('faculty_code');
-        $majors = $this->externalDatabase->majors()->keyBy('major_code');
+        $faculties = $this->externalDatabase
+            ->faculties()
+            ->keyBy('faculty_code');
+
+        $majors = $this->externalDatabase
+            ->majors()
+            ->keyBy('major_code');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Add Display Information
+        |--------------------------------------------------------------------------
+        */
 
         foreach ($students->items() as $student) {
+
             /*
             |--------------------------------------------------------------------------
             | Faculty
             |--------------------------------------------------------------------------
             */
 
-            $faculty = $faculties->get($student->faculty_code);
+            $faculty = $faculties->get(
+                $student->faculty_code
+            );
 
             $student->faculty_desc_e = $faculty->faculty_desc_e
                 ?? $student->faculty_code;
@@ -429,7 +475,9 @@ class AdminRepository
             |--------------------------------------------------------------------------
             */
 
-            $major = $majors->get($student->major_code);
+            $major = $majors->get(
+                $student->major_code
+            );
 
             $student->major_desc_e = $major->major_desc_e
                 ?? $student->major_code;
@@ -437,36 +485,19 @@ class AdminRepository
 
             /*
             |--------------------------------------------------------------------------
-            | Application / Account Status
+            | Account Status
             |--------------------------------------------------------------------------
             */
 
-            $settingKey = implode('|', [
-                $student->faculty_code,
-                $student->major_code,
-                $student->batch,
-                $student->semester,
-            ]);
+            $student->account_active = (bool) $student->is_active;
 
-            $setting = $settings->get($settingKey);
-
-            if (!$setting) {
-
-                // No setting means the student is active by default.
-                $student->account_active = true;
-                $student->account_status = 'Active';
-
-            } else {
-
-                $student->account_active = (bool) $setting->api_active;
-                $student->account_status = $setting->api_active
-                    ? 'Active'
-                    : 'Disabled';
-            }
+            $student->account_status = $student->is_active ? 'Active' : 'Inactive';
         }
 
         return $students;
     }
+
+    // Students End
 
     public function getStudentBatches(): Collection
     {

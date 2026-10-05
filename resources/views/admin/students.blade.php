@@ -108,7 +108,7 @@
                                     Major
                                 </label>
 
-                                <select name="major_code" id="major_code" class="form-control" required>
+                                <select name="major_code" id="major_code" class="form-control" >
                                     <option value="">
                                         Select Major
                                     </option>
