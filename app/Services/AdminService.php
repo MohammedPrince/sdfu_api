@@ -44,7 +44,7 @@ class AdminService
         return $this->adminRepository->getFaculties();
     }
 
-    public function getMajors()
+    public function getMajors(): Collection
     {
         return $this->adminRepository->getMajors();
     }
