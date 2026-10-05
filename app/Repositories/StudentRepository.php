@@ -72,10 +72,10 @@ class StudentRepository
         if ($user) {
 
             /*
-       |--------------------------------------------------------------------------
-       | Student exists locally
-       |--------------------------------------------------------------------------
-       */
+            |--------------------------------------------------------------------------
+            | Student exists locally
+            |--------------------------------------------------------------------------
+            */
 
             if (!$user->is_active) {
 
@@ -110,7 +110,6 @@ class StudentRepository
 
             // Local authentication successful.
             Auth::login($user);
-
             RateLimiter::clear($rateLimitKey);
         }
 
@@ -1110,7 +1109,6 @@ class StudentRepository
             $dumpData = Helper::studentDumpTestData();
             return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform = null, $currentAppVersion = null, 'timetable');
         }
-
 
         $timetable = $this->externalDatabase->getStudentTimetable(
             $stud_id,
