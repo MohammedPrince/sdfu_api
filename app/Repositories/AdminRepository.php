@@ -393,7 +393,7 @@ class AdminRepository
 
         $students = $query
             ->orderBy('name')
-            ->paginate(20)
+            ->paginate(10, ['*'], 'students_page')
             ->appends(request()->query());
 
         $settings = SystemSetting::query()
