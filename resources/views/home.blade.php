@@ -49,7 +49,7 @@
                 <p class="hero-text">
 
                     Access your academic information, semester results,
-                    registration fees, timetable and other student services
+                    registration fees, timetable and other student educational services
                     through one simple and secure platform.
 
                 </p>
@@ -59,7 +59,7 @@
 
                     <a href="#services" class="secondary-button">
 
-                        Explore services
+                        Educational Services
 
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
 
@@ -131,7 +131,7 @@
                     </div>
 
                     <div class="panel-id">
-                        Access your academic information and services
+                        Access your academic information and educational services
                     </div>
 
 
@@ -213,7 +213,7 @@
                             </div>
 
                             <div class="mini-value">
-                                Academic Services
+                                 Registration Status
                             </div>
 
                         </div>
@@ -367,7 +367,7 @@
             <div class="section-heading">
 
                 <h2>
-                    Student services
+                    Student educational services
                 </h2>
 
                 <p>
@@ -456,7 +456,7 @@
                     </h3>
 
                     <p>
-                        Access your registration information and academic services.
+                        Access your registration information and academic educational services.
                     </p>
 
                 </div>
