@@ -39,7 +39,7 @@
 
         <a href="{{ url('/#services') }}"
            class="nav-link">
-            Application Services
+            Educational Services
         </a>
 
         <a href="{{ url('/privacy-policy') }}"

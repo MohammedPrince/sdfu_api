@@ -367,7 +367,7 @@
             <div class="section-heading">
 
                 <h2>
-                    Student educational services
+                    Student Educational Services
                 </h2>
 
                 <p>
