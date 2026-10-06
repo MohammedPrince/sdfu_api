@@ -41,6 +41,7 @@ class ExternalDatabaseService
 
     public function getStudentDetails(string $studIndex): ?object
     {
+
         return DB::connection('mysql_sis')
             ->table('student_profile_e as e')
             ->join(
@@ -135,6 +136,275 @@ class ExternalDatabaseService
         return (int) $status === 1;
     }
 
+    // public function getStudentResult(
+    //     $stud_id,
+    //     $facultyCode,
+    //     $majorCode,
+    //     $batch,
+    //     $semester
+    // ): array {
+
+    //     // $specialMajors = [7, 8, 26, 28, 29, 30];
+
+    //     // if (($semester == 10 && !in_array($majorCode, $specialMajors)) || ($semester == 6 && in_array($majorCode, $specialMajors))) {
+    //     //     // Keep semester as it is.
+    //     // } else {
+    //     //     $semester = $semester - 1;
+    //     // }
+
+    //     $db = DB::connection('mysql_sis');
+
+    //     $ministryNo = $this->getMinistryNo($stud_id);
+
+    //     $results = $db->table('stud_course_mark as scm')
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Course
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join('course_details as crs', function ($join) {
+    //             $join->on('scm.course_code', '=', 'crs.course_code')
+    //                 ->on('scm.semester', '=', 'crs.course_semester')
+    //                 ->on('scm.major_code', '=', 'crs.major_code')
+    //                 ->on('scm.batch', '=', 'crs.batch');
+    //         })
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Transcript - Get Last Semester
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join('stud_transcript_table as res', function ($join) {
+    //             $join->on('scm.stud_id', '=', 'res.stud_id')
+    //                 ->on('scm.batch', '=', 'res.batch')
+    //                 ->on('scm.faculty_code', '=', 'res.faculty_code')
+    //                 ->on('scm.major_code', '=', 'res.major_code')
+    //                 ->whereRaw('
+    //         res.semester = (
+    //             SELECT MAX(res2.semester)
+    //             FROM stud_transcript_table as res2
+    //             WHERE res2.stud_id = res.stud_id
+    //               AND res2.batch = res.batch
+    //               AND res2.faculty_code = res.faculty_code
+    //               AND res2.major_code = res.major_code
+    //         )
+    //     ');
+    //         })
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | CGPA Status
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join(
+    //             'cgpa_status as status',
+    //             'res.cgpa_status_code',
+    //             '=',
+    //             'status.cgpa_status_code'
+    //         )
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Student Profile
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join(
+    //             'student_profile_e as sp',
+    //             'scm.stud_id',
+    //             '=',
+    //             'sp.stud_id'
+    //         )
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Student Common Profile
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join('student_profile_common as spc', function ($join) {
+    //             $join->on('res.stud_id', '=', 'spc.stud_id')
+    //                 ->on('res.major_code', '=', 'spc.major_code')
+    //                 ->on('res.batch', '=', 'spc.batch');
+    //         })
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Faculty
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join(
+    //             'faculty as f',
+    //             'f.faculty_code',
+    //             '=',
+    //             'scm.faculty_code'
+    //         )
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Major
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->join(
+    //             'major as m',
+    //             'm.major_code',
+    //             '=',
+    //             'scm.major_code'
+    //         )
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Filters
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->where('scm.stud_id', $stud_id)
+    //         ->where('scm.faculty_code', $facultyCode)
+    //         ->where('scm.major_code', $majorCode)
+    //         ->where('scm.batch', $batch)
+    //         ->where('scm.semester', $semester)
+    //         ->where('crs.course_units', '>', 0)
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Select
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         ->select([
+    //             'scm.result_status',
+    //             'scm.stud_id',
+    //             'scm.semester',
+
+    //             'crs.course_code',
+    //             'crs.course_name',
+    //             'crs.course_units',
+
+    //             'sp.stud_name',
+    //             'sp.stud_surname',
+    //             'sp.familyname',
+
+    //             'scm.grade',
+    //             'scm.sub_grade1',
+    //             'scm.sub_grade2',
+    //             'scm.weightage',
+    //             'scm.remark',
+
+    //             'res.gpa',
+    //             'res.cgpa',
+    //             'res.cgpa_status_code',
+
+    //             'status.status_desc_e',
+
+    //             'f.faculty_desc_e',
+    //             'm.major_desc_e',
+    //             'm.abbreviation',
+    //         ])
+
+    //         ->orderBy('scm.course_code')
+    //         ->get();
+
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Build Result
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $list = [];
+
+    //     $i = 0;
+
+    //     foreach ($results as $row) {
+
+    //         $i++;
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Student Name
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         $studentName = trim(
+    //             $row->stud_name . ' ' .
+    //             $row->stud_surname . ' ' .
+    //             $row->familyname
+    //         );
+
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Grade
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         $grade = $row->grade;
+
+    //         if (!empty($row->sub_grade1)) {
+    //             $grade .= '/' . $row->sub_grade1;
+    //         }
+
+    //         if (!empty($row->sub_grade2)) {
+    //             $grade .= '/' . $row->sub_grade2;
+    //         }
+
+
+    //         /*
+    //         |--------------------------------------------------------------------------
+    //         | Result
+    //         |--------------------------------------------------------------------------
+    //         */
+
+    //         $list[] = [
+
+    //             'result_status' => (int) $row->result_status,
+
+    //             'stud_id' => $row->stud_id,
+
+    //             'student_name' => $studentName,
+
+    //             'semester' => (int) $row->semester,
+
+    //             'course_code' => $row->course_code,
+
+    //             'course_name' => $row->course_name,
+
+    //             'course_units' => (int) $row->course_units,
+
+    //             'grade' => $grade,
+
+    //             'points' => number_format((float) $row->weightage, 2, '.', ''),
+
+    //             'remark' => $row->remark ?? '',
+
+    //             'gpa' => number_format((float) $row->gpa, 2, '.', ''),
+
+    //             'cgpa' => number_format((float) $row->cgpa, 2, '.', ''),
+
+    //             'status' => $row->status_desc_e,
+
+    //             'ministry_no' => $ministryNo,
+
+    //             'faculty' => $row->faculty_desc_e,
+
+    //             'major' => $row->major_desc_e,
+
+    //             'abbreviation' => $row->abbreviation,
+
+    //             'i' => $i,
+    //         ];
+    //     }
+
+    //     return $list;
+    // }
+
+
+
     public function getStudentResult(
         $stud_id,
         $facultyCode,
@@ -143,17 +413,19 @@ class ExternalDatabaseService
         $semester
     ): array {
 
-        // $specialMajors = [7, 8, 26, 28, 29, 30];
-
-        // if (($semester == 10 && !in_array($majorCode, $specialMajors)) || ($semester == 6 && in_array($majorCode, $specialMajors))) {
-        //     // Keep semester as it is.
-        // } else {
-        //     $semester = $semester - 1;
-        // }
-
+        // OPTIMIZATION: Replace expensive correlated subquery with efficient join
         $db = DB::connection('mysql_sis');
 
         $ministryNo = $this->getMinistryNo($stud_id);
+
+        // First, get the max semester per student in a derived table (executed once)
+        $maxSemesterSubquery = $db->table('stud_transcript_table')
+            ->selectRaw('stud_id, batch, faculty_code, major_code, MAX(semester) as max_semester')
+            ->where('stud_id', $stud_id)
+            ->where('batch', $batch)
+            ->where('faculty_code', $facultyCode)
+            ->where('major_code', $majorCode)
+            ->groupBy('stud_id', 'batch', 'faculty_code', 'major_code');
 
         $results = $db->table('stud_course_mark as scm')
 
@@ -162,7 +434,6 @@ class ExternalDatabaseService
             | Course
             |--------------------------------------------------------------------------
             */
-
             ->join('course_details as crs', function ($join) {
                 $join->on('scm.course_code', '=', 'crs.course_code')
                     ->on('scm.semester', '=', 'crs.course_semester')
@@ -172,32 +443,28 @@ class ExternalDatabaseService
 
             /*
             |--------------------------------------------------------------------------
-            | Transcript - Get Last Semester
+            | Transcript - Get Last Semester (OPTIMIZED)
             |--------------------------------------------------------------------------
             */
-
-            ->join('stud_transcript_table as res', function ($join) {
-                $join->on('scm.stud_id', '=', 'res.stud_id')
-                    ->on('scm.batch', '=', 'res.batch')
-                    ->on('scm.faculty_code', '=', 'res.faculty_code')
-                    ->on('scm.major_code', '=', 'res.major_code')
-                    ->whereRaw('
-            res.semester = (
-                SELECT MAX(res2.semester)
-                FROM stud_transcript_table as res2
-                WHERE res2.stud_id = res.stud_id
-                  AND res2.batch = res.batch
-                  AND res2.faculty_code = res.faculty_code
-                  AND res2.major_code = res.major_code
-            )
-        ');
+            ->joinSub($maxSemesterSubquery, 'res_max', function ($join) {
+                $join->on('scm.stud_id', '=', 'res_max.stud_id')
+                    ->on('scm.batch', '=', 'res_max.batch')
+                    ->on('scm.faculty_code', '=', 'res_max.faculty_code')
+                    ->on('scm.major_code', '=', 'res_max.major_code');
             })
+            ->join('stud_transcript_table as res', function ($join) {
+                $join->on('res.stud_id', '=', 'res_max.stud_id')
+                    ->on('res.batch', '=', 'res_max.batch')
+                    ->on('res.faculty_code', '=', 'res_max.faculty_code')
+                    ->on('res.major_code', '=', 'res_max.major_code')
+                    ->on('res.semester', '=', 'res_max.max_semester');
+            })
+
             /*
             |--------------------------------------------------------------------------
             | CGPA Status
             |--------------------------------------------------------------------------
             */
-
             ->join(
                 'cgpa_status as status',
                 'res.cgpa_status_code',
@@ -210,7 +477,6 @@ class ExternalDatabaseService
             | Student Profile
             |--------------------------------------------------------------------------
             */
-
             ->join(
                 'student_profile_e as sp',
                 'scm.stud_id',
@@ -223,7 +489,6 @@ class ExternalDatabaseService
             | Student Common Profile
             |--------------------------------------------------------------------------
             */
-
             ->join('student_profile_common as spc', function ($join) {
                 $join->on('res.stud_id', '=', 'spc.stud_id')
                     ->on('res.major_code', '=', 'spc.major_code')
@@ -235,7 +500,6 @@ class ExternalDatabaseService
             | Faculty
             |--------------------------------------------------------------------------
             */
-
             ->join(
                 'faculty as f',
                 'f.faculty_code',
@@ -248,7 +512,6 @@ class ExternalDatabaseService
             | Major
             |--------------------------------------------------------------------------
             */
-
             ->join(
                 'major as m',
                 'm.major_code',
@@ -261,7 +524,6 @@ class ExternalDatabaseService
             | Filters
             |--------------------------------------------------------------------------
             */
-
             ->where('scm.stud_id', $stud_id)
             ->where('scm.faculty_code', $facultyCode)
             ->where('scm.major_code', $majorCode)
@@ -274,7 +536,6 @@ class ExternalDatabaseService
             | Select
             |--------------------------------------------------------------------------
             */
-
             ->select([
                 'scm.result_status',
                 'scm.stud_id',
@@ -401,7 +662,6 @@ class ExternalDatabaseService
 
         return $list;
     }
-
 
     /*
     |--------------------------------------------------------------------------

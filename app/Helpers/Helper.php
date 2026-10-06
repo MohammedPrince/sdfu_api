@@ -866,6 +866,8 @@ class Helper
         ];
     }
 
+
+
     public static function buildTestResponse(
         $dumpData,
         $studentHelper,
@@ -876,19 +878,53 @@ class Helper
     ) {
         $appVersion = [];
 
-        $studentData = [
-            'stud_id' => $studentHelper['stud_id'],
-            'student_name' => $studentHelper['stud_full_name'],
-            'email' => $studentHelper['email'] ?? null,
-            'phone' => $studentHelper['phone'] ?? null,
-            'faculty_code' => $studentHelper['faculty_code'],
-            'major_code' => $studentHelper['major_code'],
-            'faculty' => $externalDatabase->getFacultyName($studentHelper['faculty_code']),
-            'major' => $externalDatabase->getMajorName($studentHelper['major_code']),
-            'batch' => $studentHelper['batch'],
-            'semester' => (int) $studentHelper['semester'],
-            'gender' => $studentHelper['gender'] ?? null,
-        ];
+        /*
+        |--------------------------------------------------------------------------
+        | Student Data
+        |--------------------------------------------------------------------------
+        */
+
+        $cacheKey = 'student_data:' . $studentHelper['id'];
+
+        // Check whether student data already exists in Laravel cache
+        $cached = Cache::has($cacheKey);
+
+        $studentData = Cache::remember(
+            $cacheKey,
+            now()->addHours(24),
+            function () use ($studentHelper, $externalDatabase) {
+                return [
+                    'stud_id' => $studentHelper['stud_id'],
+                    'student_name' => $studentHelper['stud_full_name'],
+                    'email' => $studentHelper['email'] ?? null,
+                    'phone' => $studentHelper['phone'] ?? null,
+
+                    'faculty_code' => $studentHelper['faculty_code'],
+                    'major_code' => $studentHelper['major_code'],
+
+                    'faculty' => $externalDatabase->getFacultyName(
+                        $studentHelper['faculty_code']
+                    ),
+
+                    'major' => $externalDatabase->getMajorName(
+                        $studentHelper['major_code']
+                    ),
+
+                    'batch' => $studentHelper['batch'],
+                    'semester' => (int) $studentHelper['semester'],
+                    'gender' => $studentHelper['gender'] ?? null,
+                ];
+            }
+        );
+
+        // cached is NOT stored inside the 24-hour cache
+        $studentData['cached'] = (bool) $cached;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application Version
+        |--------------------------------------------------------------------------
+        */
 
         if ($apiType === 'mainData') {
 
@@ -902,6 +938,7 @@ class Helper
                 )->first();
 
                 if ($versionConfig) {
+
                     $forceUpdate = version_compare(
                         $currentAppVersion,
                         $versionConfig->minimum_version,
@@ -918,6 +955,13 @@ class Helper
                 }
             }
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
 
         return match ($apiType) {
 
@@ -954,9 +998,11 @@ class Helper
                 'code' => 200,
                 'message' => 'Main Data Retrieved Successfully',
                 'studentDetails' => $studentData,
+
                 'semesterResult' => $dumpData['semesterResult'],
                 'feeDetails' => $dumpData['feeDetails'],
                 'timetable' => $dumpData['timetable'],
+
                 'appStatus' => [
                     'active' => true,
                     'tabs_status' => [
@@ -969,6 +1015,7 @@ class Helper
                         $studentHelper['id']
                     )->where('is_active', true)->exists(),
                 ],
+
                 'appVersion' => $appVersion,
             ],
 
@@ -1009,33 +1056,51 @@ class Helper
 
     public static function studentData(): ?array
     {
-        if (!Auth::check() || !Auth::user()) {
+        if (!Auth::check()) {
             return null;
         }
 
         $user = Auth::user();
 
-        return [
-            'user' => $user,
-            'id' => $user->id,
-            'stud_id' => $user->stud_index,
-            'stud_full_name' => $user->name,
-            'password' => $user->password,
+        $cacheKey = 'student_data:' . $user->id;
 
-            'faculty_code' => $user->faculty_code,
-            'major_code' => $user->major_code,
+        // Check if data already exists in Laravel cache
+        $cached = Cache::has($cacheKey);
 
-            'batch' => $user->batch,
-            'semester' => $user->semester,
-            //Personal
-            'phone' => $user->phone ?? null,
-            'email' => $user->email ?? null,
-            'gender' => $user->gender ?? null,
-            //Role
-            'role_id' => $user->role_id ?? null,
-            'is_active' => $user->is_active ?? null,
-        ];
+        $data = Cache::remember(
+            $cacheKey,
+            now()->addHours(24),
+            function () use ($user) {
+                return [
+                    'id' => $user->id,
+                    'stud_id' => $user->stud_index,
+                    'stud_full_name' => $user->name,
+
+                    'faculty_code' => $user->faculty_code,
+                    'major_code' => $user->major_code,
+
+                    'batch' => $user->batch,
+                    'semester' => $user->semester,
+
+                    'phone' => $user->phone ?? null,
+                    'email' => $user->email ?? null,
+                    'gender' => $user->gender ?? null,
+
+                    'role_id' => $user->role_id ?? null,
+                ];
+            }
+        );
+
+        // Always check is_active from database
+        $data['is_active'] = (bool) User::whereKey($user->id)->value('is_active');
+
+        // true = data came from existing cache
+        // false = cache was empty and data was created now
+        $data['cached'] = $cached;
+
+        return $data;
     }
+
     public static function authenticatedUser()
     {
         return Auth::check() ? Auth::user() : null;

@@ -404,6 +404,9 @@ class StudentRepository
         $phone = $studentHelper['phone'];
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
+        //Check cached status
+        $cached = (bool) ($studentHelper['cached'] ?? false);
+
 
         $facultyMajor = Helper::getFacultyAndMajorNames($faculty_code, $major_code, $this->externalDatabase);
 
@@ -415,7 +418,7 @@ class StudentRepository
 
         if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
             $dumpData = Helper::studentDumpTestData();
-            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform, $currentAppVersion, 'mainData');
+            return Helper::buildTestResponse($dumpData, $studentHelper, $this->externalDatabase, $platform, $currentAppVersion, 'mainData', );
         }
 
         /*
@@ -456,6 +459,8 @@ class StudentRepository
             'semester' => (int) $semester,
 
             'gender' => $gender ?? null,
+
+            'cached' => $cached,
         ];
 
         /*
