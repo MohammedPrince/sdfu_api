@@ -867,7 +867,6 @@ class Helper
     }
 
 
-
     public static function buildTestResponse(
         $dumpData,
         $studentHelper,
@@ -884,22 +883,28 @@ class Helper
         |--------------------------------------------------------------------------
         */
 
-        $cacheKey = 'student_data:' . $studentHelper['id'];
+        // Use a new key so old cached student structure is not reused.
+        $cacheKey = 'student_data_v2:' . $studentHelper['id'];
 
-        // Check whether student data already exists in Laravel cache
+        // Check if student data already exists in Laravel cache
         $cached = Cache::has($cacheKey);
 
         $studentData = Cache::remember(
             $cacheKey,
             now()->addHours(24),
             function () use ($studentHelper, $externalDatabase) {
+
                 return [
                     'stud_id' => $studentHelper['stud_id'],
+
                     'student_name' => $studentHelper['stud_full_name'],
+
                     'email' => $studentHelper['email'] ?? null,
+
                     'phone' => $studentHelper['phone'] ?? null,
 
                     'faculty_code' => $studentHelper['faculty_code'],
+
                     'major_code' => $studentHelper['major_code'],
 
                     'faculty' => $externalDatabase->getFacultyName(
@@ -911,14 +916,23 @@ class Helper
                     ),
 
                     'batch' => $studentHelper['batch'],
+
                     'semester' => (int) $studentHelper['semester'],
+
                     'gender' => $studentHelper['gender'] ?? null,
                 ];
             }
         );
 
-        // cached is NOT stored inside the 24-hour cache
+        /*
+        |--------------------------------------------------------------------------
+        | Cache Status
+        |--------------------------------------------------------------------------
+        */
+
+        // Do NOT store this inside the 24-hour cached data.
         $studentData['cached'] = (bool) $cached;
+
 
         /*
         |--------------------------------------------------------------------------
@@ -926,33 +940,31 @@ class Helper
         |--------------------------------------------------------------------------
         */
 
-        if ($apiType === 'mainData') {
+        if (
+            $apiType === 'mainData' &&
+            in_array($platform, ['ios', 'android'], true) &&
+            $currentAppVersion !== ''
+        ) {
+            $versionConfig = AppVersion::where(
+                'platform',
+                $platform
+            )->first();
 
-            if (
-                in_array($platform, ['ios', 'android'], true) &&
-                $currentAppVersion !== ''
-            ) {
-                $versionConfig = AppVersion::where(
-                    'platform',
-                    $platform
-                )->first();
+            if ($versionConfig) {
 
-                if ($versionConfig) {
+                $forceUpdate = version_compare(
+                    $currentAppVersion,
+                    $versionConfig->minimum_version,
+                    '<'
+                ) && (bool) $versionConfig->force_update;
 
-                    $forceUpdate = version_compare(
-                        $currentAppVersion,
-                        $versionConfig->minimum_version,
-                        '<'
-                    ) && (bool) $versionConfig->force_update;
-
-                    $appVersion = [
-                        'platform' => $versionConfig->platform,
-                        'minimum_version' => $versionConfig->minimum_version,
-                        'app_url' => $versionConfig->app_url,
-                        'force_update' => $forceUpdate,
-                        'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
-                    ];
-                }
+                $appVersion = [
+                    'platform' => $versionConfig->platform,
+                    'minimum_version' => $versionConfig->minimum_version,
+                    'app_url' => $versionConfig->app_url,
+                    'force_update' => $forceUpdate,
+                    'desc' => 'A new version of Student Desk app is available. Please update the app to continue using the latest features and improvements.',
+                ];
             }
         }
 
@@ -997,23 +1009,30 @@ class Helper
                 'success' => true,
                 'code' => 200,
                 'message' => 'Main Data Retrieved Successfully',
+
                 'studentDetails' => $studentData,
 
                 'semesterResult' => $dumpData['semesterResult'],
+
                 'feeDetails' => $dumpData['feeDetails'],
+
                 'timetable' => $dumpData['timetable'],
 
                 'appStatus' => [
                     'active' => true,
+
                     'tabs_status' => [
                         'fee' => true,
                         'result' => true,
                         'timetable' => true,
                     ],
+
                     'notificationToggled' => UserDevice::where(
                         'user_id',
                         $studentHelper['id']
-                    )->where('is_active', true)->exists(),
+                    )
+                        ->where('is_active', true)
+                        ->exists(),
                 ],
 
                 'appVersion' => $appVersion,
@@ -1026,6 +1045,7 @@ class Helper
             ],
         };
     }
+
 
     public static function getFacultyAndMajorNames(int|string $faculty_code, int|string $major_code, ExternalDatabaseService $externalDatabase): array
     {
@@ -1078,6 +1098,18 @@ class Helper
 
                     'faculty_code' => $user->faculty_code,
                     'major_code' => $user->major_code,
+
+                    'faculty' => Helper::getFacultyAndMajorNames(
+                        $user->faculty_code,
+                        $user->major_code,
+                        app(ExternalDatabaseService::class)
+                    )['faculty'],
+
+                    'major' => Helper::getFacultyAndMajorNames(
+                        $user->faculty_code,
+                        $user->major_code,
+                        app(ExternalDatabaseService::class)
+                    )['major'],
 
                     'batch' => $user->batch,
                     'semester' => $user->semester,
