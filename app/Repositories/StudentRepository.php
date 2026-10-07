@@ -172,6 +172,14 @@ class StudentRepository
                 ];
             }
 
+            if ((int) ($studentDetails->cgpa_status_code ?? 0) == 5) {
+                return [
+                    'success' => false,
+                    'code' => 404,
+                    'message' => 'Student Dismissed, Check faculty dean',
+                ];
+            }
+
             $stud_full_name = trim(
                 $studentDetails->stud_name . ' ' .
                 $studentDetails->stud_surname . ' ' .

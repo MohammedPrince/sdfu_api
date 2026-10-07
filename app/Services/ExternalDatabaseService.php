@@ -50,17 +50,48 @@ class ExternalDatabaseService
                 '=',
                 'c.stud_id'
             )
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get latest transcript semester for this student
+            |--------------------------------------------------------------------------
+            */
+            ->leftJoinSub(
+                DB::connection('mysql_sis')
+                    ->table('stud_transcript_table')
+                    ->select([
+                        'stud_id',
+                        DB::raw('MAX(semester) as last_semester'),
+                    ])
+                    ->where('stud_id', $studIndex)
+                    ->groupBy('stud_id'),
+                't',
+                function ($join) {
+                    $join->on('t.stud_id', '=', 'e.stud_id');
+                }
+            )
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get CGPA status from the latest semester record
+            |--------------------------------------------------------------------------
+            */
+            ->leftJoin('stud_transcript_table as ts', function ($join) {
+                $join->on('ts.stud_id', '=', 'e.stud_id')
+                    ->on('ts.semester', '=', 't.last_semester');
+            })
+
             ->where('e.stud_id', $studIndex)
+
             ->select([
-                // e.* — explicit, so a shared column name never gets
-                // silently overwritten by c.*
+                // Student profile
                 'e.stud_id',
                 'e.stud_name',
                 'e.stud_surname',
                 'e.familyname',
                 'e.lastName',
 
-                // c.* — add/remove to match what callers actually use
+                // Common profile
                 'c.stud_email',
                 'c.stud_tel_mobile',
                 'c.batch',
@@ -68,7 +99,12 @@ class ExternalDatabaseService
                 'c.faculty_code',
                 'c.major_code',
                 'c.sex_code',
+
+                // Latest transcript
+                't.last_semester',
+                'ts.cgpa_status_code',
             ])
+
             ->first();
     }
 
