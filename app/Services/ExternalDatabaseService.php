@@ -698,6 +698,7 @@ class ExternalDatabaseService
         $ttid = 41;
         $group = 1;
         $newCourseFlag = 1;
+        $new_course_flag_course = 2;
 
         // dd($semester);
 
@@ -771,8 +772,8 @@ class ExternalDatabaseService
 
             $course = $connection->selectOne(
                 'select Course_Name from tbl_courses
-                 where Course_Code = ? and Batch_Year = ? and Faculty_Code = ? and Major_Code = ? and semester = ? and new_course_flag != 0',
-                [$row->Course_Code, $batch, $faculty_code, $major_code, $semester]
+                 where Course_Code = ? and Batch_Year = ? and Faculty_Code = ? and Major_Code = ? and semester = ? and new_course_flag =?',
+                [$row->Course_Code, $batch, $faculty_code, $major_code, $semester, $new_course_flag_course]
             );
 
             $lecInstructor = $row->Instructor_ID
