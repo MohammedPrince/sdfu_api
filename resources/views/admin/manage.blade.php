@@ -574,7 +574,7 @@
                                     <input type="hidden" name="timetable_active" value="0">
 
                                     <input type="checkbox" name="timetable_active" value="1"
-                                        {{ old('timetable_active', $editSetting->timetable_active ?? 0) ? 'checked' : '' }}>
+                                        {{ old('timetable_active', $editSetting->timetable_active ?? 1) ? 'checked' : '' }}>
 
                                     <span class="slider"></span>
 
