@@ -995,9 +995,13 @@ class MainController extends Controller
             ->filter(fn($item) => is_object($item))
             ->keyBy(fn($item) => (string) ($item->Class_ID ?? ''));
 
+        // $labMap = collect($labs)
+        //     ->filter(fn($item) => is_object($item))
+        //     ->keyBy(fn($item) => (string) ($item->Id ?? ''));
+
         $labMap = collect($labs)
             ->filter(fn($item) => is_object($item))
-            ->keyBy(fn($item) => (string) ($item->Id ?? ''));
+            ->keyBy(fn($item) => (string) ($item->LabID ?? ''));
 
         /*
         |--------------------------------------------------------------------------
@@ -1079,20 +1083,30 @@ class MainController extends Controller
 
             } elseif ($type === 'lab') {
 
-                $labId = $row->LabID ?: $row->ClassID;
+                /*
+                |--------------------------------------------------------------------------
+                | LAB ROOM
+                |--------------------------------------------------------------------------
+                | Lab entries use LabID -> tbl_labs.LabID
+                */
+
+                $labId = $row->LabID;
 
                 $lab = $labMap->get((string) $labId);
 
                 if ($lab) {
-                    $roomName = $lab->LabName
-                        ?? $lab->Class_Name
-                        ?? $labId;
-                } else {
-                    $classroom = $classroomMap->get((string) $labId);
 
-                    $roomName = $classroom
-                        ? ($classroom->Class_Name ?? $labId)
-                        : $labId;
+                    $roomName = $lab->LabName ?? $labId;
+
+                } else {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Fallback only if the LabID cannot be found
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $roomName = $labId ?: 'N/A';
                 }
 
             } else {
