@@ -182,7 +182,7 @@ class StudentRepository
             $faculty_code = $studentDetails->faculty_code ?? null;
             $major_code = $studentDetails->major_code ?? null;
             $batch = $studentDetails->batch ?? null;
-            $semester = (int) ($studentDetails->curr_sem ?? 0);
+            $semester = (int) ($studentDetails->curr_sem ?? 0) + 1;
 
             $phone = $studentDetails->stud_tel_mobile ?? null;
 
