@@ -937,6 +937,8 @@ class Helper
                     'semester' => (int) $studentHelper['semester'],
 
                     'gender' => $studentHelper['gender'] ?? null,
+
+                    'stud_group' => $studentHelper['stud_group'] ?? 1,
                 ];
             }
         );
