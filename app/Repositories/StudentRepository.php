@@ -348,6 +348,7 @@ class StudentRepository
             'batch' => $batch,
             'sem' => (int) $semester,
             'gender' => $gender,
+            'stud_group' => $stud_group,
             'token' => $token->plainTextToken,
             'token_expires_at' => $expiresAt->toISOString(),
             'app_status' => $appStatus,
