@@ -341,8 +341,8 @@
 
 
                                 <input type="text" name="student_index" id="student_index" class="form-control"
-                                    value="{{ old('student_index') }}" maxlength="100" required
-                                    placeholder="Enter student index">
+                                    value="{{ old('student_index') }}" maxlength="2000" required
+                                    placeholder="Enter student indexes separated by commas">
 
                             </div>
 

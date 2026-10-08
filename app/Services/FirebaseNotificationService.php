@@ -32,7 +32,7 @@ class FirebaseNotificationService
 
 
         $type = $notification_type;
-        
+
         $user = User::where('stud_index', $studentIndex)->where('role_id', 2)->first();
 
         if (!$user) {
@@ -340,5 +340,115 @@ class FirebaseNotificationService
 
             return false;
         }
+    }
+
+    public function sendToStudentIndexes(
+        array $studentIndexes,
+        string $notification_type,
+        string $title,
+        string $body,
+        array $data = []
+    ): array {
+
+        $sentStudents = 0;
+        $notFound = 0;
+        $totalSuccess = 0;
+        $totalFailed = 0;
+
+        foreach ($studentIndexes as $studentIndex) {
+
+            $result = $this->sendToStudentIndexResult(
+                studentIndex: $studentIndex,
+                notification_type: $notification_type,
+                title: $title,
+                body: $body,
+                data: $data
+            );
+
+            if ($result['sent']) {
+                $sentStudents++;
+            } else {
+                $notFound++;
+            }
+
+            $totalSuccess += $result['success'];
+            $totalFailed += $result['failed'];
+        }
+
+        return [
+            'sent_students' => $sentStudents,
+            'not_found' => $notFound,
+            'success' => $totalSuccess,
+            'failed' => $totalFailed,
+        ];
+    }
+    private function sendToStudentIndexResult(
+        string $studentIndex,
+        string $notification_type,
+        string $title,
+        string $body,
+        array $data = []
+    ): array {
+
+        $type = $notification_type;
+
+        $user = User::where('stud_index', $studentIndex)
+            ->where('role_id', 2)
+            ->first();
+
+        if (!$user) {
+            Log::warning('FCM: Student not found', [
+                'student_index' => $studentIndex,
+            ]);
+
+            return [
+                'sent' => false,
+                'success' => 0,
+                'failed' => 0,
+            ];
+        }
+
+        $devices = UserDevice::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->whereNotNull('fcm_token')
+            ->get();
+
+        if ($devices->isEmpty()) {
+
+            Log::warning('FCM: No active device for student', [
+                'student_index' => $studentIndex,
+                'user_id' => $user->id,
+            ]);
+
+            return [
+                'sent' => false,
+                'success' => 0,
+                'failed' => 0,
+            ];
+        }
+
+        // Store notification in database
+        $this->storeNotification(
+            $user,
+            $title,
+            $body,
+            $type,
+            $data
+        );
+
+        // Send to all active devices belonging to this student
+        $sendResult = $this->sendToDevices(
+            $devices,
+            $title,
+            $body,
+            $type,
+            $data
+        );
+
+        return [
+            'sent' => $sendResult['success'] > 0,
+            'success' => $sendResult['success'],
+            'failed' => $sendResult['failed'],
+        ];
     }
 }

@@ -32,7 +32,6 @@ class NotificationController extends Controller
         ));
     }
 
-
     /**
      * Push notification to all students
      * matching academic group.
@@ -105,7 +104,6 @@ class NotificationController extends Controller
 
         );
 
-
         return redirect()
             ->route('admin.notifications')
             ->with(
@@ -121,11 +119,10 @@ class NotificationController extends Controller
     public function pushToOne(Request $request)
     {
         $validated = $request->validate([
-
             'student_index' => [
                 'required',
                 'string',
-                'max:100',
+                'max:2000',
             ],
 
             'notification_type' => [
@@ -145,40 +142,59 @@ class NotificationController extends Controller
                 'string',
                 'max:2000',
             ],
-
         ]);
 
-        $sent = $this->firebaseNotificationService->sendToStudentIndex(
+        // Convert comma-separated indexes into a clean unique array
+        $studentIndexes = collect(
+            preg_split('/[\s,]+/', $validated['student_index'])
+        )
+            ->map(fn($index) => trim($index))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
-            studentIndex: $validated['student_index'],
-
-            notification_type: $validated['notification_type'],
-
-            title: $validated['title'],
-
-            body: $validated['body'],
-
-        );
-
-
-        if (!$sent) {
-
+        if (empty($studentIndexes)) {
             return redirect()
                 ->route('admin.notifications')
                 ->withErrors([
-                    'student_index' =>
-                        'Student not found or no active device is registered for this student.',
+                    'student_index' => 'Please enter at least one student index.',
                 ])
                 ->withInput();
         }
 
+        $result = $this->firebaseNotificationService->sendToStudentIndexes(
+            studentIndexes: $studentIndexes,
+            notification_type: $validated['notification_type'],
+            title: $validated['title'],
+            body: $validated['body'],
+        );
+
+        if ($result['sent_students'] === 0) {
+            return redirect()
+                ->route('admin.notifications')
+                ->withErrors([
+                    'student_index' =>
+                        'No matching students with active registered devices were found.',
+                ])
+                ->withInput();
+        }
+
+        $message = sprintf(
+            'Notification sent successfully to %d student(s).',
+            $result['sent_students']
+        );
+
+        if ($result['not_found'] > 0) {
+            $message .= sprintf(
+                ' %d student index(es) were not found or have no active device.',
+                $result['not_found']
+            );
+        }
 
         return redirect()
             ->route('admin.notifications')
-            ->with(
-                'success',
-                'Notification sent successfully to the student.'
-            );
+            ->with('success', $message);
     }
 
     public function testFirebase()
