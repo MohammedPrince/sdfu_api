@@ -99,6 +99,7 @@ class ExternalDatabaseService
                 'c.faculty_code',
                 'c.major_code',
                 'c.sex_code',
+                'c.stud_group',
 
                 // Latest transcript
                 't.last_semester',
@@ -733,7 +734,7 @@ class ExternalDatabaseService
             ->first();
     }
 
-    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester)
+    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester,$stud_group)
     {
         // NOTE: swap 'mysql_ott' for whatever this connection is actually
         // named in config/database.php — the original code's "mysql_fib"
@@ -741,7 +742,7 @@ class ExternalDatabaseService
         $connection = DB::connection('mysql_ott');
 
         $ttid = 41;
-        $group = 1;
+        $group = $stud_group ?? 1;
         $newCourseFlag = 1;
         $new_course_flag_course = 2;
 

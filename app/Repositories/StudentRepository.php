@@ -201,6 +201,8 @@ class StudentRepository
                 default => null,
             };
 
+            $stud_group = $studentDetails->stud_group ?? 1;
+
             /*
             |--------------------------------------------------------------------------
             | Create local User
@@ -228,6 +230,8 @@ class StudentRepository
                 'gender' => $gender,
 
                 'role_id' => Helper::STUDENT_ROLE,
+
+                'stud_group' => $stud_group,
             ]);
 
             Auth::login($user);
@@ -263,6 +267,7 @@ class StudentRepository
         $phone = $user->phone;
         $email = $user->email;
         $gender = $user->gender;
+        $stud_group = $user->stud_group;
 
         // $faculty_desc_e = $this->externalDatabase->getFacultyName($faculty_code);
         // $major_desc_e = $this->externalDatabase->getMajorName($major_code);
@@ -412,6 +417,7 @@ class StudentRepository
         $phone = $studentHelper['phone'];
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
+        $stud_group = $studentHelper['stud_group'];
         //Check cached status
         $cached = (bool) ($studentHelper['cached'] ?? false);
 
@@ -467,6 +473,8 @@ class StudentRepository
             'semester' => (int) $semester,
 
             'gender' => $gender ?? null,
+
+            'stud_group' => $stud_group ?? 1,
 
             'cached' => $cached,
         ];
@@ -670,13 +678,14 @@ class StudentRepository
         $timetable = Cache::remember(
             'timetable_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
             15, // 15 minutes
-            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester) {
+            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester,$stud_group) {
                 return $this->externalDatabase->getStudentTimetable(
                     $stud_id,
                     $faculty_code,
                     $major_code,
                     $batch,
-                    $semester
+                    $semester,
+                    $stud_group
                 );
             }
         );
@@ -1116,6 +1125,7 @@ class StudentRepository
         $major_code = $studentHelper['major_code'];
         $batch = $studentHelper['batch'];
         $semester = $studentHelper['semester'];
+        $stud_group = $studentHelper['stud_group'];
 
         //Dump Data for testing. Fees
         if (in_array((string) $stud_id, Helper::STUD_IDS, true)) {
@@ -1128,7 +1138,8 @@ class StudentRepository
             $faculty_code,
             $major_code,
             $batch,
-            $semester
+            $semester,
+            $stud_group
         );
 
         if (!empty($timetable['days'])) {

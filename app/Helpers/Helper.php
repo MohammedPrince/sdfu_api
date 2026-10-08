@@ -1136,6 +1136,7 @@ class Helper
                     'gender' => $user->gender ?? null,
 
                     'role_id' => $user->role_id ?? null,
+                    'stud_group' => $user->stud_group ?? null,
                 ];
             }
         );

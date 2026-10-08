@@ -31,6 +31,7 @@ class User extends Authenticatable
         'semester',
         'gender',
         'role_id',
+        'stud_group',
         'is_active'
     ];
 
