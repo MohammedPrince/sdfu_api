@@ -252,6 +252,26 @@
                                         40
                                     </option>
 
+                                    <option value="41" {{ old('ttid') == 41 ? 'selected' : '' }}>
+                                        41
+                                    </option>
+
+                                    <option value="42" {{ old('ttid') == 42 ? 'selected' : '' }}>
+                                        42
+                                    </option>
+
+                                    <option value="43" {{ old('ttid') == 43 ? 'selected' : '' }}>
+                                        43
+                                    </option>
+
+                                    <option value="44" {{ old('ttid') == 44 ? 'selected' : '' }}>
+                                        44
+                                    </option>
+
+                                    <option value="45" {{ old('ttid') == 45 ? 'selected' : '' }}>
+                                        45
+                                    </option>
+
                                 </select>
 
                             </div>

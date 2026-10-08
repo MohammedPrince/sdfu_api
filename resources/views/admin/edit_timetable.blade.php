@@ -309,7 +309,7 @@
 
                             <select name="ttid" id="ttid" class="form-control" required>
 
-                                @foreach ([40, 41, 42, 43, 44, 45] as $id)
+                                @foreach ([ 41, 42, 43, 44, 45] as $id)
                                     <option value="{{ $id }}" {{ (int) $ttid === $id ? 'selected' : '' }}>
 
                                         {{ $id }}

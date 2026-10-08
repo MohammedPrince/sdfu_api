@@ -269,7 +269,7 @@
                                         Select TTID
                                     </option>
 
-                                    @foreach ([40, 41, 42, 43, 44, 45] as $ttid)
+                                    @foreach ([41, 42, 43, 44, 45] as $ttid)
                                         <option value="{{ $ttid }}" {{ old('ttid') == $ttid ? 'selected' : '' }}>
                                             {{ $ttid }}
                                         </option>
