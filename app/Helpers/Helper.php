@@ -1095,6 +1095,7 @@ class Helper
 
     public static function studentData(): ?array
     {
+        
         if (!Auth::check()) {
             return null;
         }

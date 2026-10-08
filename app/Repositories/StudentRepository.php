@@ -418,7 +418,7 @@ class StudentRepository
         $phone = $studentHelper['phone'];
         $email = $studentHelper['email'];
         $gender = $studentHelper['gender'];
-        $stud_group = $studentHelper['stud_group'];
+        $stud_group = $studentHelper['stud_group'] ?? 1;
         //Check cached status
         $cached = (bool) ($studentHelper['cached'] ?? false);
 
