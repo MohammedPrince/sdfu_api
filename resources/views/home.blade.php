@@ -285,11 +285,11 @@
             <div class="section-heading">
 
                 <h2>
-                    Take it with you
+                    Right in your pocket.
                 </h2>
 
                 <p>
-                    Get the Student Desk app on your phone.
+                    Get the Student Desk app for both.
                 </p>
 
             </div>
