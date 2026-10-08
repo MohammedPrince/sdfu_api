@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\PersonalAccessToken;
 
-use function CuyZ\Valinor\Compiler\return_;
-
 class StudentRepository
 {
     protected $externalDatabase;
@@ -679,7 +677,7 @@ class StudentRepository
         $timetable = Cache::remember(
             'timetable_' . $stud_id . '_' . $faculty_code . '_' . $major_code . '_' . $batch . '_' . $semester,
             15, // 15 minutes
-            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester,$stud_group) {
+            function () use ($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_group) {
                 return $this->externalDatabase->getStudentTimetable(
                     $stud_id,
                     $faculty_code,

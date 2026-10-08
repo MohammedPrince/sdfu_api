@@ -736,6 +736,7 @@ class ExternalDatabaseService
 
     public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester,$stud_group)
     {
+        
         // NOTE: swap 'mysql_ott' for whatever this connection is actually
         // named in config/database.php — the original code's "mysql_fib"
         // comment was just a placeholder, not a confirmed name.
@@ -746,11 +747,6 @@ class ExternalDatabaseService
         $newCourseFlag = 1;
         $new_course_flag_course = 2;
 
-        // dd($semester);
-
-        // $faculty_code = 21;
-        // $major_code = 2;
-        // $batch = '2022';
 
         // Lecture/tutorial bindings — only keys that appear in $lectureQuery /
         // $fallbackQuery below. PDO throws "Invalid parameter number:
