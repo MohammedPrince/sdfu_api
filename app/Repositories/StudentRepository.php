@@ -1422,7 +1422,7 @@ class StudentRepository
 
         // Get authenticated student
         $studentHelper = Helper::studentData();
-        $user_id = $studentHelper['user']->id;
+        $user_id = $studentHelper['id'];
 
         // Find notification belonging to this student
         $notification = Notification::query()->where('id', $notificationId)->where('user_id', $user_id)->first();
@@ -1476,7 +1476,7 @@ class StudentRepository
 
         // Get authenticated student
         $studentHelper = Helper::studentData();
-        $user_id = $studentHelper['user']->id;
+        $user_id = $studentHelper['id'];
 
         // Mark all unread notifications as read
         $updatedCount = Notification::query()->where('user_id', $user_id)->whereNull('read_at')
