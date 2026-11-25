@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CampaignTemplate;
+use App\Models\ScheduledCampaign;
 use App\Services\AdminService;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
@@ -25,10 +27,19 @@ class NotificationController extends Controller
         $batches = $this->adminService->getBatches();
         $notifications = $this->adminService->getPushedNotifications();
 
+        $campaigns = ScheduledCampaign::query()->latest()->get();
+        $templateGroups = CampaignTemplate::query()
+            ->orderBy('template_group')
+            ->orderBy('sequence')
+            ->get()
+            ->groupBy('template_group');
+
         return view('admin.notifications', compact(
             'faculties',
             'batches',
-            'notifications'
+            'notifications',
+            'campaigns',
+            'templateGroups'
         ));
     }
 

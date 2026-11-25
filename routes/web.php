@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\MainController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\ScheduledCampaignController;
 use App\Http\Controllers\Admin\AdminPermissionController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -139,6 +140,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->name('notifications.push.one');
 
             Route::get('/notifications/test', [NotificationController::class, 'testFirebase']);
+
+            // Scheduled campaigns (daily / weekly notifications from template sets)
+            Route::post('/notifications/campaigns', [ScheduledCampaignController::class, 'store'])
+                ->name('notifications.campaigns.store');
+
+            Route::post('/notifications/campaigns/{campaign}/toggle', [ScheduledCampaignController::class, 'toggle'])
+                ->name('notifications.campaigns.toggle');
+
+            Route::post('/notifications/campaigns/{campaign}/send-now', [ScheduledCampaignController::class, 'sendNow'])
+                ->name('notifications.campaigns.send');
+
+            Route::delete('/notifications/campaigns/{campaign}', [ScheduledCampaignController::class, 'destroy'])
+                ->name('notifications.campaigns.destroy');
+
+            Route::post('/notifications/templates', [ScheduledCampaignController::class, 'storeTemplate'])
+                ->name('notifications.templates.store');
+
+            Route::put('/notifications/templates/{template}', [ScheduledCampaignController::class, 'updateTemplate'])
+                ->name('notifications.templates.update');
+
+            Route::delete('/notifications/templates/{template}', [ScheduledCampaignController::class, 'destroyTemplate'])
+                ->name('notifications.templates.destroy');
 
         });
 

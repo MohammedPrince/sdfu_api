@@ -4042,3 +4042,87 @@ button,
     cursor: not-allowed;
     transform: none;
 }
+
+/* =========================================================
+   Scheduled notification campaigns
+   ========================================================= */
+
+.campaigns-section {
+    margin-top: 24px;
+}
+
+.campaign-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.campaign-actions form {
+    margin: 0;
+}
+
+.campaign-templates {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.campaign-template-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #efe4e6;
+    border-radius: 8px;
+}
+
+.campaign-template-group > summary {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.campaign-template-group[open] > summary {
+    margin-bottom: 10px;
+}
+
+.campaign-template-row {
+    display: grid;
+    grid-template-columns: 80px 150px minmax(160px, 1fr) minmax(220px, 2fr) auto;
+    gap: 12px;
+    align-items: end;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #efe4e6;
+    border-radius: 8px;
+}
+
+.campaign-template-row .form-group {
+    margin: 0;
+}
+
+.campaign-template-new {
+    grid-template-columns: minmax(180px, 1fr) 80px 150px minmax(160px, 1fr) minmax(220px, 2fr) auto;
+    border-style: dashed;
+}
+
+.campaign-template-actions {
+    display: flex;
+    gap: 6px;
+}
+
+@media (max-width: 900px) {
+    .campaign-template-row,
+    .campaign-template-new {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .campaign-template-group-name,
+    .campaign-template-title,
+    .campaign-template-body,
+    .campaign-template-actions {
+        grid-column: 1 / -1;
+    }
+}

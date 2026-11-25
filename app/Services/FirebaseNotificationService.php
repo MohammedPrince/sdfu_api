@@ -153,6 +153,76 @@ class FirebaseNotificationService
 
 
     /**
+     * Store and push a notification to a list of students.
+     * Works in chunks of 500 (FCM multicast limit), so it is safe for
+     * "all students" broadcasts.
+     *
+     * @return array{students:int, with_device:int, success:int, failed:int}
+     */
+    public function sendToUsers(
+        Collection $users,
+        string $notification_type,
+        string $title,
+        string $body,
+        array $data = []
+    ): array {
+
+        $result = [
+            'students' => $users->count(),
+            'with_device' => 0,
+            'success' => 0,
+            'failed' => 0,
+        ];
+
+        if ($users->isEmpty()) {
+            return $result;
+        }
+
+        $now = now();
+        $encodedData = json_encode($data);
+
+        foreach ($users->chunk(500) as $chunk) {
+
+            // Store in-app notification for every student (bulk insert)
+            Notification::insert(
+                $chunk->map(fn(User $user) => [
+                    'user_id' => $user->id,
+                    'title' => $title,
+                    'body' => $body,
+                    'type' => $notification_type,
+                    'data' => $encodedData,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])->values()->all()
+            );
+
+            $devices = UserDevice::whereIn('user_id', $chunk->pluck('id'))
+                ->where('is_active', true)
+                ->whereNotNull('fcm_token')
+                ->get();
+
+            $result['with_device'] += $devices->pluck('user_id')->unique()->count();
+
+            foreach ($devices->chunk(500) as $deviceChunk) {
+
+                $sendResult = $this->sendToDevices(
+                    $deviceChunk,
+                    $title,
+                    $body,
+                    $notification_type,
+                    $data
+                );
+
+                $result['success'] += $sendResult['success'];
+                $result['failed'] += $sendResult['failed'];
+            }
+        }
+
+        return $result;
+    }
+
+
+    /**
      * Send Firebase notification to devices.
      */
     private function sendToDevices(
