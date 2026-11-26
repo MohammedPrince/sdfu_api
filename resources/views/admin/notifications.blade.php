@@ -590,8 +590,8 @@
 
                                 <td>
 
-                                    <span class="notification-body">
-                                        {{ $notification->body }}
+                                    <span class="notification-body" title="{{ $notification->body }}">
+                                        {{ \Illuminate\Support\Str::limit($notification->body, 60) }}
                                     </span>
 
                                 </td>
