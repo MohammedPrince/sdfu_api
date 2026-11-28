@@ -21,3 +21,4 @@ yarn-error.log
 /.vscode
 /.zed
 /.sdfu.code-workspace
+/doc/tester.csv

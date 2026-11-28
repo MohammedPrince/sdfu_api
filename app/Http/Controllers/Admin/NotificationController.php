@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CampaignTemplate;
+use App\Models\Notification;
 use App\Models\ScheduledCampaign;
 use App\Services\AdminService;
 use App\Services\FirebaseNotificationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class NotificationController extends Controller
 {
@@ -25,7 +28,8 @@ class NotificationController extends Controller
     {
         $faculties = $this->adminService->getFaculties();
         $batches = $this->adminService->getBatches();
-        $notifications = $this->adminService->getPushedNotifications();
+        // Rows are loaded by the DataTable from data(); only the count is needed here
+        $notificationsTotal = Notification::count();
 
         $campaigns = ScheduledCampaign::query()->latest()->get();
         $templateGroups = CampaignTemplate::query()
@@ -37,10 +41,61 @@ class NotificationController extends Controller
         return view('admin.notifications', compact(
             'faculties',
             'batches',
-            'notifications',
+            'notificationsTotal',
             'campaigns',
             'templateGroups'
         ));
+    }
+
+    /**
+     * Server-side data for the Pushed Notifications DataTable.
+     */
+    public function data(Request $request): JsonResponse
+    {
+        $start = max(0, (int) $request->input('start', 0));
+        $length = min(100, max(1, (int) $request->input('length', 10)));
+        $search = trim((string) $request->input('search.value', ''));
+        $direction = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
+
+        $result = $this->adminService->getPushedNotificationsTable($search, $start, $length, $direction);
+
+        $data = $result['rows']->map(function (Notification $notification) {
+
+            $user = $notification->user;
+            $body = (string) $notification->body;
+
+            return [
+                'student' => $user
+                    ? '<strong>' . e($user->name ?? 'Student') . '</strong>'
+                    : '<span class="notification-deleted-user">Student account removed</span>',
+
+                'student_index' => $user
+                    ? '<span class="notification-student-index">' . e($user->stud_index) . '</span>'
+                    : '<span class="notification-muted">—</span>',
+
+                'title' => '<strong class="notification-title">' . e($notification->title) . '</strong>',
+
+                'message' => '<span class="notification-body" title="' . e($body) . '">'
+                    . e(Str::limit($body, 60)) . '</span>',
+
+                'type' => '<span class="notification-type">' . e(ucfirst($notification->type ?? 'general')) . '</span>',
+
+                'status' => $notification->read_at
+                    ? '<span class="notification-status read">Read</span>'
+                    : '<span class="notification-status unread">Unread</span>',
+
+                'sent_at' => '<div class="notification-date"><strong>'
+                    . $notification->created_at->format('d M Y') . '</strong><span>'
+                    . $notification->created_at->format('h:i A') . '</span></div>',
+            ];
+        })->values();
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 0),
+            'recordsTotal' => $result['total'],
+            'recordsFiltered' => $result['filtered'],
+            'data' => $data,
+        ]);
     }
 
     /**

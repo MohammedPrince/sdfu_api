@@ -290,7 +290,7 @@
 
                     </div>
 
-                    <table class="settings-table students-table">
+                    <table class="settings-table students-table" data-datatable="paginated">
 
                         <thead>
 

@@ -59,9 +59,9 @@ class AdminService
         return $this->adminRepository->majorsByFaculty($facultyCode);
     }
 
-    public function getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid)
+    public function getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid, $studGroup = null)
     {
-        return $this->adminRepository->getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid);
+        return $this->adminRepository->getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid, $studGroup);
     }
 
     public function getAppVersions()
@@ -124,6 +124,11 @@ class AdminService
     public function getPushedNotifications()
     {
         return $this->adminRepository->getPushedNotifications();
+    }
+
+    public function getPushedNotificationsTable(string $search, int $start, int $length, string $direction): array
+    {
+        return $this->adminRepository->getPushedNotificationsTable($search, $start, $length, $direction);
     }
 
     public function getStudents($data)

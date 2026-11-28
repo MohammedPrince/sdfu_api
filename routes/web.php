@@ -139,6 +139,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/notifications/push-one', [NotificationController::class, 'pushToOne'])
                 ->name('notifications.push.one');
 
+            Route::get('/notifications/data', [NotificationController::class, 'data'])
+                ->name('notifications.data');
+
             Route::get('/notifications/test', [NotificationController::class, 'testFirebase']);
 
             // Scheduled campaigns (daily / weekly notifications from template sets)

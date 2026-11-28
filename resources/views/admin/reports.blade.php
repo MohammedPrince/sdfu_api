@@ -585,7 +585,7 @@
 
             <div class="table-responsive">
 
-                <table class="settings-table reports-table">
+                <table class="settings-table reports-table" data-datatable="paginated">
 
                     <thead>
 

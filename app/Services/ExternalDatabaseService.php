@@ -665,7 +665,7 @@ class ExternalDatabaseService
             ->first();
     }
 
-    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester,$stud_group)
+    public function getStudentTimetable($stud_id, $faculty_code, $major_code, $batch, $semester, $stud_group = null)
     {
         
         // NOTE: swap 'mysql_ott' for whatever this connection is actually

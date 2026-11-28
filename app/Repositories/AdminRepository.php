@@ -298,7 +298,7 @@ class AdminRepository
         return $majors;
     }
 
-    public function getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid)
+    public function getTimetable($facultyCode, $majorCode, $batch, $semester, $ttid, $studGroup = null)
     {
         // stud_id is not actually used in the getStudentTimetable method for the queries,
         // but we need to pass something. We'll pass 0 as a placeholder.
@@ -308,7 +308,7 @@ class AdminRepository
             $majorCode,
             $batch,
             $semester,
-
+            $studGroup // null = default group (1)
         );
     }
 
@@ -1141,6 +1141,41 @@ class AdminRepository
         return Notification::with('user')
             ->latest('created_at')
             ->paginate(10);
+    }
+
+    /**
+     * Pushed notifications page for the admin DataTable (server-side).
+     * Search matches the student index (partial match).
+     */
+    public function getPushedNotificationsTable(string $search, int $start, int $length, string $direction): array
+    {
+        $total = Notification::count();
+
+        $query = Notification::query()->with('user:id,name,stud_index');
+
+        if ($search !== '') {
+            $like = '%' . addcslashes($search, '%_\\') . '%';
+
+            $query->whereIn(
+                'user_id',
+                User::query()->select('id')->where('stud_index', 'like', $like)
+            );
+        }
+
+        $filtered = $search === '' ? $total : (clone $query)->count();
+
+        $rows = $query
+            ->orderBy('created_at', $direction)
+            ->orderBy('id', $direction)
+            ->skip($start)
+            ->take($length)
+            ->get();
+
+        return [
+            'total' => $total,
+            'filtered' => $filtered,
+            'rows' => $rows,
+        ];
     }
 
     public function getMoodlePasswordByUsername(string $username)

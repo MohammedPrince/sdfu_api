@@ -4090,7 +4090,7 @@ button,
 
 .campaign-template-row {
     display: grid;
-    grid-template-columns: 80px 150px minmax(160px, 1fr) minmax(220px, 2fr) auto;
+    grid-template-columns: 96px 150px minmax(160px, 1fr) minmax(220px, 2fr) auto;
     gap: 12px;
     align-items: end;
     padding: 12px;
@@ -4104,7 +4104,7 @@ button,
 }
 
 .campaign-template-new {
-    grid-template-columns: minmax(180px, 1fr) 80px 150px minmax(160px, 1fr) minmax(220px, 2fr) auto;
+    grid-template-columns: minmax(180px, 1fr) 96px 150px minmax(160px, 1fr) minmax(220px, 2fr) auto;
     border-style: dashed;
 }
 
@@ -4125,4 +4125,285 @@ button,
     .campaign-template-actions {
         grid-column: 1 / -1;
     }
+}
+
+.campaign-template-seq .form-control {
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 6px;
+}
+
+/* =========================================================
+   Admin DataTables (themed, responsive) - all admin tables
+   ========================================================= */
+
+.notification-history-wrapper {
+    padding: 0 20px 20px;
+}
+
+.admin-content .dt-container {
+    font-size: 14px;
+    color: inherit;
+}
+
+.admin-content .dt-layout-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 !important;
+}
+
+.admin-content .dt-layout-row.dt-layout-table {
+    display: block;
+    margin: 0 !important;
+}
+
+.admin-content .dt-layout-cell {
+    padding: 0 !important;
+}
+
+/* Search */
+.admin-content .dt-search input {
+    width: 280px;
+    max-width: 100%;
+    height: 40px;
+    margin: 0 !important;
+    padding: 0 14px 0 38px !important;
+    border: 1px solid var(--admin-border) !important;
+    border-radius: 8px !important;
+    background: var(--admin-white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23651522' stroke-width='2' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px center !important;
+    font-size: 14px;
+    outline: none;
+}
+
+.admin-content .dt-search input:focus,
+.admin-content .dt-length select:focus {
+    border-color: var(--admin-burgundy) !important;
+    box-shadow: 0 0 0 3px rgba(101, 21, 34, 0.08);
+}
+
+/* Page length */
+.admin-content .dt-length {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8a7b7f;
+    font-size: 13px;
+}
+
+.admin-content .dt-length select {
+    height: 40px;
+    padding: 0 10px !important;
+    border: 1px solid var(--admin-border) !important;
+    border-radius: 8px !important;
+    background-color: var(--admin-white) !important;
+    color: var(--admin-burgundy);
+    font-weight: 600;
+}
+
+/* Table */
+.admin-content table.dataTable {
+    margin: 0 !important;
+    border-collapse: collapse !important;
+}
+
+.admin-content table.dataTable thead th {
+    text-align: left !important;
+    white-space: nowrap;
+}
+
+.admin-content table.dataTable > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.admin-content table.dataTable.nowrap td .notification-body {
+    white-space: nowrap;
+}
+
+/* Sort arrows in theme color */
+.admin-content table.dataTable thead th.dt-orderable-asc span.dt-column-order::before,
+.admin-content table.dataTable thead th.dt-orderable-desc span.dt-column-order::after,
+.admin-content table.dataTable thead th.dt-ordering-asc span.dt-column-order::before,
+.admin-content table.dataTable thead th.dt-ordering-desc span.dt-column-order::after {
+    color: var(--admin-burgundy);
+}
+
+/* Info + paging (same look as report pagination) */
+.admin-content .dt-info {
+    color: #8a7b7f;
+    font-size: 13px;
+}
+
+.admin-content .dt-paging nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.admin-content .dt-paging .dt-paging-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    border: 1px solid var(--admin-border) !important;
+    border-radius: 8px !important;
+    background: var(--admin-white) !important;
+    color: var(--admin-burgundy) !important;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-content .dt-paging .dt-paging-button:hover:not(.disabled):not(.current) {
+    border-color: var(--admin-burgundy) !important;
+    background: var(--admin-cream) !important;
+}
+
+.admin-content .dt-paging .dt-paging-button.current {
+    border-color: var(--admin-burgundy) !important;
+    background: var(--admin-burgundy) !important;
+    color: var(--admin-white) !important;
+}
+
+.admin-content .dt-paging .dt-paging-button.disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* Loading indicator */
+.admin-content div.dt-processing {
+    padding: 10px 18px !important;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    background: var(--admin-white);
+    color: var(--admin-burgundy);
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(101, 21, 34, 0.08);
+}
+
+.admin-content div.dt-processing > div:last-child {
+    display: none;
+}
+
+/* Responsive "+" control and child rows */
+.admin-content table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before {
+    border-color: transparent transparent transparent var(--admin-burgundy) !important;
+    color: var(--admin-burgundy);
+}
+
+.admin-content table.dataTable > tbody > tr.child ul.dtr-details {
+    width: 100%;
+}
+
+.admin-content table.dataTable > tbody > tr.child ul.dtr-details > li {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--admin-border);
+    white-space: normal;
+}
+
+.admin-content table.dataTable > tbody > tr.child span.dtr-title {
+    min-width: 110px;
+    color: #8a7b7f;
+    font-weight: 600;
+}
+
+.admin-content table.dataTable > tbody > tr.child .notification-body {
+    white-space: normal;
+}
+
+/* Read / unread badges */
+.notification-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notification-status.read {
+    color: #35634a;
+    background: #edf6ef;
+}
+
+.notification-status.unread {
+    color: #8a555c;
+    background: #f8eeee;
+}
+
+.notification-date {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.notification-date span {
+    color: #8a7b7f;
+    font-size: 12px;
+}
+
+@media (max-width: 640px) {
+    .notification-history-wrapper {
+        padding: 0 12px 16px;
+    }
+
+    .admin-content .dt-layout-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-content .dt-search,
+    .admin-content .dt-search input {
+        width: 100%;
+    }
+
+    .admin-content .dt-length {
+        justify-content: flex-end;
+    }
+
+    .admin-content .dt-info {
+        text-align: center;
+    }
+
+    .admin-content .dt-paging nav {
+        justify-content: center;
+    }
+}
+
+/* Let Responsive collapse columns instead of forcing horizontal scroll */
+.admin-content table.dataTable.settings-table,
+.admin-content table.dataTable.students-table,
+.admin-content table.dataTable.reports-table {
+    min-width: 0 !important;
+}
+
+/* Search / info / paging rows of tables that sit directly in a card */
+.admin-content .table-responsive > .dt-container > .dt-layout-row:not(.dt-layout-table) {
+    padding: 0 16px;
+}
+
+/* Expanded child rows: wrap long values (names, faculties, messages) */
+.admin-content table.dataTable > tbody > tr.child ul.dtr-details > li span.dtr-data {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Buttons / forms moved into a child row keep their inline layout */
+.admin-content table.dataTable > tbody > tr.child form {
+    display: inline-flex;
+    margin: 0;
+}
+
+/* Empty table message */
+.admin-content table.dataTable td.dt-empty {
+    padding: 28px 16px;
+    color: #8a7b7f;
+    text-align: center;
 }

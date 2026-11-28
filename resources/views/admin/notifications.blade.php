@@ -470,11 +470,11 @@
                 <div class="notifications-count">
 
                     <strong>
-                        {{ number_format($notifications->total()) }}
+                        {{ number_format($notificationsTotal) }}
                     </strong>
 
                     <span>
-                        {{ $notifications->total() === 1 ? 'Notification' : 'Notifications' }}
+                        {{ $notificationsTotal === 1 ? 'Notification' : 'Notifications' }}
                     </span>
 
                 </div>
@@ -483,238 +483,40 @@
 
 
             {{-- =====================================================
-                 TABLE
+                 TABLE (DataTables, server-side, searchable by index)
                  ===================================================== --}}
 
-            <div class="table-responsive notification-history-wrapper">
+            <div class="notification-history-wrapper">
 
-                <table class="settings-table notification-history-table">
+                <table id="pushedNotificationsTable" data-datatable="custom"
+                    class="settings-table notification-history-table display nowrap" style="width:100%">
 
                     <thead>
-
                         <tr>
-
-                            <th>
-                                Student
-                            </th>
-
-                            <th>
-                                Student Index
-                            </th>
-
-                            <th>
-                                Title
-                            </th>
-
-                            <th>
-                                Message
-                            </th>
-
-                            <th>
-                                Type
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Sent At
-                            </th>
-
+                            <th data-priority="3">Student</th>
+                            <th data-priority="1">Student Index</th>
+                            <th data-priority="2">Title</th>
+                            <th data-priority="6">Message</th>
+                            <th data-priority="7">Type</th>
+                            <th data-priority="5">Status</th>
+                            <th data-priority="4">Sent At</th>
                         </tr>
-
                     </thead>
 
-
-                    <tbody>
-
-                        @forelse ($notifications as $notification)
-                            <tr>
-
-                                {{-- Student --}}
-
-                                <td>
-
-                                    @if ($notification->user)
-                                        <div class="notification-student-info">
-
-
-                                            <div>
-
-                                                <strong>
-                                                    {{ $notification->user->name ?? 'Student' }}
-                                                </strong>
-
-                                            </div>
-
-                                        </div>
-                                    @else
-                                        <span class="notification-deleted-user">
-                                            Student account removed
-                                        </span>
-                                    @endif
-
-                                </td>
-
-
-                                {{-- Student Index --}}
-
-                                <td>
-
-                                    @if ($notification->user)
-                                        <span class="notification-student-index">
-                                            {{ $notification->user->stud_index }}
-                                        </span>
-                                    @else
-                                        <span class="notification-muted">
-                                            —
-                                        </span>
-                                    @endif
-
-                                </td>
-
-
-                                {{-- Title --}}
-
-                                <td>
-
-                                    <strong class="notification-title">
-                                        {{ $notification->title }}
-                                    </strong>
-
-                                </td>
-
-
-                                {{-- Body --}}
-
-                                <td>
-
-                                    <span class="notification-body" title="{{ $notification->body }}">
-                                        {{ \Illuminate\Support\Str::limit($notification->body, 60) }}
-                                    </span>
-
-                                </td>
-
-
-                                {{-- Type --}}
-
-                                <td>
-
-                                    <span class="notification-type">
-                                        {{ ucfirst($notification->type ?? 'general') }}
-                                    </span>
-
-                                </td>
-
-
-                                {{-- Status --}}
-
-                                <td>
-
-                                    @if ($notification->read_at)
-                                        <span class="notification-status read">
-                                            Read
-                                        </span>
-                                    @else
-                                        <span class="notification-status unread">
-                                            Unread
-                                        </span>
-                                    @endif
-
-                                </td>
-
-
-                                {{-- Sent At --}}
-
-                                <td>
-
-                                    <div class="notification-date">
-
-                                        <strong>
-                                            {{ $notification->created_at->format('d M Y') }}
-                                        </strong>
-
-                                        <span>
-                                            {{ $notification->created_at->format('h:i A') }}
-                                        </span>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        @empty
-
-                            <tr>
-
-                                <td colspan="7" class="notifications-empty">
-
-                                    No pushed notifications yet.
-
-                                </td>
-
-                            </tr>
-                        @endforelse
-
-                    </tbody>
+                    <tbody></tbody>
 
                 </table>
 
             </div>
 
-
-            {{-- =====================================================
-                 PAGINATION
-                 ===================================================== --}}
-
-            @if ($notifications->hasPages())
-                @php
-                    $activityPaginator = $notifications;
-                    $startPage = max(1, $activityPaginator->currentPage() - 1);
-                    $endPage = min($activityPaginator->lastPage(), $activityPaginator->currentPage() + 1);
-                @endphp
-
-                <div class="pagination-wrapper report-pagination">
-                    <p class="report-pagination-summary">
-                        Showing {{ $activityPaginator->firstItem() }} to {{ $activityPaginator->lastItem() }} of
-                        {{ $activityPaginator->total() }} results
-                    </p>
-
-                    <nav aria-label="Recent student activity pagination">
-                        <ul class="report-pagination-list">
-                            <li>
-                                @if ($activityPaginator->onFirstPage())
-                                    <span class="is-disabled" aria-disabled="true">Previous</span>
-                                @else
-                                    <a href="{{ $activityPaginator->previousPageUrl() }}" rel="prev">Previous</a>
-                                @endif
-                            </li>
-
-                            @foreach ($activityPaginator->getUrlRange($startPage, $endPage) as $page => $url)
-                                <li>
-                                    @if ($page === $activityPaginator->currentPage())
-                                        <span class="is-active" aria-current="page">{{ $page }}</span>
-                                    @else
-                                        <a href="{{ $url }}">{{ $page }}</a>
-                                    @endif
-                                </li>
-                            @endforeach
-
-                            <li>
-                                @if ($activityPaginator->hasMorePages())
-                                    <a href="{{ $activityPaginator->nextPageUrl() }}" rel="next">Next</a>
-                                @else
-                                    <span class="is-disabled" aria-disabled="true">Next</span>
-                                @endif
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            @endif
-
         </div>
+
+
+        {{-- =========================================================
+             CAMPAIGN TEMPLATES
+             ========================================================= --}}
+
+        @include('admin.partials.campaign-templates')
 
     </div>
 
@@ -729,6 +531,77 @@
         </script>
 
         <script src="{{ asset('js/admin/script.js') }}"></script>
+
+        {{-- DataTables is loaded in the admin layout; this table is server-side --}}
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+
+                const tableElement = document.getElementById('pushedNotificationsTable');
+
+                if (!tableElement || typeof DataTable === 'undefined') {
+                    return;
+                }
+
+                // Show load errors (e.g. expired session) in the console instead of an alert
+                DataTable.ext.errMode = 'none';
+
+                const table = new DataTable(tableElement, {
+                    serverSide: true,
+                    processing: true,
+                    responsive: true,
+                    autoWidth: false,
+                    searchDelay: 400,
+                    pageLength: 10,
+                    lengthMenu: [10, 25, 50, 100],
+                    order: [[6, 'desc']],
+
+                    ajax: {
+                        url: @json(route('admin.notifications.data')),
+                    },
+
+                    columns: [
+                        { data: 'student', orderable: false },
+                        { data: 'student_index', orderable: false },
+                        { data: 'title', orderable: false },
+                        { data: 'message', orderable: false },
+                        { data: 'type', orderable: false },
+                        { data: 'status', orderable: false },
+                        { data: 'sent_at', orderable: true },
+                    ],
+
+                    layout: {
+                        topStart: 'search',
+                        topEnd: 'pageLength',
+                        bottomStart: 'info',
+                        bottomEnd: 'paging',
+                    },
+
+                    language: {
+                        search: '',
+                        searchPlaceholder: 'Search by student index...',
+                        lengthMenu: '_MENU_ per page',
+                        info: 'Showing _START_ to _END_ of _TOTAL_ results',
+                        infoEmpty: 'No results',
+                        infoFiltered: '(filtered from _MAX_)',
+                        emptyTable: 'No pushed notifications yet.',
+                        zeroRecords: 'No notifications found for this student index.',
+                        processing: 'Loading...',
+                    },
+                });
+
+                table.on('error.dt', function (event, settings, techNote, message) {
+                    console.error('Pushed notifications table error:', message);
+                });
+
+                // Numeric keyboard on phones for the index search box
+                const searchInput = document.querySelector('#pushedNotificationsTable_wrapper .dt-search input');
+
+                if (searchInput) {
+                    searchInput.setAttribute('inputmode', 'numeric');
+                }
+            });
+        </script>
     @endpush
 
 @endsection
